@@ -6,7 +6,7 @@
 
 <template>
   <Navbar></Navbar>
- <RouterView></RouterView>
+  <RouterView></RouterView>
   
 </template>
 
