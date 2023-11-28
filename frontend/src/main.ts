@@ -1,14 +1,10 @@
 import { createApp } from "vue";
 import "./style.css";
 import App from "./App.vue";
-import router from "./router";
-// 导入element-plus整体
-import ElementPlus from "element-plus";
-import "element-plus/dist/index.css";
+import router from "./router/router.ts";
+
 const app = createApp(App);
-app.use(ElementPlus);
-// app.mount('#app')
 // 导入style 文件
 import "./styles/index.scss";
 
-createApp(App).use(router).mount("#app");
+app.use(router).mount("#app");
