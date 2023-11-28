@@ -2,7 +2,7 @@
     <div class="register-container">
         <el-form :model="form" label-width="120px" class="register-form">
             <div class="title-container">
-                <h3 class="title">Register</h3>
+                <h3 class="title">注册</h3>
             </div>
             <div class="input-container">
                 <el-form-item>
@@ -25,7 +25,7 @@
                 </el-form-item>
             </div>
             <el-form-item>
-                <el-button class="register-button" type="primary" @click="register">Register</el-button>
+                <el-button class="register-button" type="primary" @click="register">注册</el-button>
             </el-form-item>
         </el-form>
     </div>
