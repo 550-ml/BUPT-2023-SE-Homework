@@ -1,8 +1,8 @@
-import SvgIcon from '@/components/SvgIcon'
+import SvgIcon from "@/components/SvgIcon";
 
-const svgRequired = require.context('./svg', false, /\.svg$/)
-svgRequired.keys().forEach((item) => svgRequired(item))
+const svgRequired = require.context("./svg", false, /\.svg$/);
+svgRequired.keys().forEach(item => svgRequired(item));
 
-export default (app) => {
-  app.component('svg-icon', SvgIcon)
-}
+export default app => {
+  app.component("svg-icon", SvgIcon);
+};
