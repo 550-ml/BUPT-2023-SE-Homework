@@ -1,24 +1,46 @@
 <template>
-    <el-row>
-        <el-col v-for="(room, index) in roomsInfo" :key="index" :span="8" :offset="index > 0 ? 3 : 0">
-            <el-card :body-style="{ padding: '0px' }">
-                <img src="../../assets/room1.jpg" class="image" />
-                <div style="padding: 14px">
-                    <span>{{ room.roomId }}</span>
-                    <div class="bottom">
-                        <p>空调模式: {{ room.mode }}</p>
-                        <p>当前风速: {{ room.speed }}</p>
-                        <p>当前温度: {{ room.currTemp }}</p>
-                        <p>目标温度: {{ room.targetTemp }}</p>
-                        <p>服务时间: {{ room.servedTime }}</p>
-                        <p>服务费用: {{ room.fee }}</p>
-                        <el-button text class="button">操作</el-button>
+    <div class="common-layout">
+        <el-container>
+            <el-header height="200px">
+                <div class="head-text">空调管理员界面</div>
+            </el-header>
+            <el-container>
+                <el-aside width="200px">
+                    <el-tabs type="border-card">
+                        <el-tab-pane label="房间信息">
+                            房间信息内容
+                        </el-tab-pane>
+                        <el-tab-pane label="空调参数调节">
+                            空调参数调节内容
+                        </el-tab-pane>
+                    </el-tabs>
+                </el-aside>
+                <el-main>
+                    <!-- 主要内容 -->
+                    <div class="show-mes">
+                        <el-card v-for="(room, index) in roomsInfo" :key="index">
+                            <img src="../../assets/room1.jpg" class="image" />
+                            <div style="padding: 14px">
+                                <span>{{ room.roomId }}</span>
+                                <div class="bottom">
+                                    <p>空调模式: {{ room.mode }}</p>
+                                    <p>当前风速: {{ room.speed }}</p>
+                                    <p>当前温度: {{ room.currTemp }}</p>
+                                    <p>目标温度: {{ room.targetTemp }}</p>
+                                    <p>服务时间: {{ room.servedTime }}</p>
+                                    <p>服务费用: {{ room.fee }}</p>
+                                    <el-button text class="button">操作</el-button>
+                                </div>
+                            </div>
+                        </el-card>
                     </div>
-                </div>
-            </el-card>
-        </el-col>
-    </el-row>
+                </el-main>
+            </el-container>
+            <el-footer>Footer</el-footer>
+        </el-container>
+    </div>
 </template>
+
 
 <script lang="ts" setup>
 import { ref } from 'vue'
@@ -59,6 +81,15 @@ const roomsInfo = ref([
         servedTime: '2 hours',
         fee: '$15'
     },
+    {
+        roomId: 'Room 1',
+        mode: 'Cold',
+        speed: 'Medium',
+        currTemp: '20°C',
+        targetTemp: '25°C',
+        servedTime: '2 hours',
+        fee: '$15'
+    }
     // Add more rooms as needed...
 ])
 
@@ -70,17 +101,71 @@ setInterval(() => {
 </script>
 
 <style>
-.time {
-    font-size: 12px;
-    color: #999;
+/* 全局样式 */
+.common-layout {
+    height: 100vh;
+    /* 设置整个布局高度为视窗的高度 */
 }
 
-.bottom {
-    margin-top: 13px;
-    line-height: 12px;
+/* 定义el-header元素的样式 */
+.el-header {
+    background-color: #3498db;
+    /* 背景颜色 */
+    color: #ffffff;
+    /* 文本颜色 */
+    padding: 20px;
+    /* 内边距 */
+    text-align: center;
+    /* 文本居中 */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    /* 阴影效果 */
+}
+
+/* 定义head-text类的样式 */
+.head-text {
+    font-size: 80px;
+    /* 字体大小 */
+    font-weight: bold;
+    /* 字体加粗 */
+}
+
+/* 侧边栏样式 */
+.el-aside {
+    background-color: #f0f0f0;
+    /* 设置侧边栏背景色 */
+    padding: 200px;
+    box-sizing: border-box;
+    /* 保证padding不影响元素宽度 */
+}
+
+/* 主要内容样式 */
+.show-mes {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-wrap: wrap;
+    /* 使用 flex 布局，让 el-card 水平排列，并换行显示 */
+    gap: 20px;
+    /* 设置元素之间的间距 */
+}
+
+.el-card {
+    width: calc(33.33% - 20px);
+    /* 设置每个 el-card 的宽度为三分之一，减去间距 */
+    margin-bottom: 20px;
+    /* 设置下边距 */
+}
+
+.image {
+    width: 100%;
+    max-width: 100%;
+    display: block;
+    margin-bottom: 10px;
+    /* 调整图片样式 */
+}
+
+.show-mes .bottom {
+    line-height: 1.5;
+    font-size: 16px;
+    /* 调整文字样式 */
 }
 
 .button {
@@ -88,8 +173,9 @@ setInterval(() => {
     min-height: auto;
 }
 
-.image {
-    width: 100%;
-    display: block;
+.time {
+    font-size: 12px;
+    color: #999;
 }
 </style>
+
