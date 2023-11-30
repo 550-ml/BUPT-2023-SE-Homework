@@ -23,6 +23,7 @@ declare module 'vue' {
     ElTabPane: typeof import('element-plus/es')['ElTabPane']
     ElTabs: typeof import('element-plus/es')['ElTabs']
     Navbar: typeof import('./src/components/Navbar.vue')['default']
+    RoomStateHistory: typeof import('./src/components/RoomStateHistory.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
   }
