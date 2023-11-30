@@ -19,7 +19,7 @@
     </div>
 
     <!-- 右侧 3/4 - 内容区域 -->
-    <div class="flex-3 p-8 bg-gray-100 rounded-xl shadow-md">
+    <div class="w-3/4 flex-3 p-8 bg-gray-100 rounded-xl shadow-md">
       <!-- 根据 selectedPanel 动态渲染不同的组件 -->
       <router-view />
     </div>
