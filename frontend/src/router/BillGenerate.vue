@@ -6,7 +6,8 @@
 </template> -->
 <template>
     <table class="table-auto w-full">
-      <thead>
+      <thead class="">
+        账单查看
       </thead>
       <tbody>
         <RoomState v-for="index in 3" :key="index" />
