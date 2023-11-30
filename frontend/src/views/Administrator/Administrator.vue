@@ -43,7 +43,7 @@
 
 
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { ref } from "vue";
 
 const roomsInfo = ref([
     {
@@ -94,10 +94,10 @@ const roomsInfo = ref([
 ])
 
 // This code keeps track of the current date and time
-const currentDate = ref(new Date())
+const currentDate = ref(new Date());
 setInterval(() => {
-    currentDate.value = new Date()
-}, 1000)
+  currentDate.value = new Date();
+}, 1000);
 </script>
 
 <style>
@@ -183,8 +183,8 @@ setInterval(() => {
 }
 
 .button {
-    padding: 0;
-    min-height: auto;
+  padding: 0;
+  min-height: auto;
 }
 
 .time {
