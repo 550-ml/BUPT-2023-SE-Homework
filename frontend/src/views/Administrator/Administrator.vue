@@ -5,35 +5,35 @@
                 <div class="head-text">空调管理员界面</div>
             </el-header>
             <el-container>
-                <el-aside width="200px">
-                    <el-tabs type="border-card">
-                        <el-tab-pane label="房间信息">
-                            房间信息内容
-                        </el-tab-pane>
-                        <el-tab-pane label="空调参数调节">
-                            空调参数调节内容
-                        </el-tab-pane>
+                <!-- <el-aside width="200px">
+                    <el-tabs type="border-card" tab-position="left">
+                        <el-tab-pane label="空调运行">空调运行</el-tab-pane>
+                        <el-tab-pane label="设置空调">设置空调</el-tab-pane>
                     </el-tabs>
-                </el-aside>
+                </el-aside> -->
                 <el-main>
-                    <!-- 主要内容 -->
-                    <div class="show-mes">
-                        <el-card v-for="(room, index) in roomsInfo" :key="index">
-                            <img src="../../assets/room1.jpg" class="image" />
-                            <div style="padding: 14px">
-                                <span>{{ room.roomId }}</span>
-                                <div class="bottom">
-                                    <p>空调模式: {{ room.mode }}</p>
-                                    <p>当前风速: {{ room.speed }}</p>
-                                    <p>当前温度: {{ room.currTemp }}</p>
-                                    <p>目标温度: {{ room.targetTemp }}</p>
-                                    <p>服务时间: {{ room.servedTime }}</p>
-                                    <p>服务费用: {{ room.fee }}</p>
-                                    <el-button text class="button">操作</el-button>
-                                </div>
+                    <el-tabs type="border-card" tab-position="left">
+                        <el-tab-pane label="空调运行" class="left-text">
+                            <div class="show-mes">
+                                <el-card v-for="(room, index) in roomsInfo" :key="index">
+                                    <img src="../../assets/room1.jpg" class="image" />
+                                    <div style="padding: 14px">
+                                        <span>{{ room.roomId }}</span>
+                                        <div class="bottom">
+                                            <p>空调模式: {{ room.mode }}</p>
+                                            <p>当前风速: {{ room.speed }}</p>
+                                            <p>当前温度: {{ room.currTemp }}</p>
+                                            <p>目标温度: {{ room.targetTemp }}</p>
+                                            <p>服务时间: {{ room.servedTime }}</p>
+                                            <p>服务费用: {{ room.fee }}</p>
+                                            <el-button text class="button">操作</el-button>
+                                        </div>
+                                    </div>
+                                </el-card>
                             </div>
-                        </el-card>
-                    </div>
+                        </el-tab-pane>
+                        <el-tab-pane label="设置空调" class="left-text">设置空调</el-tab-pane>
+                    </el-tabs>
                 </el-main>
             </el-container>
             <el-footer>Footer</el-footer>
@@ -129,13 +129,27 @@ setInterval(() => {
     /* 字体加粗 */
 }
 
-/* 侧边栏样式 */
-.el-aside {
-    background-color: #f0f0f0;
-    /* 设置侧边栏背景色 */
+
+.el-tabs {
+    flex: 1;
+    height: 100%;
+    /* 使用 el-aside 的高度 */
+
+}
+
+.el-tab-pane {
     padding: 200px;
-    box-sizing: border-box;
-    /* 保证padding不影响元素宽度 */
+}
+
+.el-tabs__content {
+    padding: 200px;
+    color: #6b778c;
+    font-size: 32px;
+    font-weight: 600;
+}
+
+.left-text {
+    font-size: 24px;
 }
 
 /* 主要内容样式 */
