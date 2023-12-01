@@ -2,11 +2,18 @@ import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QTextEdit
 from PyQt5.QtCore import Qt, QTimer, QDateTime
 from os.path import isfile
+import requests
+import json
+import hashlib
+import rsa
+import random
+from datetime import datetime
 
 class AirConditionerPanel(QWidget):
     def __init__(self):
         super().__init__()
 
+        self.room_id = '2-233' # 房间号
         self.power_on = False
         self.temperature = 25  # 初始温度
         self.fan_speeds = ['低', '中', '高']
@@ -24,6 +31,9 @@ class AirConditionerPanel(QWidget):
 
     def init_ui(self):
         layout = QVBoxLayout()
+
+        self.room_id_label = QLabel(f"房间号: {self.room_id}", self)
+        layout.addWidget(self.room_id_label)
 
         self.temperature_label = QLabel(f"温度: {self.temperature}°", self)
         layout.addWidget(self.temperature_label)
@@ -54,9 +64,9 @@ class AirConditionerPanel(QWidget):
         mode_button.clicked.connect(self.toggle_mode)
         layout.addWidget(mode_button)
 
-        #shutdown_button = QPushButton('关闭', self)
-        #shutdown_button.clicked.connect(self.shutdown)
-        #layout.addWidget(shutdown_button)
+        shutdown_button = QPushButton('关闭窗口', self)
+        shutdown_button.clicked.connect(self.close_window)
+        layout.addWidget(shutdown_button)
 
         self.log_display = QTextEdit(self)
         layout.addWidget(self.log_display)
@@ -65,6 +75,9 @@ class AirConditionerPanel(QWidget):
         self.setWindowTitle('空调面板')
         self.setGeometry(300, 300, 500, 700)
         self.show()
+    def close_window(self):
+        # 关闭窗口
+        self.close()
 
     def toggle_power(self):
         if not self.power_on:
