@@ -16,7 +16,7 @@
             <el-tab-pane label="空调运行" class="left-text">
               <div class="show-mes">
                 <el-card v-for="(room, index) in roomsInfo" :key="index">
-                  <img src="../../assets/room1.jpg" class="image" />
+                  <img src="../assets/room1.jpg" class="image" />
                   <div style="padding: 14px">
                     <span>{{ room.roomId }}</span>
                     <div class="bottom">
@@ -44,7 +44,7 @@
 
 <script lang="ts" setup>
 import { ref } from "vue";
-
+// declare function require(img: string): string;  // 声明
 const roomsInfo = ref([
   {
     roomId: 'Room 1',
@@ -53,7 +53,8 @@ const roomsInfo = ref([
     currTemp: '20°C',
     targetTemp: '25°C',
     servedTime: '2 hours',
-    fee: '$15'
+    fee: '$15',
+    // image: require('../assets/room1.jpg')
   },
   {
     roomId: 'Room 2',
@@ -62,7 +63,8 @@ const roomsInfo = ref([
     currTemp: '30°C',
     targetTemp: '28°C',
     servedTime: '3 hours',
-    fee: '$20'
+    fee: '$20',
+    // image: require('../assets/room2.jpg')
   },
   {
     roomId: 'Room 2',
@@ -71,7 +73,8 @@ const roomsInfo = ref([
     currTemp: '30°C',
     targetTemp: '28°C',
     servedTime: '3 hours',
-    fee: '$20'
+    fee: '$20',
+    image: '../assets/room3.jpg'
   }, {
     roomId: 'Room 1',
     mode: 'Cold',
@@ -79,7 +82,8 @@ const roomsInfo = ref([
     currTemp: '20°C',
     targetTemp: '25°C',
     servedTime: '2 hours',
-    fee: '$15'
+    fee: '$15',
+    image: '../assets/room4.jpg'
   },
   {
     roomId: 'Room 1',
@@ -88,7 +92,8 @@ const roomsInfo = ref([
     currTemp: '20°C',
     targetTemp: '25°C',
     servedTime: '2 hours',
-    fee: '$15'
+    fee: '$15',
+    image: '../assets/room5.jpg'
   }
   // Add more rooms as needed...
 ])
@@ -100,16 +105,17 @@ setInterval(() => {
 }, 1000);
 </script>
 
-<style>
+<style lang="scss">
 /* 全局样式 */
 .common-layout {
   height: 100vh;
+  padding: 0;
   /* 设置整个布局高度为视窗的高度 */
 }
 
 /* 定义el-header元素的样式 */
 .el-header {
-  background-color: #3498db;
+  background-color: #111619;
   /* 背景颜色 */
   color: #ffffff;
   /* 文本颜色 */
@@ -129,62 +135,79 @@ setInterval(() => {
   /* 字体加粗 */
 }
 
-
-.el-tabs {
-  flex: 1;
-  height: 100%;
-  /* 使用 el-aside 的高度 */
-
+/* 左边那一栏文字 */
+.el-tabs--left .el-tabs__item.is-left {
+  font-size: 25px;
+  color: #333;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+  line-height: 1.5;
+  text-decoration: none;
+  text-transform: uppercase;
 }
 
 .el-tab-pane {
-  padding: 200px;
-}
-
-.el-tabs__content {
-  padding: 200px;
-  color: #6b778c;
-  font-size: 32px;
-  font-weight: 600;
-}
-
-.left-text {
-  font-size: 24px;
+  padding: 50px;
 }
 
 /* 主要内容样式 */
 .show-mes {
   display: flex;
   flex-wrap: wrap;
-  /* 使用 flex 布局，让 el-card 水平排列，并换行显示 */
   gap: 20px;
-  /* 设置元素之间的间距 */
+  margin: 0;
+  /* 去除外边距 */
+  padding: 0;
+  /* 去除内边距 */
+  justify-content: space-evenly;
 }
 
 .el-card {
   width: calc(33.33% - 20px);
-  /* 设置每个 el-card 的宽度为三分之一，减去间距 */
   margin-bottom: 20px;
-  /* 设置下边距 */
+  border-radius: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  /* 添加阴影效果 */
+  background-color: rgb(216, 210, 210);
+  /* 设置背景色 */
+  transition: box-shadow 0.3s ease;
+  /* 添加阴影过渡效果 */
 }
 
+.el-card:hover {
+  box-shadow: 0 50px 50px rgba(13, 88, 180, 0.15);
+  /* 改变阴影效果 */
+}
+
+/* 设置图片样式 */
 .image {
-  width: 100%;
+  width: 95%;
   max-width: 100%;
   display: block;
+  margin: 0 auto;
   margin-bottom: 10px;
-  /* 调整图片样式 */
+  border-radius: 20px 20px 10px 10px;
+  /* 图片上方设置圆角 */
 }
 
 .show-mes .bottom {
   line-height: 1.5;
-  font-size: 16px;
-  /* 调整文字样式 */
+  font-size: 18px;
 }
 
+/* 按钮样式 */
 .button {
-  padding: 0;
-  min-height: auto;
+  padding: 8px 16px;
+  border-radius: 5px;
+  background-color: #007BFF;
+  color: #a01818;
+  transition: background-color 0.3s ease;
+  /* 添加背景色过渡效果 */
+}
+
+.button:hover {
+  background-color: #0056b3;
+  /* 鼠标悬停时改变背景色 */
 }
 
 .time {
