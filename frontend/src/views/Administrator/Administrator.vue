@@ -96,7 +96,7 @@ const roomsInfo = ref([
 // This code keeps track of the current date and time
 const currentDate = ref(new Date());
 setInterval(() => {
-  currentDate.value = new Date();
+    currentDate.value = new Date();
 }, 1000);
 </script>
 
@@ -135,6 +135,11 @@ setInterval(() => {
     height: 100%;
     /* 使用 el-aside 的高度 */
 
+}
+
+.el-tabs_item {
+    font-size: 32px;
+    /* 使用 el-aside 的高度 */
 }
 
 .el-tab-pane {
@@ -183,8 +188,8 @@ setInterval(() => {
 }
 
 .button {
-  padding: 0;
-  min-height: auto;
+    padding: 0;
+    min-height: auto;
 }
 
 .time {
