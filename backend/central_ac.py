@@ -13,7 +13,7 @@ class CentralAc:
         self.temperature_change_rate = {'HIGH': 1, 'MID': 0.5, 'LOW': 0.25}  # Temperature change rate
 
     def service(self, current_temp, target_temp, target_speed, total_cost):
-        time.sleep(60)
+        time.sleep(10)
         current_temp = self.update_temperature(current_temp, target_temp, target_speed)
         total_cost = self.update_cost(total_cost, target_speed)
 
@@ -26,5 +26,5 @@ class CentralAc:
         return current_temp
 
     def update_cost(self, total_cost, target_speed):
-        total_cost += self.power_rate[target_speed]
+        total_cost += self.fee_rate * self.power_rate[target_speed]
         return total_cost
