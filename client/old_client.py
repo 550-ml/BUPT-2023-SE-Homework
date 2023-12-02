@@ -9,6 +9,19 @@ import rsa
 import random
 from datetime import datetime
 
+# 生成唯一标识符
+unique_id = ''.join(random.choices('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', k=16))
+
+# 请求数据
+#room_id = '2-233'#房间号
+port = '11451'
+#data = '26'#温度temperature
+#operation = 'start'#空调状态power
+#time = datetime.now().isoformat()#时间timestamp
+
+# 配置服务器的URL
+base_url = 'http://localhost:11451/api'#host:port
+
 class AirConditionerPanel(QWidget):
     def __init__(self):
         super().__init__()
@@ -20,6 +33,30 @@ class AirConditionerPanel(QWidget):
         self.current_fan_speed = 0  # 初始风速为低
         self.modes = ['制冷', '制热']
         self.current_mode = 0  # 初始模式为制冷
+
+
+        # 生成签名文本
+        #sign_text = self.room_id + unique_id + port
+        #signature = hashlib.sha256(sign_text.encode()).hexdigest()
+
+        # /device/client 端点的请求数据
+        #client_data = {
+        #    "room_id": self.room_id,
+        #    "port": port,
+        #    "unique_id": unique_id,
+        #    "signature": signature
+        #}
+
+        # /device/client/{room_id} 端点的请求数据
+        #client_operation_data = {
+        #    "operation": self.power_on,
+        #    "data": self.temperature,
+        #    "time": timestamp,
+        #    "unique_id": unique_id,
+        #    "signature": signature
+        #}
+
+
 
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.record_event)
@@ -137,6 +174,46 @@ class AirConditionerPanel(QWidget):
         timestamp = QDateTime.currentDateTime().toString("yyyy-MM-dd hh:mm:ss")
         log_entry = f"{timestamp} - {event}\n"
         self.log_display.append(log_entry)
+
+        sign_text = self.room_id + unique_id + port
+        signature = hashlib.sha256(sign_text.encode()).hexdigest()
+        #底下是发送post的测试，并非最终版本
+        # /device/client 端点的请求数据
+        client_data = {
+            "room_id": self.room_id,
+            "port": port,
+            "unique_id": unique_id,
+            "signature": signature
+        }
+        # /device/client/{room_id} 端点的请求数据
+        client_operation_data = {
+            "operation": self.power_on,
+            "data": self.temperature,
+            "time": timestamp,
+            "unique_id": unique_id,
+            "signature": signature
+        }
+        # /control 端点的请求数据
+        server_operation_data = {
+        "operation": self.power_on,
+        "data": self.temperature,
+        }
+
+        # 发送到 /device/client 的 POST 请求
+        response = requests.post(f'{base_url}/device/client', json=client_data)
+        print(response.status_code)
+        print(response.json())
+
+        # 发送到 /device/client/{room_id} 的 POST 请求
+        response = requests.post(f'{base_url}/device/client/{self.room_id}', json=client_operation_data)
+        print(response.status_code)
+        print(response.json())
+
+        # 发送到 /control 的 POST 请求
+        response = requests.post(f'{base_url}/control', json=server_operation_data)
+        print(response.status_code)
+        print(response.json())
+
         with open(self.log_file, 'a') as file:
             file.write(log_entry)
 
