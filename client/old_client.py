@@ -26,9 +26,10 @@ class AirConditionerPanel(QWidget):
     def __init__(self):
         super().__init__()
 
-        self.room_id = '2-233' # 房间号
+        self.room_id = '2-233' # 房间号,自己输入
         self.power_on = False
         self.temperature = 25  # 初始温度
+        self.first_temperature = 32#初始室温，只有一次输入
         self.fan_speeds = ['低', '中', '高']
         self.current_fan_speed = 0  # 初始风速为低
         self.modes = ['制冷', '制热']
@@ -72,7 +73,10 @@ class AirConditionerPanel(QWidget):
         self.room_id_label = QLabel(f"房间号: {self.room_id}", self)
         layout.addWidget(self.room_id_label)
 
-        self.temperature_label = QLabel(f"温度: {self.temperature}°", self)
+        self.first_temperature_label = QLabel(f"室内初始温度: {self.first_temperature}", self)
+        layout.addWidget(self.first_temperature_label)
+
+        self.temperature_label = QLabel(f"设定温度: {self.temperature}°", self)
         layout.addWidget(self.temperature_label)
 
         self.fan_speed_label = QLabel(f"风速: {self.fan_speeds[self.current_fan_speed]}", self)
@@ -120,19 +124,21 @@ class AirConditionerPanel(QWidget):
         if not self.power_on:
             self.power_on = True
             self.start_timer()
-            self.log_event("空调开机")
+            self.log_event("空调开机 - 正在记录 - 房间号: {self.room_id},"
+                           f"设定温度: {self.temperature}°, 风速: {self.fan_speeds[self.current_fan_speed]}, "
+                           f"模式: {self.modes[self.current_mode]}")
         else:
             self.stop_timer()
             self.power_on = False
             self.log_event(f"空调关闭 - 最后记录 - 房间号: {self.room_id},"
-                           f"温度: {self.temperature}°, 风速: {self.fan_speeds[self.current_fan_speed]}, "
+                           f"设定温度: {self.temperature}°, 风速: {self.fan_speeds[self.current_fan_speed]}, "
                            f"模式: {self.modes[self.current_mode]}")
 
     def adjust_temperature(self, change):
         if self.power_on:
             if 16 <= self.temperature + change <= 30:
                 self.temperature += change
-                self.temperature_label.setText(f"温度: {self.temperature}°")
+                self.temperature_label.setText(f"设定温度: {self.temperature}°")
                 self.start_timer()
 
     def adjust_fan_speed(self):
@@ -167,7 +173,7 @@ class AirConditionerPanel(QWidget):
         if self.countdown == 0:
             self.stop_timer()
             self.log_event(f"正在记录 - 房间号: {self.room_id},"
-                           f"温度: {self.temperature}°, 风速: {self.fan_speeds[self.current_fan_speed]}, "
+                           f"设定温度: {self.temperature}°, 风速: {self.fan_speeds[self.current_fan_speed]}, "
                            f"模式: {self.modes[self.current_mode]}")
 
     def log_event(self, event):
