@@ -1,9 +1,10 @@
 import threading
 from datetime import datetime
 
-from room1 import Room
+from room import Room
 from queues import Queues
 from central_ac import CentralAc
+from utils import recover_temp
 
 
 class Scheduler:
@@ -42,12 +43,34 @@ class Scheduler:
         else:
             for room in self.room_threads:
                 if room.room_id == room_id:
+                    room.end_time = datetime.now()
                     room.stop()
                     room.state = 'FINISH'
                     room.power = False
                     self.queues.pop_service_by_room_id(room_id)
 
-    # def deal_with_speed_temp_change(self, room_id, target_temp, target_speed):
+    def deal_with_speed_temp_change(self, room_id, target_temp, target_speed):
+        if target_temp is None and target_speed is not None:
+            self.state_lock[room_id].acquire()
+            for room in self.room_threads:
+                if room.room_id == room_id:
+                    room.target_speed = target_speed
+                    room.current_speed = target_speed
+            self.state_lock[room_id].release()
+        elif target_temp is not None and target_speed is None:
+            self.state_lock[room_id].acquire()
+            for room in self.room_threads:
+                if room.room_id == room_id:
+                    room.target_temp = target_temp
+            self.state_lock[room_id].release()
+        else:
+            self.state_lock[room_id].acquire()
+            for room in self.room_threads:
+                if room.room_id == room_id:
+                    room.target_temp = target_temp
+                    room.target_speed = target_speed
+                    room.current_speed = target_speed
+            self.state_lock[room_id].release()
 
     def schedule(self):
         while 1:
@@ -71,6 +94,7 @@ class Scheduler:
                 self.queues.pop_ready_queue()
                 self.queues.add_into_running_queue(ready_be_served)
 
+                recover_temp(ready_be_served)
                 ready_be_served.state = 'RUNNING'
                 ready_be_served.power = True
                 ready_be_served.current_speed = ready_be_served.target_speed
@@ -84,6 +108,7 @@ class Scheduler:
                 if ready_served_priority < room_priority:
                     # priority scheduling
                     room_with_lowest_priority.stop()
+                    room_with_lowest_priority.end_time = datetime.now()
                     room_with_lowest_priority.state = 'SUSPEND'
                     room_with_lowest_priority.power = False
                     self.queues.pop_service_by_room_id(room_with_lowest_priority.room_id)
@@ -91,6 +116,7 @@ class Scheduler:
 
                     self.queues.pop_ready_queue()
                     self.queues.add_into_running_queue(ready_be_served)
+                    recover_temp(ready_be_served)
                     ready_be_served.power = True
                     ready_be_served.state = 'RUNNING'
                     ready_be_served.current_speed = ready_be_served.target_speed
@@ -100,6 +126,7 @@ class Scheduler:
                     time_now = datetime.now()
                     if (time_now - start_ready_time).total_seconds() >= self.RR_SLOT:
                         room_with_lowest_priority.stop()
+                        room_with_lowest_priority.end_time = datetime.now()
                         room_with_lowest_priority.state = 'SUSPEND'
                         room_with_lowest_priority.power = False
                         self.queues.pop_service_by_room_id(room_with_lowest_priority.room_id)
@@ -107,6 +134,7 @@ class Scheduler:
 
                         self.queues.pop_ready_queue()
                         self.queues.add_into_running_queue(ready_be_served)
+                        recover_temp(ready_be_served)
                         ready_be_served.power = True
                         ready_be_served.state = 'RUNNING'
                         ready_be_served.current_speed = ready_be_served.target_speed
