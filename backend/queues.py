@@ -1,6 +1,7 @@
 import heapq
 import threading
 from datetime import datetime
+
 from room1 import Room
 
 
@@ -16,17 +17,6 @@ class Queues:
         self.running_queue = {}  # 设计成字典类型，通过room_id访问
         self.service_lock = threading.Lock()
 
-    # 创建服务对象
-    @staticmethod
-    def create_service_object(room_id, cur_temp, cur_speed, target_temp, target_speed):
-        service_object = ServiceObject()
-        service_object.init_room_id(room_id=room_id)
-        service_object.init_servive_start_time()
-        service_object.init_current_temp_and_speed(cur_temp=cur_temp, cur_speed=cur_speed)
-        service_object.init_target(target_temp=target_temp, speed=target_speed)
-        service_object.init_fee()
-        return service_object
-
     # 将服务对象加入等待/待调度队列
     def add_into_ready_queue(self, service_object: Room, priority):
         heapq.heappush(self.ready_queue, (priority, datetime.now(), service_object))
@@ -37,11 +27,24 @@ class Queues:
         service_objects = heapq.nsmallest(1, self.ready_queue)
         if not service_objects:
             return None
-        return service_objects[0][-1]
+        return service_objects[0][-1], service_objects[0][-2]
 
     def add_into_suspend_queue(self, room: Room):
         time_now = datetime.now()
         self.suspend_queue[room] = time_now
+
+    def pop_suspend_queue(self):
+        ready_to_pop = []
+        time_now = datetime.now()
+        for room, start_time in self.suspend_queue.items():
+            if (time_now - start_time).total_seconds() >= 60:
+                ready_to_pop.append(room)
+        if len(ready_to_pop) == 0:
+            return None
+        else:
+            for room in ready_to_pop:
+                self.suspend_queue.pop(room)
+            return ready_to_pop
 
     # 把等待/待调度队列中优先级最高的服务对象弹出
     def pop_ready_queue(self):

@@ -2,7 +2,7 @@ import threading
 
 
 class Room(threading.Thread):
-    def __init__(self, room_id, state, initial_env_temp, target, **kwargs):
+    def __init__(self, room_id, state, initial_env_temp, target, state_lock: threading.Lock, **kwargs):
         super().__init__(**kwargs)
         self.power = False
         self.room_id = room_id
@@ -18,6 +18,8 @@ class Room(threading.Thread):
 
         self.running = True
         self.target = target
+        self.running_lock = threading.Lock()
+        self.state_lock = state_lock
 
     def run(self):
         while self.running:
