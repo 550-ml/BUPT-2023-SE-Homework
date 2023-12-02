@@ -87,7 +87,7 @@ class AirConditionerPanel(QWidget):
         else:
             self.stop_timer()
             self.power_on = False
-            self.log_event(f"空调关闭 - 最后记录 - "
+            self.log_event(f"空调关闭 - 最后记录 - 房间号: {self.room_id},"
                            f"温度: {self.temperature}°, 风速: {self.fan_speeds[self.current_fan_speed]}, "
                            f"模式: {self.modes[self.current_mode]}")
 
@@ -110,13 +110,13 @@ class AirConditionerPanel(QWidget):
             self.mode_label.setText(f"模式: {self.modes[self.current_mode]}")
             self.start_timer()
 
-    def shutdown(self):
-        if self.power_on:
-            self.stop_timer()
-            self.power_on = False
-            self.log_event(f"空调关闭 - 最后记录 - "
-                           f"温度: {self.temperature}°, 风速: {self.fan_speeds[self.current_fan_speed]}, "
-                           f"模式: {self.modes[self.current_mode]}")
+    #def shutdown(self):
+    #    if self.power_on:
+    #        self.stop_timer()
+    #        self.power_on = False
+    #        self.log_event(f"空调关闭 - 最后记录 - 房间号: {self.room_id},"
+    #                       f"温度: {self.temperature}°, 风速: {self.fan_speeds[self.current_fan_speed]}, "
+    #                       f"模式: {self.modes[self.current_mode]}")
 
     def start_timer(self):
         self.countdown = 3
@@ -129,7 +129,7 @@ class AirConditionerPanel(QWidget):
         self.countdown -= 1
         if self.countdown == 0:
             self.stop_timer()
-            self.log_event(f"正在记录 - "
+            self.log_event(f"正在记录 - 房间号: {self.room_id},"
                            f"温度: {self.temperature}°, 风速: {self.fan_speeds[self.current_fan_speed]}, "
                            f"模式: {self.modes[self.current_mode]}")
 
