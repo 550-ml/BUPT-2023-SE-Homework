@@ -12,8 +12,15 @@ class CentralAc:
         self.power_rate = {'HIGH': 1, 'MID': 0.5, 'LOW': 1/3}  # Electricity consumption rate
         self.temperature_change_rate = {'HIGH': 1, 'MID': 0.5, 'LOW': 0.25}  # Temperature change rate
 
+    def set_params(self, mode, fee_rate, temp_section, default_temp, default_speed):
+        self.mode = mode
+        self.fee_rate = fee_rate
+        self.temp_section = temp_section
+        self.default_temp = default_temp
+        self.default_speed = default_speed
+
     def service(self, current_temp, target_temp, target_speed, total_cost):
-        time.sleep(10)
+        time.sleep(0.5)
         current_temp = self.update_temperature(current_temp, target_temp, target_speed)
         total_cost = self.update_cost(total_cost, target_speed)
 

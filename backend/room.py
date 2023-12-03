@@ -1,15 +1,16 @@
 import threading
 from datetime import datetime
+from database import add_to_detail
 
 
 class Room(threading.Thread):
-    def __init__(self, room_id, state, initial_env_temp, target, state_lock: threading.Lock, **kwargs):
+    def __init__(self, room_id, state, target, state_lock: threading.Lock, **kwargs):
         super().__init__(**kwargs)
         self.power = False
         self.room_id = room_id
         self.state = state
-        self.initial_env_temp = initial_env_temp
-        self.current_temp = initial_env_temp
+        self.initial_env_temp = None
+        self.current_temp = None
         self.current_speed = None
         self.target_temp = None
         self.target_speed = None
@@ -38,6 +39,11 @@ class Room(threading.Thread):
             )
             if self.current_temp == self.target_temp:
                 self.running = False
+                self.end_time = datetime.now()
+                self.power = False
+                self.state = 'FINISH'
+
+                self.write_into_db(self.end_time)
 
             self.state_lock.release()
             self.running_lock.release()
@@ -46,12 +52,23 @@ class Room(threading.Thread):
         self.running = False
         self.running_lock.acquire()
 
-        end_time = datetime.now()
+        self.end_time = datetime.now()
+        self.write_into_db(self.end_time)
+
+        self.running_lock.release()
+
+    def write_into_db(self, end_time):
         duration = (end_time - self.start_time).total_seconds()
-        print(duration)
 
         self.fee += self.current_fee
         self.last_fee = self.current_fee
         self.current_fee = 0
 
-        self.running_lock.release()
+        add_to_detail(
+            self.room_id,
+            self.start_time,
+            self.end_time,
+            self.current_speed,
+            self.fee,
+            duration
+        )
