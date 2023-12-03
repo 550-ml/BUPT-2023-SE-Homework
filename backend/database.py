@@ -6,6 +6,13 @@ import datetime
 db = SQLAlchemy(app)
 
 
+class Bill(db.Model):
+    room_id = db.Column(db.String(5), primary_key=True)
+    check_in = db.Column(db.DateTime, default=datetime.datetime.now())
+    check_out = db.Column(db.DateTime, default=datetime.datetime.now())
+    ac_cost = db.Column(db.Float, default=0.0)
+
+
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True)
