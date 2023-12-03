@@ -21,7 +21,7 @@ def login_admin():
     :return: {error:bool.
                 role:str}  # room/administrator/manager/receptionist
 
-    不用加
+
     """
 
     params = request.get_json(force=True)
@@ -65,13 +65,16 @@ def add_room():
                     type: string
             401
 
-    向后端发送信号，往账单表里添加元组
     """
 
+    params = request.get_json(force=True)
+    print(request.path, " : ", params)
+    room = params['room']
+    public_key = params['public_key']
 
 
 
-    return jsonify(ret), 200
+
 
 # 管理员删房
 @app.route('/admin/device', methods=['delete'])
@@ -85,15 +88,18 @@ def delete_room():
                     type: string
             401
 
-    将账单里的删除
     """
+
+    params = request.get_json(force=True)
+    print(request.path, " : ", params)
+    room = params['room']
+
+
 
 # 管理员给出所有可利用的设备
 @app.route('admin/devices', methods=['get'])
 def get_room_list():
     """
-    room:
-        type: string
 
     :return: 200 room 数组:
                     type: string array
@@ -101,6 +107,8 @@ def get_room_list():
 
     调数据库
     """
+
+
 
 
 # 管理员控制某一设备
@@ -117,17 +125,21 @@ def control_device():
           type: string
           example: 26   # different for operations
 
-    :return: 200 items:
-                    type: string
+    :return: 200 返回房间列表？？   ？？？？
             401
 
 
     """
+    params = request.get_json(force=True)
+    print(request.path, " : ", params)
+    room = params['room']
+    operation = params['operation']
+    data = params['data']
 
 
 # 对某一房间进行状态查询
-@app.route('/status/{room_id}', methods=['get'])
-def get_one_status():
+@app.route('/status/<string:room_id>', methods=['GET'])
+def get_one_status(room_id):
     """
     room:
         type: string
@@ -138,22 +150,36 @@ def get_one_status():
             401
 
     """
+    params = request.get_json(force=True)
+    print(request.path, " : ", params)
+    room = params['room']
+    public_key = params['public_key']
+
 
 
 # 获取所有房间状态信息
 @app.route('/status', methods=['get'])
 def get_all_status():
     """
-    room:
-        type: string
-    public_key:
-        type: string # RSA 4096
 
     :return: 200 room, is_on(开关机状态)
 
             401
 
     """
+    params = request.get_json(force=True)
+    print(request.path, " : ", params)
+
+    if isinstance(params, list):
+        for item in params:
+            if isinstance(item, dict):
+                room = item.get('room')
+                is_on = item.get('is_on')
+
+        return , 200
+    else:
+
+        return 400
 
 
 # 开房
@@ -170,7 +196,7 @@ def check_in():
     return
 
 
-# 退房 FINISH
+# 退房
 @app.route('/room/check_out', methods=['POST'])
 def check_out():
     """前台退房
@@ -196,3 +222,23 @@ def check_out():
 
 
 # 客户端
+
+# 客户端进行空调操作
+@app.route('/device/client', methods=['POST'])
+def check_out():
+    """
+    有待商量
+    :return:
+    """
+
+
+
+# 客户端
+@app.route('/device/client', methods=['POST'])
+def check_out():
+
+
+
+# 客户端
+@app.route('/device/client', methods=['POST'])
+def check_out():
