@@ -6,37 +6,14 @@ import datetime
 db = SQLAlchemy(app)
 
 
-class Bill(db.Model):
-    room_id = db.Column(db.String(5), primary_key=True)
-    check_in = db.Column(db.DateTime, default=datetime.datetime.now())
-    check_out = db.Column(db.DateTime, default=datetime.datetime.now())
-    ac_cost = db.Column(db.Float, default=0.0)
-
-
 class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True)
+    username = db.Column(db.String(80), unique=True, primary_key=True)
     password = db.Column(db.String(80), nullable=True)
-    type = db.Column(db.Enum('receptionist', 'manager', 'administrator', 'room'))
-    times_used = db.Column(db.Integer, default=1)
-    room_id = db.Column(db.Integer, nullable=True)
-    status = db.Column(db.Enum('in', 'out'), default='out')
-
-    def __str__(self) -> str:
-        if self.type != 'room':
-            return 'id:{0},username:{1},password:{2},type:{3}'.format(
-                self.id, self.username, self.password, self.type)
-        else:
-            return 'id:{0},username:{1},password:{2},type:{3},times_used{4},status:{5},room_id:{6}'.format(
-                self.id, self.username, self.password, self.type, self.times_used, self.status, self.room_id)
-
-    def __repr__(self) -> str:
-        return self.__str__()
+    type = db.Column(db.Enum('receptionist', 'manager', 'administrator'))
 
 
-class RoomRecord(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    room_id = db.Column(db.Integer, nullable=True)
+class Detail(db.Model):
+    room_id = db.Column(db.String, nullable=True, primary_key=True)
     start_time = db.Column(db.DateTime, default=datetime.datetime.now)
     end_time = db.Column(db.DateTime, default=datetime.datetime.now, onupdate=datetime.datetime.now)
     speed = db.Column(db.Enum("HIGH", "MID", "LOW"))
@@ -44,99 +21,67 @@ class RoomRecord(db.Model):
     times_used = db.Column(db.Integer, nullable=True)
 
     def __str__(self) -> str:
-        return 'id:{0},room_id:{1},start_time:{2},end_time:{3},speed:{4},fee:{5},times_used:{6}'.format(
-            self.id,self.room_id,self.start_time,self.end_time,self.speed,self.fee,self.times_used)
+        return 'room_id:{0},start_time:{1},end_time:{2},speed:{3},fee:{4},times_used:{5}'.format(
+             self.room_id, self.start_time, self.end_time, self.speed, self.fee, self.times_used)
 
     def __repr__(self) -> str:
         return self.__str__()
 
 
-class RoomInfo(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    room_id = db.Column(db.Integer, nullable=True)              # 房间id
-    mode = db.Column(db.String(80))                             # 冷热模式
-    speed = db.Column(db.Enum("HIGH", "MID", "LOW", ""))    # 当前风速
-    current_temp = db.Column(db.Float, nullable=True)         # 当前温度
-    target_temp = db.Column(db.Float, nullable=True)          # 目标温度
-    state = db.Column(db.Enum("SENDING", "NOT SENDING"))         # 是否送风
-    served_time = db.Column(db.Integer, nullable=True)     # 服务时间
-    fee = db.Column(db.Float, nullable=True)        #费用
-
-
-class Statistics(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    totalNum = db.Column(db.Integer)
-
-
-# 各种计数
-class NewStatistics(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    dateTime = db.Column(db.DateTime, default=datetime.datetime.now)
-    totalNum = db.Column(db.Integer)
-    satisfyNum = db.Column(db.Integer, nullable=True)
-    scheduledNum = db.Column(db.Integer, nullable=True)
-    RDRNum = db.Column(db.Integer, nullable=True)
-    totalFee = db.Column(db.Float, default=0.0)
+class Order(db.Model):
+    room_id = db.Column(db.String, primary_key=True)
+    checkin = db.Column(db.DateTime, default=datetime.datetime.now)
+    checkout = db.Column(db.DateTime, default=datetime.datetime.now, onupdate=datetime.datetime.now)
+    total_cost = db.Column(db.Float, default=0.0)
 
     def __str__(self) -> str:
-        return 'id:{0},dateTime:{1},totalNum:{2},satisfyNum:{3},scheduledNum:{4},RDRNum:{5},totalFee:{6}'.format(
-            self.id,self.dateTime,self.totalNum,self.satisfyNum,self.scheduledNum,self.RDRNum,self.totalFee)
+        return 'room_id:{0},checkin:{1},checkout:{2},total_cost:{3}'.format(
+             self.room_id, self.checkin, self.checkout, self.total_cost)
 
     def __repr__(self) -> str:
         return self.__str__()
 
 
-class TempSpeed(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    dateTime = db.Column(db.DateTime, default=datetime.datetime.now)
-    currentTemp = db.Column(db.Integer, nullable=True)
-    currentSpeed = db.Column(db.Enum("HIGH", "MID", "LOW", ""))
+def add_to_detail(room_id, star_time=datetime.datetime.now, end_time=datetime.datetime.now, speed='mid', fee=0,
+                  time_used=0):
+    with app.app_context():
+        db.session.add(Detail(room_id=room_id,
+                              star_time=star_time,
+                              end_time=end_time,
+                              speed=speed,
+                              fee=fee,
+                              time_used=time_used))
+        db.session.commit()
 
-    def __str__(self) -> str:
-        return 'id:{0},dataTime:{1},currentTemp:{2},currentSpeed:{3}'.format(
-            self.id, self.dateTime, self.currentTemp, self.currentSpeed
-        )
-    
-    def __repr__(self) -> str:
-        return self.__str__()
+
+def add_to_order(room_id, checkin=datetime.datetime.now, checkout=datetime.datetime.now, total_cost=0):
+    with app.app_context():
+        db.session.add(Order(room_id=room_id,
+                             checkin=checkin,
+                             checkout=checkout,
+                             total_cost=total_cost))
+        db.session.commit()
+
+# class Statistics(db.Model):
+#     id = db.Column(db.Integer, primary_key=True)
+#     dateTime = db.Column(db.DateTime, default=datetime.datetime.now)
+#     totalNum = db.Column(db.Integer)
+#     satisfyNum = db.Column(db.Integer, nullable=True)
+#     scheduledNum = db.Column(db.Integer, nullable=True)
+#     RDRNum = db.Column(db.Integer, nullable=True)
+#     totalFee = db.Column(db.Float, default=0.0)
+#
+#     def __str__(self) -> str:
+#         return 'id:{0},dateTime:{1},totalNum:{2},satisfyNum:{3},scheduledNum:{4},RDRNum:{5},totalFee:{6}'.format(
+#             self.id, self.dateTime, self.totalNum, self.satisfyNum, self.scheduledNum, self.RDRNum, self.totalFee)
+#
+#     def __repr__(self) -> str:
+#         return self.__str__()
 
 
 def db_init():
-    db.drop_all()
-    db.create_all()
-    db.session.add(User(username='receptionist_1',password='receptionist',type='receptionist'))
-    db.session.add(User(username='manager_1',password='manager',type='manager'))
-    db.session.add(User(username='administrator_1',password='administrator',type='administrator'))
-    db.session.add(User(username='room_1',password='room',type='room',room_id=101))
-    db.session.add(User(username='room_2',password='room',type='room',room_id=102))
-    db.session.add(User(username='room_3',password='room',type='room',room_id=103))
-    db.session.add(User(username='room_4',password='room',type='room',room_id=104))
+    with app.app_context():
+        db.drop_all()
+        db.create_all()
 
-    # 测试数据2
-    db.session.add(RoomInfo(room_id=101,mode='cold',speed='',current_temp=32,target_temp=25,state='NOT SENDING',served_time=0,fee=0))
-    db.session.add(RoomInfo(room_id=102,mode='cold',speed='',current_temp=28,target_temp=25,state='NOT SENDING',served_time=0,fee=0))
-    db.session.add(RoomInfo(room_id=103,mode='cold',speed='',current_temp=30,target_temp=25,state='NOT SENDING',served_time=0,fee=0))
-    db.session.add(RoomInfo(room_id=104,mode='cold',speed='',current_temp=29,target_temp=25,state='NOT SENDING',served_time=0,fee=0))
-
-    # 测试数据3
-    dates = ['2021-06-22','2021-06-23','2021-06-24','2021-06-25']
-    format_dates = []
-    for date in dates:
-        format_dates.append(datetime.datetime.strptime(date,'%Y-%m-%d'))
-    db.session.add(NewStatistics(dateTime=format_dates[0],totalNum=23,satisfyNum=2,scheduledNum=28,RDRNum=3,totalFee=15.8))
-    db.session.add(NewStatistics(dateTime=format_dates[1],totalNum=12,satisfyNum=0,scheduledNum=15,RDRNum=13,totalFee=16.8))
-    db.session.add(NewStatistics(dateTime=format_dates[2],totalNum=36,satisfyNum=3,scheduledNum=38,RDRNum=0,totalFee=17.8))
-    db.session.add(NewStatistics(dateTime=format_dates[3],totalNum=32,satisfyNum=1,scheduledNum=40,RDRNum=21,totalFee=18.8))
-    
-    # 测试数据4
-    dates = ['2021-06-22','2021-06-23','2021-06-24','2021-06-25']
-    format_dates = []
-    for date in dates:
-        format_dates.append(datetime.datetime.strptime(date,'%Y-%m-%d'))
-    db.session.add(TempSpeed(dateTime=format_dates[0],currentTemp=24,currentSpeed='HIGH'))
-    db.session.add(TempSpeed(dateTime=format_dates[1],currentTemp=23,currentSpeed='MID'))
-    db.session.add(TempSpeed(dateTime=format_dates[2],currentTemp=19,currentSpeed='HIGH'))
-    db.session.add(TempSpeed(dateTime=format_dates[2],currentTemp=20,currentSpeed='MID'))
-    db.session.add(TempSpeed(dateTime=format_dates[3],currentTemp=22,currentSpeed='LOW'))
-
-    db.session.commit()
+        db.session.commit()
