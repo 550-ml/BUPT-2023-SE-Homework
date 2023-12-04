@@ -2,7 +2,7 @@ import heapq
 import threading
 from datetime import datetime
 
-from room1 import Room
+from room import Room
 
 
 class Queues:

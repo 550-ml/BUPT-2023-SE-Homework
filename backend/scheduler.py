@@ -1,9 +1,11 @@
 import threading
 from datetime import datetime
 
-from room1 import Room
+from room import Room
 from queues import Queues
 from central_ac import CentralAc
+from database import *
+from utils import recover_temp
 
 
 class Scheduler:
@@ -18,11 +20,19 @@ class Scheduler:
 
         self.state_lock = {}
 
-    def add_room(self, room_ids: list, initial_env_temp: list):
-        for idx, id in enumerate(room_ids):
-            self.state_lock[id] = threading.Lock()
-            room = Room(id, 'INIT', initial_env_temp[idx], self.central_ac.service, self.state_lock[id])
+    def add_room(self, room_ids: list):
+        for room_id in enumerate(room_ids):
+            self.state_lock[room_id] = threading.Lock()
+            room = Room(room_id, 'INIT', self.central_ac.service, self.state_lock[room_id])
             self.room_threads.append(room)
+
+            add_to_order(room_id)
+
+    def set_room_initial_env_temp(self, room_ids: list, initial_env_temp: list):
+        for room in self.room_threads:
+            index = room_ids.index(room.room_id)
+            room.initial_env_temp = initial_env_temp[index]
+            room.current_temp = room.initial_env_temp
 
     def deal_with_on_and_off(self, room_id, target_temp, target_speed, ac_state):
         if target_temp is None:
@@ -47,10 +57,37 @@ class Scheduler:
                     room.power = False
                     self.queues.pop_service_by_room_id(room_id)
 
-    # def deal_with_speed_temp_change(self, room_id, target_temp, target_speed):
+    def deal_with_speed_temp_change(self, room_id, target_temp, target_speed):
+        if target_temp is None and target_speed is not None:
+            self.state_lock[room_id].acquire()
+            for room in self.room_threads:
+                if room.room_id == room_id:
+                    room.target_speed = target_speed
+                    room.current_speed = target_speed
+            self.state_lock[room_id].release()
+        elif target_temp is not None and target_speed is None:
+            self.state_lock[room_id].acquire()
+            for room in self.room_threads:
+                if room.room_id == room_id:
+                    room.target_temp = target_temp
+            self.state_lock[room_id].release()
+        else:
+            self.state_lock[room_id].acquire()
+            for room in self.room_threads:
+                if room.room_id == room_id:
+                    room.target_temp = target_temp
+                    room.target_speed = target_speed
+                    room.current_speed = target_speed
+            self.state_lock[room_id].release()
 
     def schedule(self):
         while 1:
+            # if room's current_temp == target_temp, pop running_queue and add into suspend_queue
+            for room in self.room_threads:
+                if room.current_temp == room.target_temp:
+                    self.queues.pop_service_by_room_id(room.room_id)
+                    self.queues.add_into_suspend_queue(room)
+
             # pop suspend_queue and add into ready_queue
             ready_to_pop_suspend = self.queues.pop_suspend_queue()
             if ready_to_pop_suspend is None:
@@ -71,6 +108,7 @@ class Scheduler:
                 self.queues.pop_ready_queue()
                 self.queues.add_into_running_queue(ready_be_served)
 
+                recover_temp(ready_be_served)
                 ready_be_served.state = 'RUNNING'
                 ready_be_served.power = True
                 ready_be_served.current_speed = ready_be_served.target_speed
@@ -91,6 +129,7 @@ class Scheduler:
 
                     self.queues.pop_ready_queue()
                     self.queues.add_into_running_queue(ready_be_served)
+                    recover_temp(ready_be_served)
                     ready_be_served.power = True
                     ready_be_served.state = 'RUNNING'
                     ready_be_served.current_speed = ready_be_served.target_speed
@@ -107,6 +146,7 @@ class Scheduler:
 
                         self.queues.pop_ready_queue()
                         self.queues.add_into_running_queue(ready_be_served)
+                        recover_temp(ready_be_served)
                         ready_be_served.power = True
                         ready_be_served.state = 'RUNNING'
                         ready_be_served.current_speed = ready_be_served.target_speed

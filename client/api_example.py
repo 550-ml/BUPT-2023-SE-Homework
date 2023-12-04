@@ -59,3 +59,40 @@ print(response.json())
 response = requests.post(f'{base_url}/control', json=server_operation_data)
 print(response.status_code)
 print(response.json())
+
+
+import requests
+import time
+
+# 服务器的基本 URL
+base_url = 'http://localhost:11451/api'
+
+# 客户端的房间号
+room_id = '2-233'
+
+# 每秒向服务器索取空调状态的函数
+def get_ac_status():
+    while True:
+        try:
+            # 发送到 /room/updateRoomState 的 POST 请求
+            response = requests.post(f'{base_url}/room/updateRoomState', json={'roomId': room_id})
+            if response.status_code == 200:
+                room_state = response.json().get('roomState')
+                if room_state:
+                    speed = room_state.get('speed')
+                    curr_temp = room_state.get('currTemp')
+                    target_temp = room_state.get('targetTemp')
+                    fee = room_state.get('fee')
+                    ac_state = room_state.get('acState')
+                    print(f'空调状态：风速-{speed}，当前温度-{curr_temp}，目标温度-{target_temp}，费用-{fee}，空调状态-{ac_state}')
+                else:
+                    print('未获取到空调状态')
+            else:
+                print(f'获取空调状态失败，状态码：{response.status_code}')
+        except requests.exceptions.RequestException as e:
+            print(f'请求异常：{e}')
+        
+        time.sleep(1)
+
+# 调用函数开始每秒索取空调状态
+get_ac_status()
