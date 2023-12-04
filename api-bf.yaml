@@ -25,7 +25,6 @@ paths:
             type: boolean
           description: Disable CSRF token
       requestBody:
-        required: true
         content:
           application/json:
             schema:
