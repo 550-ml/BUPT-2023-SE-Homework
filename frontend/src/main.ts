@@ -9,9 +9,10 @@ import Login from "./views/login/index.vue";
 import Register from "./views/login/register.vue";
 import Administrator from "./views/Administrator/Administrator.vue";
 
-import Panel1 from "./router/AirConditionerManage.vue";
-import Panel2 from "./router/BillGenerate.vue";
-import Panel3 from "./router/HotelManage.vue";
+import AirConditionerManage from "./router/AirConditionerManage.vue";
+import BillGenerate from "./router/BillGenerate.vue";
+import HotelManage from "./router/HotelManage.vue";
+import HomePage from "./router/HomePage.vue"
 
 const routes = [
     {
@@ -19,9 +20,10 @@ const routes = [
         name: "home",
         component: HomeView,
         children: [
-            { path: "panel1", component: Panel1 },
-            { path: "panel2", component: Panel2 },
-            { path: "panel3", component: Panel3 }
+            { path: "", component: HomePage },
+            { path: "airconditionermanage", component: AirConditionerManage },
+            { path: "check", component: BillGenerate },
+            { path: "panel3", component: HotelManage }
         ]
     },
     {
