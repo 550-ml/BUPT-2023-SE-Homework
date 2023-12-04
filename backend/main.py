@@ -13,6 +13,7 @@ import requests
 
 
 scheduler = Scheduler()
+ac = CentralAc()
 t = Thread(target=scheduler.schedule)
 
 # 登录
@@ -75,7 +76,7 @@ def add_room():
     room = params['room']
     public_key = params['public_key']
 
-
+    scheduler.add_room()
 
 
 
@@ -97,6 +98,8 @@ def delete_room():
     print(request.path, " : ", params)
     room = params['room']
 
+    # 删除队列中的房间对象
+
 
 
 # 管理员给出所有可利用的设备
@@ -110,7 +113,8 @@ def get_room_list():
 
     调数据库
     """
-    #给出等待与服务队列的房间号
+
+    # 给出等待与服务队列的所有房间号
 
 
 
@@ -137,6 +141,8 @@ def control_device(room_id):
     print(request.path, " : ", params)
     operation = params['operation']
     data = params['data']
+
+    ac.
 
 
 
@@ -171,12 +177,7 @@ def get_all_status():
 
     """
 
-    #查询详单,但如果房间被删除了，详单还有记录
-
-
-
-
-
+    #对目前可利用的状态队列，查询详单
 
 
 # 开房
