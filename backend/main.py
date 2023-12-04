@@ -7,6 +7,9 @@ from sqlalchemy import func
 import utils
 from scheduler import Scheduler
 import datetime
+import hashlib
+import rsa
+import requests
 
 
 scheduler = Scheduler()
@@ -101,19 +104,19 @@ def delete_room():
 def get_room_list():
     """
 
-    :return: 200 room 数组:
+    :return: 200 room :
                     type: string array
             401
 
     调数据库
     """
-
+    #给出等待与服务队列的房间号
 
 
 
 # 管理员控制某一设备
-@app.route('admin/devices/{room_id}', methods=['post'])
-def control_device():
+@app.route('admin/devices/<string:room_id>', methods=['post'])
+def control_device(room_id):
     """
     room:
         type: string
@@ -132,9 +135,9 @@ def control_device():
     """
     params = request.get_json(force=True)
     print(request.path, " : ", params)
-    room = params['room']
     operation = params['operation']
     data = params['data']
+
 
 
 # 对某一房间进行状态查询
@@ -155,7 +158,7 @@ def get_one_status(room_id):
     room = params['room']
     public_key = params['public_key']
 
-
+    #对详单表查询
 
 # 获取所有房间状态信息
 @app.route('/status', methods=['get'])
@@ -167,19 +170,13 @@ def get_all_status():
             401
 
     """
-    params = request.get_json(force=True)
-    print(request.path, " : ", params)
 
-    if isinstance(params, list):
-        for item in params:
-            if isinstance(item, dict):
-                room = item.get('room')
-                is_on = item.get('is_on')
+    #查询详单,但如果房间被删除了，详单还有记录
 
-        return , 200
-    else:
 
-        return 400
+
+
+
 
 
 # 开房
@@ -220,25 +217,80 @@ def check_out():
     """
 
 
-
-# 客户端
-
-# 客户端进行空调操作
+# 客户端连接
+port = ''
 @app.route('/device/client', methods=['POST'])
-def check_out():
+def client_connect():
     """
-    有待商量
-    :return:
+    room_id
+    port    #Port for WebHook
+    unique_id   #random Unique ID, 16 characters
+    signature   #SHA256withRSA, RSA 4096, sign text = room_id + unique_id + port
+
+    :return:204 succes
+            401
+    """
+    data = request.json
+    room_id = data.get('room_id')
+    port = data.get('port')
+    unique_id = data.get('unique_id')
+    signature = data.get('signature')
+
+    sign_text = room_id + unique_id + str(port)
+    if sign_text == signature:
+        return jsonify({'message': 'Unauthorized'}), 401
+
+    #处理
+
+    return jsonify({'message': 'Success'}), 204
+
+
+# 服务器更改客户端状态
+@app.route('/control', methods=['POST'])
+def control_device():
+    """
+    operation   # start, stop, temperature, wind_speed, mode, sweep
+    data        # example: 26  operations
+
+    :return: 204 401
     """
 
+    if 状态更改 发送状态数据结构
+
+    webhook_url = 'http://{ip}:{port}/api'  # 前端提供的Webhook URL
+    try:
+        response = requests.post(webhook_url, json=data)
+        response.raise_for_status()
+    except requests.RequestException as e:
+        print(f"Error sending webhook: {e}")
 
 
-# 客户端
-@app.route('/device/client', methods=['POST'])
-def check_out():
+
+
+    return
+
+# 客户端主动更改状态
+@app.route('/device/client/<string:room_id>', methods=['POST'])
+def client_change(room_id):
+    """
+    room_id
+    operation   # start, stop, temperature, wind_speed, mode, sweep
+    data        # example: 26  operations
+    time        # 更改日期
+    unique_id？？   # random Unique ID, 16 characters
+    signature？？   # SHA256withRSA, RSA 4096, sign text = operation + unique_id + data + time
+    :return: 204
+            401
+    """
+
+    params = request.get_json(force=True)
+    print(request.path, " : ", params)
+    operation = params['operation']
+    data = params['data']
+    time = params['time']
+    unique_id = params['unique_id']
+    signature = params['signature']
 
 
 
-# 客户端
-@app.route('/device/client', methods=['POST'])
-def check_out():
+
