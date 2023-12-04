@@ -101,19 +101,19 @@ def delete_room():
 def get_room_list():
     """
 
-    :return: 200 room 数组:
+    :return: 200 room :
                     type: string array
             401
 
     调数据库
     """
-
+    #给出等待与服务队列的房间号
 
 
 
 # 管理员控制某一设备
-@app.route('admin/devices/{room_id}', methods=['post'])
-def control_device():
+@app.route('admin/devices/<string:room_id>', methods=['post'])
+def control_device(room_id):
     """
     room:
         type: string
@@ -132,9 +132,9 @@ def control_device():
     """
     params = request.get_json(force=True)
     print(request.path, " : ", params)
-    room = params['room']
     operation = params['operation']
     data = params['data']
+
 
 
 # 对某一房间进行状态查询
@@ -155,7 +155,7 @@ def get_one_status(room_id):
     room = params['room']
     public_key = params['public_key']
 
-
+    #对详单表查询
 
 # 获取所有房间状态信息
 @app.route('/status', methods=['get'])
@@ -167,19 +167,13 @@ def get_all_status():
             401
 
     """
-    params = request.get_json(force=True)
-    print(request.path, " : ", params)
 
-    if isinstance(params, list):
-        for item in params:
-            if isinstance(item, dict):
-                room = item.get('room')
-                is_on = item.get('is_on')
+    #查询详单
 
-        return , 200
-    else:
 
-        return 400
+
+
+
 
 
 # 开房
@@ -242,3 +236,24 @@ def check_out():
 # 客户端
 @app.route('/device/client', methods=['POST'])
 def check_out():
+
+
+####webhook实例代码
+def send_webhook(data):
+    webhook_url = 'http://example.com/webhook'  # 前端提供的Webhook URL
+    try:
+        response = requests.post(webhook_url, json=data)
+        response.raise_for_status()
+    except requests.RequestException as e:
+        print(f"Error sending webhook: {e}")
+
+
+# 假设这个函数会在数据更新时被调用
+def on_data_update(updated_data):
+    # 准备要发送的数据
+    data = {
+        'message': 'Data updated',
+        'updated_data': updated_data
+    }
+    # 发送Webhook
+    send_webhook(data)
