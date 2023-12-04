@@ -5,12 +5,6 @@
         <div class="head-text">空调管理员界面</div>
       </el-header>
       <el-container>
-        <!-- <el-aside width="200px">
-                    <el-tabs type="border-card" tab-position="left">
-                        <el-tab-pane label="空调运行">空调运行</el-tab-pane>
-                        <el-tab-pane label="设置空调">设置空调</el-tab-pane>
-                    </el-tabs>
-                </el-aside> -->
         <el-main>
           <el-tabs type="border-card" tab-position="left">
             <el-tab-pane label="空调运行" class="left-text">
@@ -32,7 +26,70 @@
                 </el-card>
               </div>
             </el-tab-pane>
-            <el-tab-pane label="设置空调" class="left-text">设置空调</el-tab-pane>
+            <el-tab-pane label="设置参数" class="left-text">
+              <el-form label-width="200px" size="large" class="custom-form">
+                <el-form-item label="默认模式">
+                  <el-radio-group>
+                    <el-radio label="hot">hot</el-radio>
+                    <el-radio label="cold">cold</el-radio>
+                  </el-radio-group>
+                </el-form-item>
+
+                <el-form-item label="制冷温控区间">
+                  <el-row>
+                    <el-col :span="8" :offset="2">
+                      <el-input type="number" placeholder="最低温度"></el-input>
+                    </el-col>
+                    <el-col :span="1" :offset="1">-</el-col>
+                    <el-col :span="8" :offset="1">
+                      <el-input type="number" placeholder="最高温度"></el-input>
+                    </el-col>
+                  </el-row>
+                </el-form-item>
+
+                <el-form-item label="制热温控区间">
+                  <el-row>
+                    <el-col :span="8" :offset="2">
+                      <el-input type="number" placeholder="最低温度"></el-input>
+                    </el-col>
+                    <el-col :span="1" :offset="1">-</el-col>
+                    <el-col :span="8" :offset="1">
+                      <el-input type="number" placeholder="最高温度"></el-input>
+                    </el-col>
+                  </el-row>
+                </el-form-item>
+
+                <el-form-item label="缺省温度">
+                  <el-row>
+                    <el-col :span="8" :offset="8">
+                      <el-input type="number" placeholder="缺省温度"></el-input>
+                    </el-col>
+                  </el-row>
+                </el-form-item>
+
+                <el-form-item label="费率">
+                  <el-row>
+                    <el-col :span="8" :offset="8">
+                      <el-input type="number" placeholder="费率"></el-input>
+                    </el-col>
+                  </el-row>
+                </el-form-item>
+
+                <el-form-item label="服务对象数">
+                  <el-row>
+                    <el-col :span="8" :offset="8">
+                      <el-input type="number" placeholder="服务对象数"></el-input>
+                    </el-col>
+                  </el-row>
+                </el-form-item>
+
+                <el-form-item>
+                  <el-button type="primary" class="custom-button">
+                    设置默认参数
+                  </el-button>
+                </el-form-item>
+              </el-form>
+            </el-tab-pane>
           </el-tabs>
         </el-main>
       </el-container>
@@ -214,5 +271,66 @@ setInterval(() => {
   font-size: 12px;
   color: #999;
 }
-</style>
+
+.custom-form {
+  padding: 30px;
+  /* 增加表单内边距 */
+  background-color: #f9f9f9;
+  border: 1px solid #ccc;
+  width: 80%;
+  /* 设置表单宽度 */
+  margin: 0 auto;
+  /* 水平居中 */
+
+  .el-form-item__label {
+    font-size: 20px;
+    /* 标签字体大小 */
+    margin-bottom: 10px;
+    /* 标签下边距 */
+    display: inline-block;
+    /* 行内元素样式 */
+    width: 40%;
+    /* 设置标签宽度 */
+  }
+
+  .el-form-item__content {
+    font-size: 18px;
+    /* 内容字体大小 */
+    margin-bottom: 20px;
+    /* 内容下边距 */
+    display: inline-block;
+    /* 行内元素样式 */
+    width: 50%;
+    /* 设置内容宽度 */
+  }
+
+  .el-input {
+    font-size: 16px;
+    /* 输入框字体大小 */
+    padding: 10px;
+    /* 输入框内边距 */
+    border-radius: 5px;
+    /* 输入框边框圆角 */
+    width: 80%;
+    /* 输入框宽度 */
+  }
+
+  .el-radio-group {
+    margin-top: 12px;
+    /* 单选框组上边距 */
+    font-size: 18px;
+    /* 单选框字体大小 */
+  }
+
+  .custom-button {
+    margin-top: 24px;
+    /* 按钮上边距 */
+    font-size: 18px;
+    /* 按钮字体大小 */
+    padding: 12px 24px;
+    /* 按钮内边距 */
+    border-radius: 5px;
+    /* 按钮边框圆角 */
+  }
+}</style>
 
