@@ -8,8 +8,8 @@
           <h2 class="text-2xl font-semibold">Sidebar</h2>
         </div>
         <div class="flex-1 py-4 pl-4">
-          <router-link to="/panel1" class="block py-2 hover:bg-gray-700 text-blue-500">客房管理</router-link>
-          <router-link to="/panel2" class="block py-2 hover:bg-gray-700 text-blue-500">账单查看</router-link>
+          <router-link to="/panel1" class="block py-2 hover:bg-gray-700 text-blue-500">空调管理</router-link>
+          <router-link to="/panel2" class="block py-2 hover:bg-gray-700 text-blue-500">入住管理</router-link>
           <router-link to="/panel3" class="block py-2 hover:bg-gray-700 text-blue-500">酒店管理</router-link>
         </div>
         <div class="p-4 bg-gray-900">
@@ -19,7 +19,7 @@
     </div>
 
     <!-- 右侧 3/4 - 内容区域 -->
-    <div class="w-3/4 right-0 absolute bg-gray-100 rounded-xl shadow-md">
+    <div class="w-3/4 right-0 absolute bg-white rounded-xl">
       <!-- 根据 selectedPanel 动态渲染不同的组件 -->
       <router-view />
     </div>
