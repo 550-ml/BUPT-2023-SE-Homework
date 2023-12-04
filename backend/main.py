@@ -7,6 +7,9 @@ from sqlalchemy import func
 import utils
 from scheduler import Scheduler
 import datetime
+import hashlib
+import rsa
+import requests
 
 
 scheduler = Scheduler()
@@ -168,7 +171,7 @@ def get_all_status():
 
     """
 
-    #查询详单
+    #查询详单,但如果房间被删除了，详单还有记录
 
 
 
@@ -214,33 +217,47 @@ def check_out():
     """
 
 
-
-# 客户端
-
-# 客户端进行空调操作
+# 客户端连接
+port = ''
 @app.route('/device/client', methods=['POST'])
-def check_out():
+def client_connect():
     """
-    有待商量
-    :return:
+    room_id
+    port    #Port for WebHook
+    unique_id   #random Unique ID, 16 characters
+    signature   #SHA256withRSA, RSA 4096, sign text = room_id + unique_id + port
+
+    :return:204 succes
+            401
+    """
+    data = request.json
+    room_id = data.get('room_id')
+    port = data.get('port')
+    unique_id = data.get('unique_id')
+    signature = data.get('signature')
+
+    sign_text = room_id + unique_id + str(port)
+    if sign_text == signature:
+        return jsonify({'message': 'Unauthorized'}), 401
+
+    #处理
+
+    return jsonify({'message': 'Success'}), 204
+
+
+# 服务器更改客户端状态
+@app.route('/control', methods=['POST'])
+def control_device():
+    """
+    operation   # start, stop, temperature, wind_speed, mode, sweep
+    data        # example: 26  operations
+
+    :return: 204 401
     """
 
+    if 状态更改 发送状态数据结构
 
-
-# 客户端
-@app.route('/device/client', methods=['POST'])
-def check_out():
-
-
-
-# 客户端
-@app.route('/device/client', methods=['POST'])
-def check_out():
-
-
-####webhook实例代码
-def send_webhook(data):
-    webhook_url = 'http://example.com/webhook'  # 前端提供的Webhook URL
+    webhook_url = 'http://{ip}:{port}/api'  # 前端提供的Webhook URL
     try:
         response = requests.post(webhook_url, json=data)
         response.raise_for_status()
@@ -248,12 +265,32 @@ def send_webhook(data):
         print(f"Error sending webhook: {e}")
 
 
-# 假设这个函数会在数据更新时被调用
-def on_data_update(updated_data):
-    # 准备要发送的数据
-    data = {
-        'message': 'Data updated',
-        'updated_data': updated_data
-    }
-    # 发送Webhook
-    send_webhook(data)
+
+
+    return
+
+# 客户端主动更改状态
+@app.route('/device/client/<string:room_id>', methods=['POST'])
+def client_change(room_id):
+    """
+    room_id
+    operation   # start, stop, temperature, wind_speed, mode, sweep
+    data        # example: 26  operations
+    time        # 更改日期
+    unique_id？？   # random Unique ID, 16 characters
+    signature？？   # SHA256withRSA, RSA 4096, sign text = operation + unique_id + data + time
+    :return: 204
+            401
+    """
+
+    params = request.get_json(force=True)
+    print(request.path, " : ", params)
+    operation = params['operation']
+    data = params['data']
+    time = params['time']
+    unique_id = params['unique_id']
+    signature = params['signature']
+
+
+
+
