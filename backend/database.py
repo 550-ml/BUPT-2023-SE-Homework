@@ -13,7 +13,7 @@ class User(db.Model):
 
 
 class Detail(db.Model):
-    room_id = db.Column(db.String, nullable=True, primary_key=True)
+    room_id = db.Column(db.String(50), nullable=True, primary_key=True)
     start_time = db.Column(db.DateTime, default=datetime.datetime.now)
     end_time = db.Column(db.DateTime, default=0, onupdate=datetime.datetime.now)
     speed = db.Column(db.Enum("HIGH", "MID", "LOW"))
@@ -29,7 +29,7 @@ class Detail(db.Model):
 
 
 class Order(db.Model):
-    room_id = db.Column(db.String, primary_key=True)
+    room_id = db.Column(db.String(50), primary_key=True)
     checkin = db.Column(db.DateTime, default=datetime.datetime.now)
     checkout = db.Column(db.DateTime, default=datetime.datetime.now, onupdate=datetime.datetime.now)
     total_cost = db.Column(db.Float, default=0.0)
@@ -83,5 +83,10 @@ def db_init():
     with app.app_context():
         db.drop_all()
         db.create_all()
+
+        #账号密码
+        db.session.add(User(username='receptionist_1', password='receptionist', type='receptionist'))
+        db.session.add(User(username='manager_1', password='manager', type='manager'))
+        db.session.add(User(username='administrator_1', password='administrator', type='administrator'))
 
         db.session.commit()

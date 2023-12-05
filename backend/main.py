@@ -1,20 +1,20 @@
-import re
-from threading import Thread
 from app import *
+from threading import Thread
 from flask import request, jsonify
 from database import *
-from sqlalchemy import func
-import utils
 from scheduler import Scheduler
+import requests
+from central_ac import *
 import datetime
 import hashlib
+from sqlalchemy import func
+import utils
+import re
 
-import requests
-import central_ac
 
-
-scheduler = Scheduler()
 ac = CentralAc()
+scheduler = Scheduler(ac)
+
 t = Thread(target=scheduler.schedule)
 
 # 登录
@@ -105,24 +105,24 @@ def delete_room():
 
 
 
-# 管理员给出所有可利用的设备
-@app.route('admin/devices', methods=['get'])
-def get_room_list():
-    """
+# # 管理员给出所有可利用的设备
+# @app.route('admin/devices', methods=['get'])
+# def get_room_list():
+#     """
+#
+#     :return: 200 room :
+#                     type: string array
+#             401
+#
+#     调数据库
+#     """
+#
+#     # 给出等待与服务队列的所有房间号
 
-    :return: 200 room :
-                    type: string array
-            401
-
-    调数据库
-    """
-
-    # 给出等待与服务队列的所有房间号
-
-def control_device(is_on:bool, target_temp, wind)
+#def control_device(is_on:bool, target_temp, wind)
 
 # 管理员控制某一设备
-@app.route('admin/devices/<string:room_id>', methods=['post'])
+@app.route('/admin/devices/<string:room_id>', methods=['post'])
 def control_device(room_id):
     """
     room:
@@ -145,6 +145,7 @@ def control_device(room_id):
 
     operation = params['operation']
     data = params['data']
+    #数据元素是字符串，还未转换
 
     operations = [element.strip() for element in operation.split(',')]
     datas = [datas.strip() for datas in data.split(',')]
@@ -161,11 +162,11 @@ def control_device(room_id):
     if bool(start) == bool(power) == True:
         scheduler.deal_with_speed_temp_change(room_id, target_temp, wind_speed)
 
-        control_device(True, target_temp, wind_speed)
+        control_client(True, target_temp, wind_speed)
     else:
         scheduler.deal_with_on_and_off(room_id, target_temp, wind_speed, start)
 
-        control_device(False, target_temp, wind_speed)
+        control_client(False, target_temp, wind_speed)
 
     return jsonify({'room': room_id}), 200
 
@@ -187,7 +188,6 @@ def get_one_status(room_id):
     print(request.path, " : ", params)
     public_key = params['public_key']
 
-    #detail = Detail.query.filter_by(room_id=room_id).order_by(Detail.start_time.desc()).first()
     for room in scheduler.room_threads:
         if room.room_id == room_id:
             is_on = room.power
@@ -336,7 +336,7 @@ def client_connect():
 
 # 服务器更改客户端状态
 @app.route('/control', methods=['POST'])
-def control_device(is_on:bool, target_temp, wind):
+def control_client(is_on:bool, target_temp, wind):
     """
     send:
     operation   # start, stop, temperature, wind_speed, mode
@@ -406,4 +406,9 @@ def client_change(room_id):
     return 204
 
 
+if __name__ == '__main__':
+    db_init()
+    #t.start()
+    with app.app_context():
+        app.run(port=11451, debug=True, host='0.0.0.0')
 
