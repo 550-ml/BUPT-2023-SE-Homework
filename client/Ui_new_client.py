@@ -10,6 +10,18 @@ import hashlib
 import rsa
 import random
 from datetime import datetime
+# 生成唯一标识符
+unique_id = ''.join(random.choices('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', k=16))
+
+# 请求数据
+#room_id = '2-233'#房间号
+port = '11451'
+#data = '26'#温度temperature
+#operation = 'start'#空调状态power
+#time = datetime.now().isoformat()#时间timestamp
+
+# 配置服务器的URL
+base_url = 'http://localhost:11451/api'#host:port
 
 class Ui_Form(object):
     def setupUi(self, Form):
