@@ -12,10 +12,10 @@ import utils
 import re
 
 
-ac = CentralAc()
-scheduler = Scheduler(ac)
+central_ac = CentralAc()
+scheduler = Scheduler(central_ac)
 
-t = Thread(target=scheduler.schedule)
+# t = Thread(target=scheduler.schedule)
 
 # 登录
 @app.route('/login', methods=['POST'])
@@ -408,7 +408,7 @@ def client_change(room_id):
 
 if __name__ == '__main__':
     db_init()
-    #t.start()
+    scheduler.schedule()
     with app.app_context():
         app.run(port=11451, debug=True, host='0.0.0.0')
 

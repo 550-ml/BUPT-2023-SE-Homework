@@ -28,6 +28,22 @@ class Scheduler:
 
             add_to_order(room_id)
 
+    def delete_room(self, room_ids: list):
+        ready_to_delete = []
+        for room in self.room_threads:
+            if room.room_id in room_ids:
+                ready_to_delete.append(self.room_threads.index(room))
+
+        ready_to_delete.sort(reverse=True)
+        for index in ready_to_delete:
+            del self.room_threads[index]
+
+    def get_available_room(self):
+        available_room_ids = []
+        for room in self.room_threads:
+            available_room_ids.append(room.room_id)
+        return available_room_ids
+
     def set_room_initial_env_temp(self, room_ids: list, initial_env_temp: list):
         for room in self.room_threads:
             index = room_ids.index(room.room_id)
