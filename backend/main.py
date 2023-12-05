@@ -8,8 +8,9 @@ import utils
 from scheduler import Scheduler
 import datetime
 import hashlib
-import rsa
+
 import requests
+import central_ac
 
 
 scheduler = Scheduler()
@@ -24,8 +25,6 @@ def login_admin():
     password
     :return: {error:bool.
                 role:str}  # room/administrator/manager/receptionist
-
-
     """
 
     params = request.get_json(force=True)
@@ -76,9 +75,13 @@ def add_room():
     room = params['room']
     public_key = params['public_key']
 
-    scheduler.add_room()
-
-
+    try:
+        rooms = []
+        rooms.append(room)
+        scheduler.add_room(rooms)
+        return jsonify({'room': room}), 200
+    except:
+        return jsonify({'error_code': 100}), 401
 
 # 管理员删房
 @app.route('/admin/device', methods=['delete'])
@@ -116,7 +119,7 @@ def get_room_list():
 
     # 给出等待与服务队列的所有房间号
 
-
+def control_device(is_on:bool, target_temp, wind)
 
 # 管理员控制某一设备
 @app.route('admin/devices/<string:room_id>', methods=['post'])
@@ -127,7 +130,7 @@ def control_device(room_id):
 
     operation:
           type: string
-          example:  'start, stop, temperature, wind_speed, mode, sweep'
+          example:  'start, stop, temperature, wind_speed, mode, sweep不要了'
     data:
           type: string
           example: 26   # different for operations
@@ -139,11 +142,32 @@ def control_device(room_id):
     """
     params = request.get_json(force=True)
     print(request.path, " : ", params)
+
     operation = params['operation']
     data = params['data']
 
-    ac.
+    operations = [element.strip() for element in operation.split(',')]
+    datas = [datas.strip() for datas in data.split(',')]
+    operation_data = dict(zip(operations, datas))
 
+    start = operation_data.get('start')
+    target_temp = operation_data.get('temperature')
+    wind_speed = operation_data.get('wind_speed')
+
+    for room in scheduler.room_threads:
+        if room.room_id == room_id:
+            power = room.power
+
+    if bool(start) == bool(power) == True:
+        scheduler.deal_with_speed_temp_change(room_id, target_temp, wind_speed)
+
+        control_device(True, target_temp, wind_speed)
+    else:
+        scheduler.deal_with_on_and_off(room_id, target_temp, wind_speed, start)
+
+        control_device(False, target_temp, wind_speed)
+
+    return jsonify({'room': room_id}), 200
 
 
 # 对某一房间进行状态查询
@@ -161,10 +185,30 @@ def get_one_status(room_id):
     """
     params = request.get_json(force=True)
     print(request.path, " : ", params)
-    room = params['room']
     public_key = params['public_key']
 
-    #对详单表查询
+    #detail = Detail.query.filter_by(room_id=room_id).order_by(Detail.start_time.desc()).first()
+    for room in scheduler.room_threads:
+        if room.room_id == room_id:
+            is_on = room.power
+            temperature = room.current_temp
+            wind_speed = room.current_speed
+            mode = 'cold'
+            sweep = room.running
+            #last_update =
+
+    return jsonify({
+        'room': room_id,
+        'temperature': temperature,
+        'wind_speed': wind_speed,
+        'mode': mode,
+        #'sweep': sweep,
+        'is_on': is_on,
+        #'last_update': last_update
+    }), 200
+
+
+
 
 # 获取所有房间状态信息
 @app.route('/status', methods=['get'])
@@ -189,9 +233,20 @@ def check_in():
 
             401
     """
+    params = request.get_json(force=True)
+    print(request.path, " : ", params)
+    room = params['room']
+
+    try:
+        rooms = []
+        rooms.append(room)
+        scheduler.add_room(rooms)
+        json = jsonify('room',room)
+        return json, 200
+    except:
+        return 401
 
 
-    return
 
 
 # 退房
@@ -207,19 +262,51 @@ def check_out():
                 details:
                     start_time
                     end_time
-                    temperature
+                    temperature 不用
                     wind_speed
                     mode
-                    sweep       ??
+
                     duration
                     cost
 
     调数据库
     """
+    params = request.get_json(force=True)
+    print(request.path, " : ", params)
+    room = params['room']
 
+    order = Order.query.filter_by(room_id=room).order_by(Order.checkin.desc()).first()
+    checkin = order.checkin
+    checkout = order.checkout
+    total_time = checkout - checkin
+    total_cost = order.total_cost
+
+    details = Detail.query.filter_by(room_id=room).order_by(Detail.start_time.desc()).all()
+
+    de = {}
+
+    # 遍历查询结果并提取所需信息
+    for detail in details:
+        de.update({
+            'start_time': detail.start_time.isoformat(),
+            'end_time': detail.end_time.isoformat(),
+            'wind_speed': detail.wind_speed,
+            'mode': detail.mode,
+            'duration': detail.times_used,
+            'cost': detail.fee
+        })
+
+    report_data = {
+        'total_cost': total_cost,
+        'total_time': total_time,
+        'details': de
+    }
+
+    return jsonify(report_data), 200
 
 # 客户端连接
 port = ''
+client_ip = ''
 @app.route('/device/client', methods=['POST'])
 def client_connect():
     """
@@ -234,39 +321,44 @@ def client_connect():
     data = request.json
     room_id = data.get('room_id')
     port = data.get('port')
-    unique_id = data.get('unique_id')
-    signature = data.get('signature')
+    client_ip = request.remote_addr
 
-    sign_text = room_id + unique_id + str(port)
-    if sign_text == signature:
-        return jsonify({'message': 'Unauthorized'}), 401
+    #unique_id = data.get('unique_id')
+    #signature = data.get('signature')
 
-    #处理
+    # sign_text = room_id + unique_id + str(port)
+    # if sign_text == signature:
+    #     return 204
+    # else:
+    #     return jsonify({'error_code': 100}), 401
 
-    return jsonify({'message': 'Success'}), 204
-
+    return 204
 
 # 服务器更改客户端状态
 @app.route('/control', methods=['POST'])
-def control_device():
+def control_device(is_on:bool, target_temp, wind):
     """
-    operation   # start, stop, temperature, wind_speed, mode, sweep
+    send:
+    operation   # start, stop, temperature, wind_speed, mode
     data        # example: 26  operations
 
     :return: 204 401
     """
 
-    if 状态更改 发送状态数据结构
 
-    webhook_url = 'http://{ip}:{port}/api'  # 前端提供的Webhook URL
+    webhook_url = 'http://' + client_ip + ':' + port + '/api'  # 前端提供的Webhook URL
+    data = {
+        'start': is_on,
+        'stop': not is_on,
+        'temperature': target_temp,
+        'wind_speed': wind,
+        'mode': 'cold'
+    }
     try:
         response = requests.post(webhook_url, json=data)
         response.raise_for_status()
     except requests.RequestException as e:
         print(f"Error sending webhook: {e}")
-
-
-
 
     return
 
@@ -289,9 +381,29 @@ def client_change(room_id):
     operation = params['operation']
     data = params['data']
     time = params['time']
+
     unique_id = params['unique_id']
     signature = params['signature']
 
+
+    operations = [element.strip() for element in operation.split(',')]
+    datas = [datas.strip() for datas in data.split(',')]
+    operation_data = dict(zip(operations, datas))
+
+    start = operation_data.get('start')
+    target_temp = operation_data.get('temperature')
+    wind_speed = operation_data.get('wind_speed')
+
+    for room in scheduler.room_threads:
+        if room.room_id == room_id:
+            power = room.power
+
+    if bool(start) == bool(power) == True:
+        scheduler.deal_with_speed_temp_change(room_id, target_temp, wind_speed)
+    else:
+        scheduler.deal_with_on_and_off(room_id, target_temp, wind_speed, start)
+
+    return 204
 
 
 
