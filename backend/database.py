@@ -15,7 +15,7 @@ class User(db.Model):
 class Detail(db.Model):
     room_id = db.Column(db.String, nullable=True, primary_key=True)
     start_time = db.Column(db.DateTime, default=datetime.datetime.now)
-    end_time = db.Column(db.DateTime, default=datetime.datetime.now, onupdate=datetime.datetime.now)
+    end_time = db.Column(db.DateTime, default=0, onupdate=datetime.datetime.now)
     speed = db.Column(db.Enum("HIGH", "MID", "LOW"))
     fee = db.Column(db.Float, default=0.0)
     times_used = db.Column(db.Integer, nullable=True)
@@ -42,7 +42,7 @@ class Order(db.Model):
         return self.__str__()
 
 
-def add_to_detail(room_id, star_time=datetime.datetime.now, end_time=datetime.datetime.now, speed='mid', fee=0,
+def add_to_detail(room_id, star_time=datetime.datetime.now, end_time=0, speed='mid', fee=0,
                   time_used=0):
     with app.app_context():
         db.session.add(Detail(room_id=room_id,
