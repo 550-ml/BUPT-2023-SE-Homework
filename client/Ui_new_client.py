@@ -10,11 +10,12 @@ import hashlib
 import rsa
 import random
 from datetime import datetime
+
 # 生成唯一标识符
 unique_id = ''.join(random.choices('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', k=16))
 
 # 请求数据
-#room_id = '2-233'#房间号
+room_id = '2-233'#房间号
 port = '11451'
 #data = '26'#温度temperature
 #operation = 'start'#空调状态power
@@ -22,6 +23,9 @@ port = '11451'
 
 # 配置服务器的URL
 base_url = 'http://localhost:11451/api'#host:port
+# 生成签名文本
+sign_text = room_id + unique_id + port
+signature = hashlib.sha256(sign_text.encode()).hexdigest()
 
 class Ui_Form(object):
     def setupUi(self, Form):
@@ -115,7 +119,7 @@ class Ui_Form(object):
         self.RadioButton.setText(_translate("Form", "中"))
         self.RadioButton_3.setText(_translate("Form", "低"))
         self.BodyLabel_4.setText(_translate("Form", "房间号"))
-        self.BodyLabel_5.setText(_translate("Form", "2-233"))
+        self.BodyLabel_5.setText(_translate("Form", room_id))
         self.BodyLabel_6.setText(_translate("Form", "设定模式"))
         self.ComboBox.setText(_translate("Form", "制热"))
         self.ComboBox.setText(_translate("Form", "制冷"))
@@ -160,6 +164,41 @@ class Ui_Form(object):
             self.stop_timer()
             data = self.get_panel_data()
             self.save_data_to_file(data)
+    
+    def client_online(room_id, port, unique_id, signature):
+        url = 'http://localhost:11451/api/device/client'
+        headers = {'Content-Type': 'application/json'}
+        data = {
+            'room_id': room_id,
+            'port': port,
+            'unique_id': unique_id,
+            'signature': signature
+        }
+        response = requests.post(url, headers=headers, data=json.dumps(data))
+        if response.status_code == 204:
+            print('客户端连接成功')
+        elif response.status_code == 401:
+            print('未签名或签名不匹配')
+        else:
+            print('连接请求失败')
+    
+    def get_current_status(room_id):
+        url = f'http://localhost:11451/api/device/client/{room_id}'
+        headers = {'Content-Type': 'application/json'}
+        data = {
+            'operation': operation,
+            'data': data,
+            'time': time,
+            'unique_id': unique_id,
+            'signature': signature
+        }
+        response = requests.post(url, headers=headers)
+        if response.status_code == 204:
+            print('当前状态请求成功')
+        elif response.status_code == 401:
+            print('未签名或签名不匹配')
+        else:
+            print('当前状态请求失败')
     
     def stop_timer(self):
         self.timer.stop()
