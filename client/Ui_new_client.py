@@ -10,22 +10,28 @@ import hashlib
 import rsa
 import random
 from datetime import datetime
+import socket
+import threading
+
+# 创建Socket客户端
+#client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+#client_socket.connect(('localhost', 8888))
+
 
 # 生成唯一标识符
 unique_id = ''.join(random.choices('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', k=16))
-
 # 请求数据
 room_id = '2-233'#房间号
 port = '11451'
 #data = '26'#温度temperature
 #operation = 'start'#空调状态power
 #time = datetime.now().isoformat()#时间timestamp
-
 # 配置服务器的URL
 base_url = 'http://localhost:11451/api'#host:port
 # 生成签名文本
 sign_text = room_id + unique_id + port
 signature = hashlib.sha256(sign_text.encode()).hexdigest()
+
 
 class Ui_Form(object):
     def setupUi(self, Form):
@@ -59,13 +65,15 @@ class Ui_Form(object):
         self.BodyLabel_3.setGeometry(QtCore.QRect(650, 190, 63, 19))
         self.BodyLabel_3.setObjectName("BodyLabel_3")
 
-        self.RadioButton = RadioButton(Form)
+        self.RadioButton = RadioButton(Form)#中
         self.RadioButton.setGeometry(QtCore.QRect(670, 230, 51, 24))
         self.RadioButton.setObjectName("RadioButton")
-        self.RadioButton_2 = RadioButton(Form)
+        #self.RadioButton.setChecked(True)
+        self.RadioButton_2 = RadioButton(Form)#高
         self.RadioButton_2.setGeometry(QtCore.QRect(730, 230, 51, 24))
         self.RadioButton_2.setObjectName("RadioButton_2")
-        self.RadioButton_3 = RadioButton(Form)
+        #self.RadioButton_2.setChecked(True)
+        self.RadioButton_3 = RadioButton(Form)#低(默认)
         self.RadioButton_3.setGeometry(QtCore.QRect(600, 230, 51, 24))
         self.RadioButton_3.setObjectName("RadioButton_3")
         self.RadioButton_3.setChecked(True)
@@ -107,6 +115,13 @@ class Ui_Form(object):
 
         self.retranslateUi(Form)
         QtCore.QMetaObject.connectSlotsByName(Form)
+        # 创建Socket客户端
+        self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.client_socket.connect(('localhost', 8888))
+        
+        # 启动接收数据的线程
+        self.receive_thread = threading.Thread(target=self.receive_data)
+        self.receive_thread.start()
 
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
@@ -123,6 +138,46 @@ class Ui_Form(object):
         self.BodyLabel_6.setText(_translate("Form", "设定模式"))
         self.ComboBox.setText(_translate("Form", "制热"))
         self.ComboBox.setText(_translate("Form", "制冷"))
+    
+    def update_panel(self, data):
+        # 将接收到的数据转换为字典
+        data_dict = eval(data)
+        # 更新空调面板按钮的值
+        # 以下是一个简单的示例，你可以根据你的业务逻辑进行修改
+        if self.RadioButton.isChecked():
+            selected_radio_text = "中"
+        elif self.RadioButton_2.isChecked():
+            selected_radio_text = "高"
+        elif self.RadioButton_3.isChecked():
+            selected_radio_text = "低"
+        start=data_dict.get("start", "not is_on")
+        stop=data_dict.get("stop", "is_on")
+        temperature = data_dict.get("设定温度", 25)
+        wind_speed = data_dict.get("风速", "低")
+        mode = data_dict.get("设定模式", "cold")
+        if start=="is_on" and stop=="not is_on":
+            self.SwitchButton.setChecked(True)
+        if start=="not is_on" and stop=="is_on":
+            self.SwitchButton.setChecked(False)
+        if temperature!=self.CompactDoubleSpinBox.value():
+            self.CompactDoubleSpinBox.setProperty("value", temperature)
+        if wind_speed=="低":
+            self.RadioButton_3.setChecked(True)
+        if wind_speed=="中":
+            self.RadioButton.setChecked(True)
+        if wind_speed=="高":
+            self.RadioButton_2.setChecked(True)
+        if mode=="cold" or mode=="Cold":
+            self.ComboBox.setCurrentText("制冷")
+        if mode=="hot" or mode=="Hot":
+            self.ComboBox.setCurrentText("制热")
+
+    def receive_data(self):
+        while True:
+            data = self.client_socket.recv(1024).decode()
+            if data:
+                self.update_panel(data)
+
 
     def updateDateTime(self):
         # 更新 QLabel 显示当前日期和时间
@@ -163,18 +218,22 @@ class Ui_Form(object):
         if self.countdown == 0:
             self.stop_timer()
             data = self.get_panel_data()
+            time=data.get('更改时间')
+            postdata=[value for key, value in data.items() if key != "更改时间"]
             self.save_data_to_file(data)
+            self.client_online(room_id, port, unique_id, signature)
+            self.get_current_status(room_id,postdata,time)
     
-    def client_online(room_id, port, unique_id, signature):
+    def client_online(self,room_id, port, unique_id, signature):
         url = 'http://localhost:11451/api/device/client'
         headers = {'Content-Type': 'application/json'}
-        data = {
+        postdata = {
             'room_id': room_id,
             'port': port,
             'unique_id': unique_id,
             'signature': signature
         }
-        response = requests.post(url, headers=headers, data=json.dumps(data))
+        response = requests.post(url, headers=headers, data=json.dumps(postdata))
         if response.status_code == 204:
             print('客户端连接成功')
         elif response.status_code == 401:
@@ -182,17 +241,18 @@ class Ui_Form(object):
         else:
             print('连接请求失败')
     
-    def get_current_status(room_id):
+    def get_current_status(self,room_id,data,time):
         url = f'http://localhost:11451/api/device/client/{room_id}'
         headers = {'Content-Type': 'application/json'}
-        data = {
-            'operation': operation,
-            'data': data,
+        postdata = {
+            'room_id': room_id,
+            'operation': "空调开关, 设定温度, 风速, 设定模式",# start, stop, temperature, wind_speed, mode
+            'data': data,# example: 26  operations
             'time': time,
             'unique_id': unique_id,
             'signature': signature
         }
-        response = requests.post(url, headers=headers)
+        response = requests.post(url, headers=headers,data=json.dumps(postdata))
         if response.status_code == 204:
             print('当前状态请求成功')
         elif response.status_code == 401:
@@ -218,9 +278,10 @@ class Ui_Form(object):
             "设定温度": self.CompactDoubleSpinBox.value(),
             "风速": selected_radio_text,
             "设定模式": self.ComboBox.currentText(),
+            "更改时间": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             # 根据需要添加更多小部件
         }
-        panel_data["更改时间"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        #panel_data["更改时间"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         return panel_data
     
     def save_data_to_file(self, data):
