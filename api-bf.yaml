@@ -25,6 +25,7 @@ paths:
             type: boolean
           description: Disable CSRF token
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -55,6 +56,12 @@ paths:
                   csrf_token: # Optional: anti-CSRF token
                     type: string
                     example: abcde12345
+                  role:
+                    type: string
+                    enum:
+                      - manager
+                      - checkout
+                      - AC admin
         '401':
           description: Login failed
           content:
