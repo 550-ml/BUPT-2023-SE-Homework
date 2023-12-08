@@ -23,7 +23,7 @@ const routes = [
             { path: "", component: HomePage },
             { path: "airconditionermanage", component: AirConditionerManage },
             { path: "check", component: BillGenerate },
-            { path: "panel3", component: HotelManage }
+            { path: "manager", component: HotelManage }
         ]
     },
     {

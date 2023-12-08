@@ -22,11 +22,11 @@
       </div>
     </div>
 
-    <div v-if="deviceData">
+    <div v-if="searchedDeviceData">
       <div class="flex justify-center">
         <table class="border-collapse w-60 mt-8 shadow-md rounded-md overflow-hidden">
           <tbody>
-            <tr v-for="(value, key) in deviceData" :key="key">
+            <tr v-for="(value, key) in searchedDeviceData" :key="key">
               <th class="border p-2 bg-gray-100">{{ key }}</th>
               <td class="border p-2">{{ value }}</td>
             </tr>
@@ -44,25 +44,51 @@
       </div>
 
       <div class="flex justify-center items-center py-4">
-        <button class="bg-blue-500 text-white py-2 px-4 rounded item-center" @click="cancelSearch">返回列表</button>
+        <button class="bg-blue-500 text-white py-2 px-4 rounded item-center" @click="cancelSearch">返回房间列表</button>
       </div>
     </div>
     <div v-else>
       <div class="flex justify-center">
-        <div v-if="activeTab === 'tab1'" class="mt-4">
-          <table class="table-auto w-full rounded-lg shadow-md">
-            <thead class="">
-              <tr>
-                <th>房间号</th>
+        <div v-if="activeTab === 'tab1'" class="mt-4 w-1/2">
+          <table class="w-full">
+            <tbody class="relative flex flex-col h-full min-w-0 break-words border-0 shadow-xl rounded-2xl">
+              <tr
+                v-for="deviceId in allDevices"
+                :key="deviceId"
+                class="flex justify-between items-center px-6 py-4 border-b border-solid rounded-t-2xl border-b-slate-100"
+              >
+                <td>{{ deviceId }}</td>
+                <td>
+                  <button class="bg-blue-500 text-white py-2 px-4 rounded item-center" @click="checkIn(deviceId)">
+                    入住
+                  </button>
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              <RoomStates v-for="index in 4" :key="index" />
             </tbody>
           </table>
         </div>
-        <div v-else-if="activeTab === 'tab2'" class="mt-4">
-          <table class="table-auto w-full rounded-lg shadow-md">
+
+        <div v-else-if="activeTab === 'tab2'" class="mt-4 w-1/2">
+          <table class="w-full">
+            <tbody class="relative flex flex-col h-full min-w-0 break-words border-0 shadow-xl rounded-2xl">
+              <tr
+                v-for="deviceId in allDevices"
+                :key="deviceId"
+                class="flex justify-between items-center px-6 py-4 border-b border-solid rounded-t-2xl border-b-slate-100"
+              >
+                <td>{{ deviceId }}</td>
+                <td>
+                  <button
+                    class="bg-blue-500 text-white py-2 px-4 rounded item-center"
+                    @click="getSingleDevice(deviceId)"
+                  >
+                    退房
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <!-- <table class="table-auto w-full rounded-lg shadow-md">
             <thead class="">
               <tr>
                 <th>房间号</th>
@@ -73,7 +99,7 @@
             <tbody>
               <RoomStates v-for="index in 4" :key="index" />
             </tbody>
-          </table>
+          </table> -->
         </div>
       </div>
     </div>
@@ -86,18 +112,24 @@
     </div>
   </div>
 
-  <div v-if="isCheckOutOpen" class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
+  <div v-if="isCheckInOpen" class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
     <div class="bg-white p-6 rounded shadow-md">
-      <!-- 对话框内容 -->
-      <h2>xxx房间账单</h2>
-      <button @click="closeCheckOut" class="mt-4 bg-blue-500 text-white py-2 px-4 rounded">关闭对话框</button>
+      <h2>入住成功！</h2>
+      <button @click="closeCheckIn" class="mt-4 bg-blue-500 text-white py-2 px-4 rounded">返回</button>
     </div>
   </div>
+
+  <div v-if="isCheckOutOpen" class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
+    <div class="bg-white p-6 rounded shadow-md">
+      <h2>xxx房间账单</h2>
+      <button @click="closeCheckOut" class="mt-4 bg-blue-500 text-white py-2 px-4 rounded">返回</button>
+    </div>
+  </div>
+
   <div v-if="isDetailedOrderOpen" class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
     <div class="bg-white p-6 rounded shadow-md">
-      <!-- 对话框内容 -->
       <h2>xxx房间详单</h2>
-      <button @click="closeDetailedOrder" class="mt-4 bg-blue-500 text-white py-2 px-4 rounded">关闭对话框</button>
+      <button @click="closeDetailedOrder" class="mt-4 bg-blue-500 text-white py-2 px-4 rounded">返回</button>
     </div>
   </div>
 </template>
@@ -112,23 +144,30 @@ export default {
   },
   data() {
     return {
-      searchTerm: "", // 用于存储搜索框的值
-      deviceData: null,
+      searchTerm: "",
+      searchedDeviceData: null,
+      isCheckInOpen: false,
       isCheckOutOpen: false,
       isDetailedOrderOpen: false,
-      activeTab: "tab1"
+      activeTab: "tab1",
+      allDevices: [],
+      roomId: null
     };
+  },
+  mounted() {
+    this.getAllDevices();
   },
   methods: {
     executeSearch() {
       // if (!this.searchTerm) {
-      //   // 搜索词为空时不发送请求
       //   return;
       // }
 
-      // // 发送请求
+      this.getSingleDevice(this.searchTerm);
+    },
+    getSingleDevice(roomId) {
       // axios
-      //   .get(`/api/device/${this.searchTerm}`, {
+      //   .get(`/api/device/${roomId}`, {
       //     headers: {
       //       "X-CSRF-Token": "abcde12345" // 替换为你的CSRF token
       //     }
@@ -136,22 +175,20 @@ export default {
       //   .then(response => {
       //     this.deviceData = response.data;
       //     if (!this.deviceData) {
-      //       // 如果搜索结果为空，显示错误信息
       //       this.errorMessage = "未找到相关设备信息";
       //     }
       //   })
       //   .catch(error => {
       //     if (error.response && error.response.status === 401) {
-      //       // 如果返回错误代码401，显示相应错误信息
       //       this.errorMessage = "未授权，请登录";
       //     } else {
       //       // 其他错误情况，显示默认错误信息
       //       console.error("请求失败", error);
-      //       this.errorMessage = "请求失败，请重试"; // 根据实际情况设置错误信息
+      //       this.errorMessage = "请求失败，请重试";
       //     }
       //   });
-      this.deviceData = {
-        room: "2-233",
+      this.searchedDeviceData = {
+        room: roomId,
         temperature: 26,
         wind_speed: 3,
         mode: "cold",
@@ -161,7 +198,13 @@ export default {
       };
     },
     cancelSearch() {
-      this.deviceData = null;
+      this.searchedDeviceData = null;
+    },
+    openCheckIn() {
+      this.isCheckInOpen = true;
+    },
+    closeCheckIn() {
+      this.isCheckInOpen = false;
     },
     openCheckOut() {
       this.isCheckOutOpen = true;
@@ -180,7 +223,45 @@ export default {
       this.errorMessage = null;
     },
     changeTab(tab) {
+      this.searchedDeviceData = null;
       this.activeTab = tab;
+    },
+    async getAllDevices() {
+      try {
+        // const response = await this.$axios.get('/admin/devices', {
+        //   headers: {
+        //     'X-CSRF-Token': 'abcde12345', // Include the CSRF token if available
+        //   },
+        // });
+
+        // this.allDevices = response.data;
+        this.allDevices = ["1-101", "2-203", "4-416"];
+      } catch (error) {
+        console.error("Failed to get devices:", error.response.data);
+      }
+    },
+    async checkIn(roomId) {
+      this.openCheckIn();
+      // try {
+      //   const response = await this.$axios.post(
+      //     "/room/check_in",
+      //     {
+      //       room: this.room
+      //     },
+      //     {
+      //       headers: {
+      //         "X-CSRF-Token": "abcde12345" // Include the CSRF token if available
+      //       }
+      //     }
+      //   );
+
+      //   const checkedInRoom = response.data.room;
+
+      //   this.openCheckIn();
+      // } catch (error) {
+      //   // Handle unauthorized or other errors
+      //   console.error("Check-in failed:", error.response.data);
+      // }
     }
   }
 };
