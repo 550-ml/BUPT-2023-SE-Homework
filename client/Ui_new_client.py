@@ -21,7 +21,7 @@ import threading
 # 生成唯一标识符
 unique_id = ''.join(random.choices('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', k=16))
 # 请求数据
-room_id = '2-233'#房间号
+room_id = '2-233'#房间号运行前更改
 port = '11451'
 #data = '26'#温度temperature
 #operation = 'start'#空调状态power
@@ -32,7 +32,7 @@ base_url = 'http://localhost:11451/api'#host:port
 sign_text = room_id + unique_id + port
 signature = hashlib.sha256(sign_text.encode()).hexdigest()
 
-
+sweep="On"#是否送风
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
@@ -155,6 +155,7 @@ class Ui_Form(object):
         temperature = data_dict.get("设定温度", 25)
         wind_speed = data_dict.get("风速", "低")
         mode = data_dict.get("设定模式", "cold")
+        sweep=data_dict.get("是否送风", "On")
         if start=="is_on" and stop=="not is_on":
             self.SwitchButton.setChecked(True)
         if start=="not is_on" and stop=="is_on":
@@ -171,6 +172,10 @@ class Ui_Form(object):
             self.ComboBox.setCurrentText("制冷")
         if mode=="hot" or mode=="Hot":
             self.ComboBox.setCurrentText("制热")
+        if sweep=="On":
+            sweep = "On"
+        if sweep=="stop":
+            sweep = "stop"
 
     def receive_data(self):
         while True:
@@ -246,7 +251,7 @@ class Ui_Form(object):
         headers = {'Content-Type': 'application/json'}
         postdata = {
             'room_id': room_id,
-            'operation': "空调开关, 设定温度, 风速, 设定模式",# start, stop, temperature, wind_speed, mode
+            'operation': "空调开关, 设定温度, 风速, 设定模式,是否送风",# start, stop, temperature, wind_speed, mode, sweep
             'data': data,# example: 26  operations
             'time': time,
             'unique_id': unique_id,
@@ -279,6 +284,7 @@ class Ui_Form(object):
             "风速": selected_radio_text,
             "设定模式": self.ComboBox.currentText(),
             "更改时间": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "是否送风": sweep,#默认开启
             # 根据需要添加更多小部件
         }
         #panel_data["更改时间"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")

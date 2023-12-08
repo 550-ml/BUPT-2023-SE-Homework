@@ -11,6 +11,7 @@ client_state = {
     "temperature": 0,
     "wind_speed": "",
     "mode": "cold",
+    "sweep":"on",#送风 on,stop
     # 可以根据实际需要添加其他状态
 }
 # 添加一个简单的路由，返回 "Hello"(测试用例)
@@ -33,6 +34,8 @@ def control_device(data):
         client_state["wind_speed"] = data["wind_speed"]#low,mid,high
     if "mode" in data:
         client_state["mode"] = data["mode"]#cold,hot
+    if "sweep" in data:
+         client_state["sweep"] = data["sweep"]#on,stop
     # 返回一个表示成功的响应
     return jsonify({'message': 'State changed successfully'}), 200
 def start_flask_server():
