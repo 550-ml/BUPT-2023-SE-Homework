@@ -1,5 +1,6 @@
 import threading
 from datetime import datetime
+import copy
 
 from room import Room
 from queues import Queues
@@ -12,43 +13,37 @@ class Scheduler:
     def __init__(self, central_ac: CentralAc):
         self.central_ac = central_ac
         self.queues = Queues()
-        self.room_threads = []
+        self.room_threads = {}
         self.priority = {'HIGH': 1, 'MID': 2, 'LOW': 3}
 
         self.max_be_served = 3
         self.RR_SLOT = 120
 
         self.state_lock = {}
+        self.write_lock = threading.Lock()
 
     def add_room(self, room_ids: list):
         for room_id in enumerate(room_ids):
             self.state_lock[room_id] = threading.Lock()
-            room = Room(room_id, 'INIT', self.central_ac.service, self.state_lock[room_id])
-            self.room_threads.append(room)
+            room = Room(room_id, 'INIT', self.central_ac.service, self.state_lock[room_id], self.write_lock)
+            self.room_threads[room_id] = room
 
             add_to_order(room_id)
 
     def delete_room(self, room_ids: list):
-        ready_to_delete = []
-        for room in self.room_threads:
-            if room.room_id in room_ids:
-                ready_to_delete.append(self.room_threads.index(room))
-
-        ready_to_delete.sort(reverse=True)
-        for index in ready_to_delete:
-            del self.room_threads[index]
+        for room_id in room_ids:
+            self.room_threads.pop(room_id)
 
     def get_available_room(self):
         available_room_ids = []
-        for room in self.room_threads:
-            available_room_ids.append(room.room_id)
+        for room_id in self.room_threads.keys():
+            available_room_ids.append(room_id)
         return available_room_ids
 
     def set_room_initial_env_temp(self, room_ids: list, initial_env_temp: list):
-        for room in self.room_threads:
-            index = room_ids.index(room.room_id)
-            room.initial_env_temp = initial_env_temp[index]
-            room.current_temp = room.initial_env_temp
+        for index, room_id in enumerate(room_ids):
+            self.room_threads[room_id].initial_env_temp = initial_env_temp[index]
+            self.room_threads[room_id].current_temp = self.room_threads[room_id].initial_env_temp
 
     def deal_with_on_and_off(self, room_id, target_temp, target_speed, ac_state):
         if target_temp is None:
@@ -59,50 +54,53 @@ class Scheduler:
         room_priority = self.priority[target_speed]
 
         if ac_state == 'ON':
-            for room in self.room_threads:
-                if room.room_id == room_id:
-                    room.current_speed = target_speed
-                    room.target_temp = target_temp
-                    room.target_speed = target_speed
-                    self.queues.add_into_ready_queue(room, room_priority)
+            self.room_threads[room_id].current_speed = target_speed
+            self.room_threads[room_id].target_temp = target_temp
+            self.room_threads[room_id].target_speed = target_speed
+            self.queues.add_into_ready_queue(room_id, room_priority)
+            return 0
         else:
-            for room in self.room_threads:
-                if room.room_id == room_id:
-                    room.stop()
-                    room.state = 'FINISH'
-                    room.power = False
-                    self.queues.pop_service_by_room_id(room_id)
+            if self.queues.remove_from_suspend_queue(room_id):
+                return 0
+            elif self.queues.remove_from_ready_queue(room_id):
+                return 0
+            else:
+                self.room_threads[room_id].stop()
+                self.room_threads[room_id].state = 'FINISH'
+                self.room_threads[room_id].power = False
+                self.queues.pop_service_by_room_id(room_id)
+                return 0
 
     def deal_with_speed_temp_change(self, room_id, target_temp, target_speed):
         if target_temp is None and target_speed is not None:
             self.state_lock[room_id].acquire()
-            for room in self.room_threads:
-                if room.room_id == room_id:
-                    room.target_speed = target_speed
-                    room.current_speed = target_speed
+            self.room_threads[room_id].target_speed = target_speed
+            self.room_threads[room_id].current_speed = target_speed
             self.state_lock[room_id].release()
         elif target_temp is not None and target_speed is None:
             self.state_lock[room_id].acquire()
-            for room in self.room_threads:
-                if room.room_id == room_id:
-                    room.target_temp = target_temp
+            self.room_threads[room_id].target_temp = target_temp
             self.state_lock[room_id].release()
         else:
             self.state_lock[room_id].acquire()
-            for room in self.room_threads:
-                if room.room_id == room_id:
-                    room.target_temp = target_temp
-                    room.target_speed = target_speed
-                    room.current_speed = target_speed
+            self.room_threads[room_id].target_temp = target_temp
+            self.room_threads[room_id].target_speed = target_speed
+            self.room_threads[room_id].current_speed = target_speed
             self.state_lock[room_id].release()
 
     def schedule(self):
         while 1:
-            # if room's current_temp == target_temp, pop running_queue and add into suspend_queue
-            for room in self.room_threads:
+            # if room's current_temp <= target_temp, pop running_queue and add into suspend_queue
+            for room in self.room_threads.values():
                 if room.current_temp == room.target_temp:
                     self.queues.pop_service_by_room_id(room.room_id)
-                    self.queues.add_into_suspend_queue(room)
+                    self.queues.add_into_suspend_queue(copy.deepcopy(room))
+                elif room.current_temp < room.target_temp:
+                    room.stop()
+                    room.state = 'SUSPEND'
+                    room.power = False
+                    self.queues.pop_service_by_room_id(room.room_id)
+                    self.queues.add_into_suspend_queue(copy.deepcopy(room))
 
             # pop suspend_queue and add into ready_queue
             ready_to_pop_suspend = self.queues.pop_suspend_queue()
@@ -111,59 +109,72 @@ class Scheduler:
             else:
                 for room in ready_to_pop_suspend:
                     priority = self.priority[room.current_speed]
-                    self.queues.add_into_ready_queue(room, priority)
+                    self.queues.add_into_ready_queue(room.room_id, priority)
 
-            ready_be_served, start_ready_time = self.queues.get_from_ready_queue()
-            ready_served_priority = self.priority[ready_be_served.current_speed]
+            ready_running_room_id, start_waiting_time = self.queues.get_from_ready_queue()
+            ready_running_priority = self.priority[
+                self.room_threads[ready_running_room_id].current_speed
+            ]
 
-            if ready_be_served is None:
+            if ready_running_room_id is None:
                 # ready_queue is empty
                 continue
             elif len(self.queues.running_queue) < self.max_be_served:
                 # running_queue has vacancies
                 self.queues.pop_ready_queue()
-                self.queues.add_into_running_queue(ready_be_served)
+                self.queues.add_into_running_queue(ready_running_room_id)
 
-                recover_temp(ready_be_served)
-                ready_be_served.state = 'RUNNING'
-                ready_be_served.power = True
-                ready_be_served.current_speed = ready_be_served.target_speed
-                ready_be_served.run()
+                recover_temp(copy.deepcopy(self.room_threads[ready_running_room_id]))
+                self.room_threads[ready_running_room_id].state = 'RUNNING'
+                self.room_threads[ready_running_room_id].power = True
+                self.room_threads[ready_running_room_id].current_speed = \
+                    self.room_threads[ready_running_room_id].target_speed
+                self.room_threads[ready_running_room_id].run()
             else:
                 # running_queue is full
                 # start scheduling
-                room_with_lowest_priority = self.queues.get_running_room_with_lowest_priority()
-                room_priority = self.priority[room_with_lowest_priority.current_speed]
+                room_with_lowest_priority = self.queues.get_running_room_with_lowest_priority(
+                    copy.deepcopy(self.room_threads)
+                )
+                room_priority = self.priority[
+                    self.room_threads[room_with_lowest_priority]
+                ]
 
-                if ready_served_priority < room_priority:
+                if ready_running_priority < room_priority:
                     # priority scheduling
-                    room_with_lowest_priority.stop()
-                    room_with_lowest_priority.state = 'SUSPEND'
-                    room_with_lowest_priority.power = False
-                    self.queues.pop_service_by_room_id(room_with_lowest_priority.room_id)
-                    self.queues.add_into_suspend_queue(room_with_lowest_priority)
+                    self.room_threads[room_with_lowest_priority].stop()
+                    self.room_threads[room_with_lowest_priority].state = 'SUSPEND'
+                    self.room_threads[room_with_lowest_priority].power = False
+                    self.queues.pop_service_by_room_id(room_with_lowest_priority)
+                    self.queues.add_into_suspend_queue(
+                        copy.deepcopy(self.room_threads[room_with_lowest_priority])
+                    )
 
                     self.queues.pop_ready_queue()
-                    self.queues.add_into_running_queue(ready_be_served)
-                    recover_temp(ready_be_served)
-                    ready_be_served.power = True
-                    ready_be_served.state = 'RUNNING'
-                    ready_be_served.current_speed = ready_be_served.target_speed
-                    ready_be_served.run()
+                    self.queues.add_into_running_queue(ready_running_room_id)
+                    recover_temp(copy.deepcopy(self.room_threads[ready_running_room_id]))
+                    self.room_threads[ready_running_room_id].state = 'RUNNING'
+                    self.room_threads[ready_running_room_id].power = True
+                    self.room_threads[ready_running_room_id].current_speed = \
+                        self.room_threads[ready_running_room_id].target_speed
+                    self.room_threads[ready_running_room_id].run()
                 else:
                     # RR scheduling
                     time_now = datetime.now()
-                    if (time_now - start_ready_time).total_seconds() >= self.RR_SLOT:
-                        room_with_lowest_priority.stop()
-                        room_with_lowest_priority.state = 'SUSPEND'
-                        room_with_lowest_priority.power = False
-                        self.queues.pop_service_by_room_id(room_with_lowest_priority.room_id)
-                        self.queues.add_into_suspend_queue(room_with_lowest_priority)
+                    if (time_now - start_waiting_time).total_seconds() >= self.RR_SLOT:
+                        self.room_threads[room_with_lowest_priority].stop()
+                        self.room_threads[room_with_lowest_priority].state = 'SUSPEND'
+                        self.room_threads[room_with_lowest_priority].power = False
+                        self.queues.pop_service_by_room_id(room_with_lowest_priority)
+                        self.queues.add_into_suspend_queue(
+                            copy.deepcopy(self.room_threads[room_with_lowest_priority])
+                        )
 
                         self.queues.pop_ready_queue()
-                        self.queues.add_into_running_queue(ready_be_served)
-                        recover_temp(ready_be_served)
-                        ready_be_served.power = True
-                        ready_be_served.state = 'RUNNING'
-                        ready_be_served.current_speed = ready_be_served.target_speed
-                        ready_be_served.run()
+                        self.queues.add_into_running_queue(ready_running_room_id)
+                        recover_temp(copy.deepcopy(self.room_threads[ready_running_room_id]))
+                        self.room_threads[ready_running_room_id].state = 'RUNNING'
+                        self.room_threads[ready_running_room_id].power = True
+                        self.room_threads[ready_running_room_id].current_speed = \
+                            self.room_threads[ready_running_room_id].target_speed
+                        self.room_threads[ready_running_room_id].run()
