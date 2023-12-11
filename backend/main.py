@@ -1,6 +1,6 @@
 from app import *
 from threading import Thread
-from flask import request, jsonify
+from flask import request, jsonify, Blueprint
 from database import *
 from scheduler import Scheduler
 import requests
@@ -18,7 +18,7 @@ scheduler = Scheduler(central_ac)
 # t = Thread(target=scheduler.schedule)
 
 # 登录
-@app.route('/login', methods=['POST'])
+@app.route('/api/login', methods=['POST'])
 def login_admin():
     """
     username
@@ -45,7 +45,7 @@ def login_admin():
         # make_response(jsonify(response_data))
 
 # 登出
-@app.route('/logout', methods=['POST'])
+@app.route('/api/logout', methods=['POST'])
 def logout_admin():
     """
     当前账号退出
@@ -58,7 +58,7 @@ def logout_admin():
 weiruzhu = []
 # 管理员加房
 # 理解是增加一个未入住房间
-@app.route('/admin/device', methods=['put'])
+@app.route('/api/admin/device', methods=['put'])
 def add_room():
     """
     room:
@@ -84,7 +84,7 @@ def add_room():
         return jsonify({'error_code': 100}), 401
 
 # 管理员删房
-@app.route('/admin/device', methods=['delete'])
+@app.route('/api/admin/device', methods=['delete'])
 def delete_room():
     """
     room:
@@ -118,7 +118,7 @@ def delete_room():
 
 
 # 管理员给出所有可利用的设备
-@app.route('admin/devices', methods=['get'])
+@app.route('/api/admin/devices', methods=['get'])
 def get_room_list():
     """
 
@@ -137,7 +137,7 @@ def get_room_list():
 #def control_device(is_on:bool, target_temp, wind)
 
 # 管理员控制某一设备
-@app.route('/admin/devices/<string:room_id>', methods=['post'])
+@app.route('/api/admin/devices/<string:room_id>', methods=['post'])
 def control_device(room_id):
     """
     room:
@@ -187,7 +187,7 @@ def control_device(room_id):
 
 
 # 对某一房间进行状态查询
-@app.route('/status/<string:room_id>', methods=['GET'])
+@app.route('/api/status/<string:room_id>', methods=['GET'])
 def get_one_status(room_id):
     """
     room:
@@ -239,7 +239,7 @@ def get_one_status(room_id):
 
 
 # 获取所有房间开关信息
-@app.route('/status', methods=['get'])
+@app.route('/api/status', methods=['get'])
 def get_all_status():
     """
 
@@ -260,7 +260,7 @@ def get_all_status():
         return 401
 
 # 开房
-@app.route('/room/check_in', methods=['POST'])
+@app.route('/api/room/check_in', methods=['POST'])
 def check_in():
     """前台开房
     roomId
@@ -290,7 +290,7 @@ def check_in():
 
 
 # 退房
-@app.route('/room/check_out', methods=['POST'])
+@app.route('/api/room/check_out', methods=['POST'])
 def check_out():
     """前台退房
     roomId:int
@@ -352,7 +352,7 @@ def check_out():
 # 客户端连接
 port = ''
 client_ip = ''
-@app.route('/device/client', methods=['POST'])
+@app.route('/api/device/client', methods=['POST'])
 def client_connect():
     """
     room_id
@@ -380,7 +380,7 @@ def client_connect():
     return 204
 
 # 服务器更改客户端状态
-@app.route('/control', methods=['POST'])
+@app.route('/api/control', methods=['POST'])
 def control_client(is_on:bool, target_temp, wind):
     """
     send:
@@ -408,7 +408,7 @@ def control_client(is_on:bool, target_temp, wind):
     return
 
 # 客户端主动更改状态
-@app.route('/device/client/<string:room_id>', methods=['POST'])
+@app.route('/api/device/client/<string:room_id>', methods=['POST'])
 def client_change(room_id):
     """
     room_id
@@ -453,7 +453,9 @@ def client_change(room_id):
 
 if __name__ == '__main__':
     db_init()
-    scheduler.schedule()
+    #scheduler.schedule()
+    #api = Blueprint('api', __name__, url_prefix='/api')
+    #app.register_blueprint(api)
     with app.app_context():
         app.run(port=11451, debug=True, host='0.0.0.0')
 
