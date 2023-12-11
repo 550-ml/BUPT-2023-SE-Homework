@@ -55,7 +55,9 @@ def logout_admin():
 
     return 204
 
+weiruzhu = []
 # 管理员加房
+# 理解是增加一个未入住房间
 @app.route('/admin/device', methods=['put'])
 def add_room():
     """
@@ -76,9 +78,7 @@ def add_room():
     public_key = params['public_key']
 
     try:
-        rooms = []
-        rooms.append(room)
-        scheduler.add_room(rooms)
+        weiruzhu.append(room)
         return jsonify({'room': room}), 200
     except:
         return jsonify({'error_code': 100}), 401
@@ -101,23 +101,38 @@ def delete_room():
     print(request.path, " : ", params)
     room = params['room']
 
-    # 删除队列中的房间对象
+    try:
+        if room in weiruzhu:
+            weiruzhu.remove(room)
+            print(f"未入住'{room}' 已删除")
+        elif room in scheduler.room_threads:
+            del scheduler.room_threads[room]    #此处等于scheduler函数中的删房函数
+            print(f"已入住'{room}' 已删除")
+        return jsonify({'room', room}), 200
+    except:
+        #raise ValueError(f"Room '{room}' not found 未入住或已入住.")
+        print(f"Room '{room}' not found 未入住或已入住.")
+        return 401
 
 
 
-# # 管理员给出所有可利用的设备
-# @app.route('admin/devices', methods=['get'])
-# def get_room_list():
-#     """
-#
-#     :return: 200 room :
-#                     type: string array
-#             401
-#
-#     调数据库
-#     """
-#
-#     # 给出等待与服务队列的所有房间号
+
+# 管理员给出所有可利用的设备
+@app.route('admin/devices', methods=['get'])
+def get_room_list():
+    """
+
+    :return: 200 room :
+                    type: string array
+            401
+
+    调数据库
+    """
+    available = scheduler.get_available_room()
+    for room in weiruzhu:
+        available.append(room)
+    return jsonify(available), 200
+
 
 #def control_device(is_on:bool, target_temp, wind)
 
@@ -188,7 +203,18 @@ def get_one_status(room_id):
     print(request.path, " : ", params)
     public_key = params['public_key']
 
-    for room in scheduler.room_threads:
+    if room_id in weiruzhu:
+        return jsonify({
+            'room': room_id,
+            'temperature': 25,
+            'wind_speed': 2,
+            'mode': 'cold',
+            # 'sweep': sweep,
+            'is_on': False,
+            'is_ruzhu': False
+        }), 200
+
+    for room in scheduler.room_threads.values():
         if room.room_id == room_id:
             is_on = room.power
             temperature = room.current_temp
@@ -196,21 +222,23 @@ def get_one_status(room_id):
             mode = 'cold'
             sweep = room.running
             #last_update =
+        return jsonify({
+            'room': room_id,
+            'temperature': temperature,
+            'wind_speed': wind_speed,
+            'mode': mode,
+            #'sweep': sweep,
+            'is_on': is_on,
+            #'last_update': last_update，
+            'is_ruzhu': True
+        }), 200
 
-    return jsonify({
-        'room': room_id,
-        'temperature': temperature,
-        'wind_speed': wind_speed,
-        'mode': mode,
-        #'sweep': sweep,
-        'is_on': is_on,
-        #'last_update': last_update
-    }), 200
+    return 401
 
 
 
 
-# 获取所有房间状态信息
+# 获取所有房间开关信息
 @app.route('/status', methods=['get'])
 def get_all_status():
     """
@@ -220,9 +248,16 @@ def get_all_status():
             401
 
     """
+    try:
+        status = {}
+        for room in weiruzhu:
+            status[room] = False
+        for room in scheduler.room_threads.values():
+            status[room.room_id] = room.power
 
-    #对目前可利用的状态队列，查询详单
-
+        return status, 200
+    except:
+        return 401
 
 # 开房
 @app.route('/room/check_in', methods=['POST'])
@@ -237,14 +272,19 @@ def check_in():
     print(request.path, " : ", params)
     room = params['room']
 
-    try:
-        rooms = []
-        rooms.append(room)
-        scheduler.add_room(rooms)
-        json = jsonify('room',room)
-        return json, 200
-    except:
+    if room not in weiruzhu:
+        print('这房间您的管理员没加呢，不存在这房间号。')
         return 401
+    else:
+        try:
+            rooms = []
+            rooms.append(room)
+            scheduler.add_room(rooms)
+            json = jsonify('room',room)
+            weiruzhu.pop(room)
+            return json, 200
+        except:
+            return 401
 
 
 
@@ -301,6 +341,11 @@ def check_out():
         'total_time': total_time,
         'details': de
     }
+
+    delete = []
+    delete.append(room)
+    scheduler.delete_room(delete)
+    weiruzhu.append(room)
 
     return jsonify(report_data), 200
 
