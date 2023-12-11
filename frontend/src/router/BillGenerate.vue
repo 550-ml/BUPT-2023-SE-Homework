@@ -88,18 +88,6 @@
               </tr>
             </tbody>
           </table>
-          <!-- <table class="table-auto w-full rounded-lg shadow-md">
-            <thead class="">
-              <tr>
-                <th>房间号</th>
-                <th>入住时间</th>
-                <th>总金额</th>
-              </tr>
-            </thead>
-            <tbody>
-              <RoomStates v-for="index in 4" :key="index" />
-            </tbody>
-          </table> -->
         </div>
       </div>
     </div>
@@ -135,6 +123,7 @@
 </template>
 
 <script>
+import { ref, onMounted } from "vue";
 import RoomStates from "../components/RoomState.vue";
 import axios from "axios";
 
@@ -142,52 +131,26 @@ export default {
   components: {
     RoomStates
   },
-  data() {
-    return {
-      searchTerm: "",
-      searchedDeviceData: null,
-      isCheckInOpen: false,
-      isCheckOutOpen: false,
-      isDetailedOrderOpen: false,
-      activeTab: "tab1",
-      allDevices: [],
-      roomId: null
-    };
-  },
-  mounted() {
-    this.getAllDevices();
-  },
-  methods: {
-    executeSearch() {
-      // if (!this.searchTerm) {
+  setup() {
+    const searchTerm = ref("");
+    const searchedDeviceData = ref(null);
+    const isCheckInOpen = ref(false);
+    const isCheckOutOpen = ref(false);
+    const isDetailedOrderOpen = ref(false);
+    const activeTab = ref("tab1");
+    const allDevices = ref([]);
+    const roomId = ref(null);
+
+    const executeSearch = () => {
+      // if (!searchTerm.value) {
       //   return;
       // }
 
-      this.getSingleDevice(this.searchTerm);
-    },
-    getSingleDevice(roomId) {
-      // axios
-      //   .get(`/api/device/${roomId}`, {
-      //     headers: {
-      //       "X-CSRF-Token": "abcde12345" // 替换为你的CSRF token
-      //     }
-      //   })
-      //   .then(response => {
-      //     this.deviceData = response.data;
-      //     if (!this.deviceData) {
-      //       this.errorMessage = "未找到相关设备信息";
-      //     }
-      //   })
-      //   .catch(error => {
-      //     if (error.response && error.response.status === 401) {
-      //       this.errorMessage = "未授权，请登录";
-      //     } else {
-      //       // 其他错误情况，显示默认错误信息
-      //       console.error("请求失败", error);
-      //       this.errorMessage = "请求失败，请重试";
-      //     }
-      //   });
-      this.searchedDeviceData = {
+      getSingleDevice(searchTerm.value);
+    };
+
+    const getSingleDevice = async roomId => {
+      searchedDeviceData.value = {
         room: roomId,
         temperature: 26,
         wind_speed: 3,
@@ -196,57 +159,68 @@ export default {
         is_on: true,
         last_update: "2023-09-18T11:45:14+08:00"
       };
-    },
-    cancelSearch() {
-      this.searchedDeviceData = null;
-    },
-    openCheckIn() {
-      this.isCheckInOpen = true;
-    },
-    closeCheckIn() {
-      this.isCheckInOpen = false;
-    },
-    openCheckOut() {
-      this.isCheckOutOpen = true;
-    },
-    closeCheckOut() {
-      this.isCheckOutOpen = false;
-    },
-    openDetailedOrder() {
-      this.isDetailedOrderOpen = true;
-    },
-    closeDetailedOrder() {
-      this.isDetailedOrderOpen = false;
-    },
-    closeModal() {
+    };
+
+    const cancelSearch = () => {
+      searchedDeviceData.value = null;
+    };
+
+    const openCheckIn = () => {
+      isCheckInOpen.value = true;
+    };
+
+    const closeCheckIn = () => {
+      isCheckInOpen.value = false;
+    };
+
+    const openCheckOut = () => {
+      isCheckOutOpen.value = true;
+    };
+
+    const closeCheckOut = () => {
+      isCheckOutOpen.value = false;
+    };
+
+    const openDetailedOrder = () => {
+      isDetailedOrderOpen.value = true;
+    };
+
+    const closeDetailedOrder = () => {
+      isDetailedOrderOpen.value = false;
+    };
+
+    const closeModal = () => {
       // 关闭对话框
-      this.errorMessage = null;
-    },
-    changeTab(tab) {
-      this.searchedDeviceData = null;
-      this.activeTab = tab;
-    },
-    async getAllDevices() {
+      // errorMessage.value = null;
+    };
+
+    const changeTab = tab => {
+      searchedDeviceData.value = null;
+      activeTab.value = tab;
+    };
+
+    const getAllDevices = async () => {
       try {
-        // const response = await this.$axios.get('/admin/devices', {
+        // const response = await axios.get('/admin/devices', {
         //   headers: {
         //     'X-CSRF-Token': 'abcde12345', // Include the CSRF token if available
         //   },
         // });
 
-        // this.allDevices = response.data;
-        this.allDevices = ["1-101", "2-203", "4-416"];
+        // allDevices.value = response.data;
+        allDevices.value = ["1-101", "2-203", "4-416"];
       } catch (error) {
         console.error("Failed to get devices:", error.response.data);
       }
-    },
-    async checkIn(roomId) {
-      this.openCheckIn();
+    };
+
+    const checkIn = async roomId => {
+      openCheckIn();
       // try {
-      //   const response = await this.$axios.post(
+      //   const response = await axios.post(
       //     "/room/check_in",
       //     {
-      //       room: this.room
+      //       room: roomId
       //     },
       //     {
       //       headers: {
@@ -257,12 +231,40 @@ export default {
 
       //   const checkedInRoom = response.data.room;
 
-      //   this.openCheckIn();
+      //   openCheckIn();
       // } catch (error) {
       //   // Handle unauthorized or other errors
       //   console.error("Check-in failed:", error.response.data);
       // }
-    }
+    };
+
+    onMounted(() => {
+      getAllDevices();
+    });
+
+    return {
+      searchTerm,
+      searchedDeviceData,
+      isCheckInOpen,
+      isCheckOutOpen,
+      isDetailedOrderOpen,
+      activeTab,
+      allDevices,
+      roomId,
+      executeSearch,
+      getSingleDevice,
+      cancelSearch,
+      openCheckIn,
+      closeCheckIn,
+      openCheckOut,
+      closeCheckOut,
+      openDetailedOrder,
+      closeDetailedOrder,
+      closeModal,
+      changeTab,
+      getAllDevices,
+      checkIn
+    };
   }
 };
 </script>
