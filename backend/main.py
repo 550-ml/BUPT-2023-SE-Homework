@@ -221,16 +221,15 @@ def get_one_status(room_id):
     """
     room:
         type: string
-    public_key:
-        type: string # RSA 4096
+
 
     :return: 200 room, temperature, wind_speed, mode, sweep, is_on, last_update
             401
 
     """
-    params = request.get_json(force=True)
-    print(request.path, " : ", params)
-    public_key = params['public_key']
+    #params = request.get_json(force=True)
+    #print(request.path, " : ", params)
+    #public_key = params['public_key']
 
     try:
         if room_id in weiruzhu:
@@ -491,7 +490,7 @@ def client_change(room_id):
 
 if __name__ == '__main__':
     db_init()
-    #scheduler.schedule()
+    scheduler.schedule()
     #api = Blueprint('api', __name__, url_prefix='/api')
     #app.register_blueprint(api)
     with app.app_context():
