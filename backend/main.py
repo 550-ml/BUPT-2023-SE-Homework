@@ -491,7 +491,7 @@ def client_change(room_id):
 
 if __name__ == '__main__':
     db_init()
-    #scheduler.schedule()
+    scheduler.schedule()
     #api = Blueprint('api', __name__, url_prefix='/api')
     #app.register_blueprint(api)
     with app.app_context():
