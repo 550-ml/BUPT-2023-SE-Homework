@@ -1,7 +1,165 @@
-<!-- Panel1.vue -->
 <template>
-  <div>
-    <h1 class="text-3xl font-semibold mb-4">Panel 3 Content</h1>
-    <p>Panel 3 的内容...</p>
-  </div>
+  <table class="w-full">
+    <tbody class="relative flex flex-col h-full min-w-0 break-words border-0 shadow-xl rounded-2xl">
+      <tr
+        v-for="deviceId in allDevices"
+        :key="deviceId"
+        class="flex justify-between items-center px-6 py-4 border-b border-solid rounded-t-2xl border-b-slate-100"
+      >
+        <td>{{ deviceId }}</td>
+        <td>
+          <button class="bg-blue-500 text-white py-2 px-4 rounded item-center" @click="getSingleDevice(deviceId)">
+            退房
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
 </template>
+
+<script>
+import { ref, onMounted } from "vue";
+import RoomStates from "../components/RoomState.vue";
+import axios from "axios";
+
+export default {
+  components: {
+    RoomStates
+  },
+  setup() {
+    const searchTerm = ref("");
+    const searchedDeviceData = ref(null);
+    const isCheckInOpen = ref(false);
+    const isCheckOutOpen = ref(false);
+    const isDetailedOrderOpen = ref(false);
+    const activeTab = ref("tab1");
+    const allDevices = ref([]);
+    const roomId = ref(null);
+
+    const executeSearch = () => {
+      // if (!searchTerm.value) {
+      //   return;
+      // }
+
+      getSingleDevice(searchTerm.value);
+    };
+
+    const getSingleDevice = async roomId => {
+      searchedDeviceData.value = {
+        room: roomId,
+        temperature: 26,
+        wind_speed: 3,
+        mode: "cold",
+        sweep: true,
+        is_on: true,
+        last_update: "2023-09-18T11:45:14+08:00"
+      };
+    };
+
+    const cancelSearch = () => {
+      searchedDeviceData.value = null;
+    };
+
+    const openCheckIn = () => {
+      isCheckInOpen.value = true;
+    };
+
+    const closeCheckIn = () => {
+      isCheckInOpen.value = false;
+    };
+
+    const openCheckOut = () => {
+      isCheckOutOpen.value = true;
+    };
+
+    const closeCheckOut = () => {
+      isCheckOutOpen.value = false;
+    };
+
+    const openDetailedOrder = () => {
+      isDetailedOrderOpen.value = true;
+    };
+
+    const closeDetailedOrder = () => {
+      isDetailedOrderOpen.value = false;
+    };
+
+    const closeModal = () => {
+      // 关闭对话框
+      // errorMessage.value = null;
+    };
+
+    const changeTab = tab => {
+      searchedDeviceData.value = null;
+      activeTab.value = tab;
+    };
+
+    const getAllDevices = async () => {
+      try {
+        // const response = await axios.get('/admin/devices', {
+        //   headers: {
+        //     'X-CSRF-Token': 'abcde12345', // Include the CSRF token if available
+        //   },
+        // });
+
+        // allDevices.value = response.data;
+        allDevices.value = ["1-101", "2-203", "4-416"];
+      } catch (error) {
+        console.error("Failed to get devices:", error.response.data);
+      }
+    };
+
+    const checkIn = async roomId => {
+      openCheckIn();
+      // try {
+      //   const response = await axios.post(
+      //     "/room/check_in",
+      //     {
+      //       room: roomId
+      //     },
+      //     {
+      //       headers: {
+      //         "X-CSRF-Token": "abcde12345" // Include the CSRF token if available
+      //       }
+      //     }
+      //   );
+
+      //   const checkedInRoom = response.data.room;
+
+      //   openCheckIn();
+      // } catch (error) {
+      //   // Handle unauthorized or other errors
+      //   console.error("Check-in failed:", error.response.data);
+      // }
+    };
+
+    onMounted(() => {
+      getAllDevices();
+    });
+
+    return {
+      searchTerm,
+      searchedDeviceData,
+      isCheckInOpen,
+      isCheckOutOpen,
+      isDetailedOrderOpen,
+      activeTab,
+      allDevices,
+      roomId,
+      executeSearch,
+      getSingleDevice,
+      cancelSearch,
+      openCheckIn,
+      closeCheckIn,
+      openCheckOut,
+      closeCheckOut,
+      openDetailedOrder,
+      closeDetailedOrder,
+      closeModal,
+      changeTab,
+      getAllDevices,
+      checkIn
+    };
+  }
+};
+</script>
