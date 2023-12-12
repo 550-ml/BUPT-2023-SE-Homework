@@ -27,7 +27,7 @@ port = '11451'
 #operation = 'start'#空调状态power
 #time = datetime.now().isoformat()#时间timestamp
 # 配置服务器的URL
-base_url = 'http://localhost:11451/api'#host:port
+base_url = 'http://10.129.37.107:11451/api'#host:port
 # 生成签名文本
 sign_text = room_id + unique_id + port
 signature = hashlib.sha256(sign_text.encode()).hexdigest()
@@ -143,39 +143,38 @@ class Ui_Form(object):
         # 将接收到的数据转换为字典
         data_dict = eval(data)
         # 更新空调面板按钮的值
-        # 以下是一个简单的示例，你可以根据你的业务逻辑进行修改
         if self.RadioButton.isChecked():
-            selected_radio_text = "中"
+            selected_radio_text = "2"#中
         elif self.RadioButton_2.isChecked():
-            selected_radio_text = "高"
+            selected_radio_text = "3"#高
         elif self.RadioButton_3.isChecked():
-            selected_radio_text = "低"
+            selected_radio_text = "1"#低
         start=data_dict.get("start", "not is_on")
         stop=data_dict.get("stop", "is_on")
-        temperature = data_dict.get("设定温度", 25)
-        wind_speed = data_dict.get("风速", "低")
-        mode = data_dict.get("设定模式", "cold")
-        sweep=data_dict.get("是否送风", "On")
-        if start=="is_on" and stop=="not is_on":
+        temperature = data_dict.get("temperature", 25)#设定温度
+        wind_speed = data_dict.get("wind_speed", "低")#风速
+        mode = data_dict.get("mode", "cold")#设定模式
+        #sweep=data_dict.get("是否送风", "On")
+        if start=="True" and stop=="False":
             self.SwitchButton.setChecked(True)
-        if start=="not is_on" and stop=="is_on":
+        if start=="False" and stop=="True":
             self.SwitchButton.setChecked(False)
         if temperature!=self.CompactDoubleSpinBox.value():
             self.CompactDoubleSpinBox.setProperty("value", temperature)
-        if wind_speed=="低":
+        if wind_speed=="1":#低=1
             self.RadioButton_3.setChecked(True)
-        if wind_speed=="中":
+        if wind_speed=="2":#中=2
             self.RadioButton.setChecked(True)
-        if wind_speed=="高":
+        if wind_speed=="3":#高=3
             self.RadioButton_2.setChecked(True)
         if mode=="cold" or mode=="Cold":
             self.ComboBox.setCurrentText("制冷")
         if mode=="hot" or mode=="Hot":
             self.ComboBox.setCurrentText("制热")
-        if sweep=="On":
-            sweep = "On"
-        if sweep=="stop":
-            sweep = "stop"
+        #if sweep=="On":
+        #    sweep = "On"
+        #if sweep=="stop":
+        #    sweep = "stop"
 
     def receive_data(self):
         while True:
@@ -230,7 +229,7 @@ class Ui_Form(object):
             self.get_current_status(room_id,postdata,time)
     
     def client_online(self,room_id, port, unique_id, signature):
-        url = 'http://localhost:11451/api/device/client'
+        url = 'http://10.129.37.107:11451/api/device/client'
         headers = {'Content-Type': 'application/json'}
         postdata = {
             'room_id': room_id,
@@ -247,11 +246,11 @@ class Ui_Form(object):
             print('连接请求失败')
     
     def get_current_status(self,room_id,data,time):
-        url = f'http://localhost:11451/api/device/client/{room_id}'
+        url = f'http://10.129.37.107:11451/api/device/client/{room_id}'
         headers = {'Content-Type': 'application/json'}
         postdata = {
             'room_id': room_id,
-            'operation': "空调开关, 设定温度, 风速, 设定模式,是否送风",# start, stop, temperature, wind_speed, mode, sweep
+            'operation': "start,  stop, temperature, wind_speed, mode",# start, stop, temperature, wind_speed, mode, sweep;开关,温度,风速,设定模式,是否送风.
             'data': data,# example: 26  operations
             'time': time,
             'unique_id': unique_id,
@@ -272,19 +271,30 @@ class Ui_Form(object):
         import datetime
         selected_radio_text = ""
         if self.RadioButton.isChecked():
-            selected_radio_text = "中"
+            selected_radio_text = "2"#中
         elif self.RadioButton_2.isChecked():
-            selected_radio_text = "高"
+            selected_radio_text = "3"#高
         elif self.RadioButton_3.isChecked():
-            selected_radio_text = "低"
+            selected_radio_text = "1"#低
+        if self.ComboBox.currentText()=="制冷":
+            mode="cold"
+        if self.ComboBox.currentText()=="制热":
+            mode="hot"
+        if self.SwitchButton.isChecked():
+            start="True"
+            stop="False"
+        else :
+            start="False"
+            stop="True"
         # 从面板上所有相关的小部件中收集数据
         panel_data = {
-            "空调开关": "On" if self.SwitchButton.isChecked() else "Off",
-            "设定温度": self.CompactDoubleSpinBox.value(),
-            "风速": selected_radio_text,
-            "设定模式": self.ComboBox.currentText(),
-            "更改时间": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "是否送风": sweep,#默认开启
+            "start": start,#start, stop, temperature, wind_speed, mode, sweep;开关,温度,风速,设定模式,是否送风.
+            "stop":stop,
+            "temperature": self.CompactDoubleSpinBox.value(),
+            "wind_speed": selected_radio_text,
+            "mode": mode,
+            "time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            #"是否送风": sweep,#默认开启
             # 根据需要添加更多小部件
         }
         #panel_data["更改时间"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
