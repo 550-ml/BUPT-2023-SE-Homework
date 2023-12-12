@@ -20,7 +20,7 @@ class Queues:
     def get_from_ready_queue(self):
         service_objects = heapq.nsmallest(1, self.ready_queue)
         if not service_objects:
-            return None
+            return None, None
         return service_objects[0][-1], service_objects[0][-2]  # room_id, start_waiting_time
 
     # 关机时，对象在等待队列中

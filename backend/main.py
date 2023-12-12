@@ -34,12 +34,19 @@ def login_admin():
 
     ans = User.query.filter(User.username == username).filter(User.password == password).first()
 
+    if ans.type == "administrator":
+        role = "AC admin"
+    elif ans.type == "receptionist":
+        role = "checkout"
+    elif ans.type == "manager":
+        role = "manager"
+
     if ans is None:
         print('登录失败')
         return jsonify({'error_code': 100}), 401
     else:
         print('登录成功')
-        ret = {'username': username}
+        ret = {'username': username, 'role': role}
 
         return jsonify(ret), 200
         # make_response(jsonify(response_data))
@@ -56,6 +63,7 @@ def logout_admin():
     return 204
 
 weiruzhu = []
+print(weiruzhu)
 # 管理员加房
 # 理解是增加一个未入住房间
 @app.route('/api/admin/device', methods=['put'])
@@ -77,8 +85,10 @@ def add_room():
     room = params['room']
     public_key = params['public_key']
 
+
     try:
         weiruzhu.append(room)
+        print(weiruzhu)
         return jsonify({'room': room}), 200
     except:
         return jsonify({'error_code': 100}), 401
@@ -105,14 +115,19 @@ def delete_room():
         if room in weiruzhu:
             weiruzhu.remove(room)
             print(f"未入住'{room}' 已删除")
+            return jsonify({'room': room}), 200
         elif room in scheduler.room_threads:
             del scheduler.room_threads[room]    #此处等于scheduler函数中的删房函数
             print(f"已入住'{room}' 已删除")
-        return jsonify({'room', room}), 200
+            return jsonify({'room': room}), 200
+        else:
+            print(f"Room '{room}' not found 未入住或已入住.")
+            return jsonify({'error_code': 100}), 401
+
     except:
         #raise ValueError(f"Room '{room}' not found 未入住或已入住.")
-        print(f"Room '{room}' not found 未入住或已入住.")
-        return 401
+        print(f"except")
+        return jsonify({'error_code': 100}), 401
 
 
 
@@ -128,10 +143,13 @@ def get_room_list():
 
     调数据库
     """
-    available = scheduler.get_available_room()
-    for room in weiruzhu:
-        available.append(room)
-    return jsonify(available), 200
+    try:
+        available = scheduler.get_available_room()
+        for room in weiruzhu:
+            available.append(room)
+        return jsonify(available), 200
+    except:
+        return jsonify({'error_code': 100}), 401
 
 
 #def control_device(is_on:bool, target_temp, wind)
@@ -170,20 +188,31 @@ def control_device(room_id):
     target_temp = operation_data.get('temperature')
     wind_speed = operation_data.get('wind_speed')
 
+    #这里需要注意一下
+    if wind_speed == 3:
+        wind_speed = 'HIGH'
+    elif wind_speed == 2:
+        wind_speed = 'MID'
+    elif wind_speed == 1:
+        wind_speed = 'LOW'
+
     for room in scheduler.room_threads:
         if room.room_id == room_id:
             power = room.power
 
-    if bool(start) == bool(power) == True:
-        scheduler.deal_with_speed_temp_change(room_id, target_temp, wind_speed)
+    try:
+        if bool(start) == bool(power) == True:
+            scheduler.deal_with_speed_temp_change(room_id, target_temp, wind_speed)
 
-        control_client(True, target_temp, wind_speed)
-    else:
-        scheduler.deal_with_on_and_off(room_id, target_temp, wind_speed, start)
+            control_client(True, target_temp, wind_speed)
+        else:
+            scheduler.deal_with_on_and_off(room_id, target_temp, wind_speed, start)
 
-        control_client(False, target_temp, wind_speed)
+            control_client(False, target_temp, wind_speed)
 
-    return jsonify({'room': room_id}), 200
+        return jsonify({'room': room_id}), 200
+    except:
+        return jsonify({'error_code': 100}), 401
 
 
 # 对某一房间进行状态查询
@@ -192,48 +221,56 @@ def get_one_status(room_id):
     """
     room:
         type: string
-    public_key:
-        type: string # RSA 4096
+
 
     :return: 200 room, temperature, wind_speed, mode, sweep, is_on, last_update
             401
 
     """
-    params = request.get_json(force=True)
-    print(request.path, " : ", params)
-    public_key = params['public_key']
+    #params = request.get_json(force=True)
+    #print(request.path, " : ", params)
+    #public_key = params['public_key']
 
-    if room_id in weiruzhu:
-        return jsonify({
-            'room': room_id,
-            'temperature': 25,
-            'wind_speed': 2,
-            'mode': 'cold',
-            # 'sweep': sweep,
-            'is_on': False,
-            'is_ruzhu': False
-        }), 200
+    try:
+        if room_id in weiruzhu:
+            return jsonify({
+                'room': room_id,
+                'temperature': 25,
+                'wind_speed': 2,
+                'mode': 'cold',
+                # 'sweep': sweep,
+                'is_on': False,
+                'is_ruzhu': False
+            }), 200
 
-    for room in scheduler.room_threads.values():
-        if room.room_id == room_id:
-            is_on = room.power
-            temperature = room.current_temp
-            wind_speed = room.current_speed
-            mode = 'cold'
-            sweep = room.running
-            #last_update =
-        return jsonify({
-            'room': room_id,
-            'temperature': temperature,
-            'wind_speed': wind_speed,
-            'mode': mode,
-            #'sweep': sweep,
-            'is_on': is_on,
-            #'last_update': last_update，
-            'is_ruzhu': True
-        }), 200
+        for room in scheduler.room_threads.values():
+            if room.room_id == room_id:
+                is_on = room.power
+                temperature = room.current_temp
+                wind_speed = room.current_speed
 
-    return 401
+                if wind_speed.low() == 'high':
+                    wind_speed = 3
+                elif wind_speed.low() == 'mid':
+                    wind_speed = 2
+                elif wind_speed.low() == 'low':
+                    wind_speed = 1
+
+                mode = 'cold'
+                sweep = room.running
+                #last_update =
+            return jsonify({
+                'room': room_id,
+                'temperature': temperature,
+                'wind_speed': wind_speed,
+                'mode': mode,
+                #'sweep': sweep,
+                'is_on': is_on,
+                #'last_update': last_update，
+                'is_ruzhu': True
+            }), 200
+    except:
+        return jsonify({'error_code': 100}), 401
 
 
 
@@ -255,9 +292,9 @@ def get_all_status():
         for room in scheduler.room_threads.values():
             status[room.room_id] = room.power
 
-        return status, 200
+        return jsonify(status), 200
     except:
-        return 401
+        return jsonify({'error_code': 100}), 401
 
 # 开房
 @app.route('/api/room/check_in', methods=['POST'])
@@ -274,7 +311,7 @@ def check_in():
 
     if room not in weiruzhu:
         print('这房间您的管理员没加呢，不存在这房间号。')
-        return 401
+        return jsonify({'error_code': 100}), 401
     else:
         try:
             rooms = []
@@ -284,7 +321,7 @@ def check_in():
             weiruzhu.pop(room)
             return json, 200
         except:
-            return 401
+            return jsonify({'error_code': 100}), 401
 
 
 
@@ -405,7 +442,7 @@ def control_client(is_on:bool, target_temp, wind):
     except requests.RequestException as e:
         print(f"Error sending webhook: {e}")
 
-    return
+    return 204
 
 # 客户端主动更改状态
 @app.route('/api/device/client/<string:room_id>', methods=['POST'])
@@ -453,8 +490,9 @@ def client_change(room_id):
 
 if __name__ == '__main__':
     db_init()
-    #scheduler.schedule()
+    scheduler.schedule()
     #api = Blueprint('api', __name__, url_prefix='/api')
+
     #app.register_blueprint(api)
     with app.app_context():
         app.run(port=11451, debug=True, host='0.0.0.0')

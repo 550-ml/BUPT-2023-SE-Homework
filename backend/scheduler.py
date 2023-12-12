@@ -5,7 +5,7 @@ import copy
 from room import Room
 from queues import Queues
 from central_ac import CentralAc
-from database import *
+from database import add_to_order
 from utils import recover_temp
 
 
@@ -112,9 +112,11 @@ class Scheduler:
                     self.queues.add_into_ready_queue(room.room_id, priority)
 
             ready_running_room_id, start_waiting_time = self.queues.get_from_ready_queue()
-            ready_running_priority = self.priority[
-                self.room_threads[ready_running_room_id].current_speed
-            ]
+
+            if ready_running_room_id is not None:
+                ready_running_priority = self.priority[
+                    self.room_threads[ready_running_room_id].current_speed
+                ]
 
             if ready_running_room_id is None:
                 # ready_queue is empty
