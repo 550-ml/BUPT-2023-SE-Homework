@@ -4,7 +4,7 @@
       <aside class="h-full bg-gray-800 text-white flex flex-col">
         <div class="py-4 pl-4 bg-gray-900">
           <router-link to="/login" class="block py-2 hover:bg-gray-700"
-            ><h2 class="text-2xl font-semibold">Sidebar</h2></router-link
+            ><h2 class="text-2xl font-semibold">点击登录</h2></router-link
           >
         </div>
         <div class="flex-1 py-4 pl-4">
