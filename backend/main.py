@@ -493,8 +493,6 @@ if __name__ == '__main__':
     scheduler.schedule()
     #api = Blueprint('api', __name__, url_prefix='/api')
 
-    #gls shi dasb
-
     #app.register_blueprint(api)
     with app.app_context():
         app.run(port=11451, debug=True, host='0.0.0.0')
