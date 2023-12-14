@@ -511,12 +511,13 @@ def client_change(room_id):
 
 if __name__ == '__main__':
     db_init()
-    #scheduler.schedule()
+
     #api = Blueprint('api', __name__, url_prefix='/api')
     #app.register_blueprint(api)
     with app.app_context():
-        app.run(port=11451, debug=True, host='0.0.0.0')
+        app.run(port=11452, debug=True, host='0.0.0.0')
 
+    scheduler.schedule()
     #control_client(1, 23, 1)
 
 
