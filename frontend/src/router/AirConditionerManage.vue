@@ -193,6 +193,10 @@ const roomsInfo = ref([
 // 获取特定房间的信息
 const fetchRoomInfo = async (roomId) => {
   try {
+    // const sentData = {
+    //   room: roomId
+    // };
+    // const jsonData = JSON.stringify(sentData);
     const response = await axios.get(`http://10.129.37.107:11451/api/status/${roomId}`);
     const roomData = response.data;
 
@@ -218,7 +222,6 @@ const fetchRoomInfo = async (roomId) => {
           // room.fee = '';
           // 其他属性更新...
         }
-
         return room;
       }
       return room;
@@ -234,19 +237,19 @@ const fetchRoomInfo = async (roomId) => {
 };
 
 // 假设你有一个包含所有房间ID的数组
-const roomIds = ['Room 1', 'Room 2', 'Room 3', /* 其他房间ID... */];
+const roomIds = ['222', '223', '224', '222', '223', '224'];
 // 每秒获取所有房间的信息
 setInterval(() => {
   roomIds.forEach(roomId => {
     fetchRoomInfo(roomId);
   });
-}, 1000);
+}, 10000);
 
 // This code keeps track of the current date and time
-const currentDate = ref(new Date());
-setInterval(() => {
-  currentDate.value = new Date();
-}, 1000);
+// const currentDate = ref(new Date());
+// setInterval(() => {
+//   currentDate.value = new Date();
+// }, 1000);
 
 const radioValue = ref('cold'); // 初始化为默认值
 const minTemperature = ref('');

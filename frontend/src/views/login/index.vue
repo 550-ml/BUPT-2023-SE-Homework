@@ -30,9 +30,35 @@ const form = ref({
   name: "",
   password: ""
 });
+import axios from "axios";
 
 const login = () => {
-  // Add login functionality here
+  const loginData = {
+    username: form.value.name,
+    password: form.value.password
+  };
+  const jsonData = JSON.stringify(loginData);
+  axios.post("http://10.129.37.107:11451/api/login", jsonData)
+    .then(response => {
+      // 处理后端返回的数据
+      const { error, role } = response.data;
+      if (!error) {
+        // username
+        // role
+        // 登录成功，处理角色信息
+        console.log("登录成功，角色是:", role);
+        // 可以将角色信息存储在前端，进行后续操作
+      } else {
+        // 登录失败，处理错误信息
+        console.error("登录失败");
+        // 可以根据错误信息给用户相应提示
+      }
+    })
+    .catch(error => {
+      // 处理网络请求失败等情况
+      console.error("登录失败", error);
+      // 可以显示一般性错误信息给用户
+    });
 };
 </script>
 
