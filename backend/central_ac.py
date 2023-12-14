@@ -27,11 +27,11 @@ class CentralAc:
         return current_temp, total_cost
 
     def update_temperature(self, current_temp, target_temp, target_speed):
-        temp = current_temp - self.temperature_change_rate[target_speed]
+        temp = current_temp - self.temperature_change_rate[target_speed] / 60 * 0.5
         if temp >= target_temp:
             current_temp = temp
         return current_temp
 
     def update_cost(self, total_cost, target_speed):
-        total_cost += self.fee_rate * self.power_rate[target_speed]
+        total_cost += self.fee_rate * self.power_rate[target_speed] / 60 * 0.5
         return total_cost

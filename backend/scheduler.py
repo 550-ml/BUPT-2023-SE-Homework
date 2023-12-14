@@ -23,7 +23,7 @@ class Scheduler:
         self.write_lock = threading.Lock()
 
     def add_room(self, room_ids: list):
-        for room_id in enumerate(room_ids):
+        for room_id in room_ids:
             self.state_lock[room_id] = threading.Lock()
             room = Room(room_id, 'INIT', self.central_ac.service, self.state_lock[room_id], self.write_lock)
             self.room_threads[room_id] = room
@@ -76,16 +76,19 @@ class Scheduler:
             self.state_lock[room_id].acquire()
             self.room_threads[room_id].target_speed = target_speed
             self.room_threads[room_id].current_speed = target_speed
+            self.room_threads[room_id].change_flag = 1
             self.state_lock[room_id].release()
         elif target_temp is not None and target_speed is None:
             self.state_lock[room_id].acquire()
             self.room_threads[room_id].target_temp = target_temp
+            self.room_threads[room_id].change_flag = 1
             self.state_lock[room_id].release()
         else:
             self.state_lock[room_id].acquire()
             self.room_threads[room_id].target_temp = target_temp
             self.room_threads[room_id].target_speed = target_speed
             self.room_threads[room_id].current_speed = target_speed
+            self.room_threads[room_id].change_flag = 1
             self.state_lock[room_id].release()
 
     def schedule(self):
