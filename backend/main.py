@@ -15,7 +15,7 @@ import re
 central_ac = CentralAc()
 scheduler = Scheduler(central_ac)
 
-# t = Thread(target=scheduler.schedule)
+t = Thread(target=scheduler.schedule)
 
 # 登录
 @app.route('/api/login', methods=['POST'])
@@ -314,7 +314,7 @@ def check_in():
 
             401
 
-    curl.exe -v -X POST -d '{"room": "test"}' http://localhost:11451/api/room/check_in?no-csrf
+curl.exe -v -X POST -d '{"room": "test"}' http://localhost:11451/api/room/check_in?no-csrf
     """
     params = request.get_json(force=True)
     print(request.path, " : ", params)
@@ -329,6 +329,7 @@ def check_in():
             rooms = []
             rooms.append(room)
             print("123")
+            print(rooms)
             scheduler.add_room(rooms)
             print("456")    #上一行代码报错
             json = jsonify('room',room)
@@ -423,6 +424,7 @@ def client_connect():
 curl.exe -v -X POST -d '{"room_id": "test"}' http://localhost:11451/api/device/client?no-csrf
     """
     data = request.json
+    print(data)
     room_id = data.get('room_id')
     port = data.get('port')
     client_ip = request.remote_addr
@@ -463,7 +465,7 @@ def control_client(is_on:bool, target_temp, wind):
     except requests.RequestException as e:
         print(f"Error sending webhook: {e}")
 
-    return 204
+    return jsonify({"message": "Online successfully"}), 200
 
 # 客户端主动更改状态
 @app.route('/api/device/client/<string:room_id>', methods=['POST'])
@@ -497,6 +499,7 @@ def client_change(room_id):
     target_temp = operation_data.get('temperature')
     wind_speed = operation_data.get('wind_speed')
 
+    power = True
     for room in scheduler.room_threads:
         if room.room_id == room_id:
             power = room.power
@@ -511,14 +514,15 @@ def client_change(room_id):
 
 if __name__ == '__main__':
     db_init()
-
+    t.start()
     #api = Blueprint('api', __name__, url_prefix='/api')
     #app.register_blueprint(api)
     with app.app_context():
         app.run(port=11452, debug=True, host='0.0.0.0')
 
-    scheduler.schedule()
-    #control_client(1, 23, 1)
+    #scheduler.schedule()
+
+
 
 
 
