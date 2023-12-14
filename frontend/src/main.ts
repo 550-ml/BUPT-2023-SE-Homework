@@ -8,11 +8,12 @@ import HomeView from "./views/HomeView.vue";
 import Login from "./views/login/index.vue";
 import Register from "./views/login/register.vue";
 import Administrator from "./views/Administrator/Administrator.vue";
+import axios from "axios";
 
 import AirConditionerManage from "./router/AirConditionerManage.vue";
 import BillGenerate from "./router/BillGenerate.vue";
 import HotelManage from "./router/HotelManage.vue";
-import HomePage from "./router/HomePage.vue"
+import HomePage from "./router/HomePage.vue";
 
 const routes = [
     {
@@ -47,6 +48,12 @@ const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
     routes
 });
+
+const api = axios.create({
+    baseURL: process.env.REACT_APP_BASE_URL || "http://10.129.37.107:11451"
+});
+
+export default api;
 
 const app = createApp(App);
 // 导入style 文件
