@@ -50,7 +50,7 @@ const router = createRouter({
 });
 
 const api = axios.create({
-    baseURL: process.env.REACT_APP_BASE_URL || "http://10.129.37.107:11451"
+    baseURL: "http://10.129.37.107:11451"
 });
 
 export default api;
