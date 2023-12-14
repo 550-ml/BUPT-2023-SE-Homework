@@ -95,6 +95,8 @@ class Scheduler:
         while 1:
             # if room's current_temp <= target_temp, pop running_queue and add into suspend_queue
             for room in self.room_threads.values():
+                if room.target_temp is None:
+                    continue
                 if room.current_temp == room.target_temp:
                     self.queues.pop_service_by_room_id(room.room_id)
                     self.queues.add_into_suspend_queue(copy.deepcopy(room))
