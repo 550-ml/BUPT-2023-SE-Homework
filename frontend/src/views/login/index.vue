@@ -38,7 +38,8 @@ const login = () => {
     password: form.value.password
   };
   const jsonData = JSON.stringify(loginData);
-  axios.post("http://10.129.37.107:11451/api/login", jsonData)
+  axios
+    .post("http://10.129.37.107:11451/api/login", jsonData)
     .then(response => {
       // 处理后端返回的数据
       const { error, role } = response.data;
