@@ -11,13 +11,8 @@
       </div>
 
       <div class="flex justify-end">
-        <input
-          type="text"
-          placeholder="请输入房间号"
-          class="p-2 border border-gray-300 rounded mr-2"
-          v-model="searchTerm"
-          @input="emitSearch"
-        />
+        <input type="text" placeholder="请输入房间号" class="p-2 border border-gray-300 rounded mr-2" v-model="searchTerm"
+          @input="emitSearch" />
         <button class="bg-blue-500 text-white py-2 px-4 rounded" @click="executeSearch">搜索</button>
       </div>
     </div>
@@ -44,11 +39,8 @@
         <div v-if="activeTab === 'tab1'" class="mt-4 w-1/2">
           <table class="w-full">
             <tbody class="relative flex flex-col h-full min-w-0 break-words border-0 shadow-xl rounded-2xl">
-              <tr
-                v-for="deviceId in allDevices"
-                :key="deviceId"
-                class="flex justify-between items-center px-6 py-4 border-b border-solid rounded-t-2xl border-b-slate-100"
-              >
+              <tr v-for="deviceId in allDevices" :key="deviceId"
+                class="flex justify-between items-center px-6 py-4 border-b border-solid rounded-t-2xl border-b-slate-100">
                 <td>{{ deviceId }}</td>
                 <td>
                   <button class="bg-blue-500 text-white py-2 px-4 rounded item-center" @click="checkIn(deviceId)">
@@ -63,17 +55,11 @@
         <div v-else-if="activeTab === 'tab2'" class="mt-4 w-1/2">
           <table class="w-full">
             <tbody class="relative flex flex-col h-full min-w-0 break-words border-0 shadow-xl rounded-2xl">
-              <tr
-                v-for="deviceId in allDevices"
-                :key="deviceId"
-                class="flex justify-between items-center px-6 py-4 border-b border-solid rounded-t-2xl border-b-slate-100"
-              >
+              <tr v-for="deviceId in allDevices" :key="deviceId"
+                class="flex justify-between items-center px-6 py-4 border-b border-solid rounded-t-2xl border-b-slate-100">
                 <td>{{ deviceId }}</td>
                 <td>
-                  <button
-                    class="bg-blue-500 text-white py-2 px-4 rounded item-center"
-                    @click="getSingleDevice(deviceId)"
-                  >
+                  <button class="bg-blue-500 text-white py-2 px-4 rounded item-center" @click="getSingleDevice(deviceId)">
                     退房
                   </button>
                 </td>
@@ -198,26 +184,26 @@ export default {
 
     const checkIn = async roomId => {
       openCheckIn();
-      // try {
-      //   const response = await axios.post(
-      //     "/room/check_in",
-      //     {
-      //       room: roomId
-      //     },
-      //     {
-      //       headers: {
-      //         "X-CSRF-Token": "abcde12345" // Include the CSRF token if available
-      //       }
-      //     }
-      //   );
+      try {
+        const response = await axios.post(
+          "/room/check_in",
+          {
+            room: roomId
+          },
+          {
+            headers: {
+              "X-CSRF-Token": "abcde12345" // Include the CSRF token if available
+            }
+          }
+        );
 
-      //   const checkedInRoom = response.data.room;
+        const checkedInRoom = response.data.room;
 
-      //   openCheckIn();
-      // } catch (error) {
-      //   // Handle unauthorized or other errors
-      //   console.error("Check-in failed:", error.response.data);
-      // }
+        openCheckIn();
+      } catch (error) {
+        // Handle unauthorized or other errors
+        console.error("Check-in failed:", error.response.data);
+      }
     };
 
     const checkOut = async () => {
