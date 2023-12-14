@@ -114,7 +114,6 @@ def delete_room():
             401
 curl.exe -v -X delete -d '{"room":"test"}' http://localhost:11451/api/admin/device?no-csrf
     """
-
     params = request.get_json(force=True)
     print(request.path, " : ", params)
     room = params['room']
@@ -123,6 +122,7 @@ curl.exe -v -X delete -d '{"room":"test"}' http://localhost:11451/api/admin/devi
         if room in weiruzhu:
             weiruzhu.remove(room)
             print(f"未入住'{room}' 已删除")
+            print(weiruzhu)
             return jsonify({'room': room}), 200
         elif room in scheduler.room_threads:
             del scheduler.room_threads[room]  # 此处等于scheduler函数中的删房函数
@@ -513,10 +513,32 @@ def client_change(room_id):
 
     return 204
 
+#from addition import *
+# 管理员给出所有未入住房间信息
+@app.route('/api/admin/uncheck_in', methods=['get'])
+def get_uncheckin_room_list():
+    """
+
+    :return: 200 room :
+                    type: string array
+            401
+
+    调数据库
+
+curl.exe -v -X get http://localhost:11451/api/admin/uncheck_in?no-csrf
+    """
+    try:
+        #available = scheduler.get_available_room()
+        available = []
+        for room in weiruzhu:
+            available.append(room)
+        return jsonify(available), 200
+    except:
+        return jsonify({'error_code': 100}), 401
 
 if __name__ == '__main__':
     db_init()
-    t.start()
+    #t.start()
     # api = Blueprint('api', __name__, url_prefix='/api')
     # app.register_blueprint(api)
     with app.app_context():
