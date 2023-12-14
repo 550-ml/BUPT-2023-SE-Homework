@@ -25,6 +25,8 @@ def login_admin():
     password
     :return: {error:bool.
                 role:str}  # room/administrator/manager/receptionist
+
+curl.exe -v -X post -d '{"username":"administrator_1", "password":"administrator"}' http://localhost:11451/api/login?no-csrf
     """
 
     params = request.get_json(force=True)
@@ -58,12 +60,13 @@ def logout_admin():
     当前账号退出
     :return: 204 成功
             401 error
+
+curl.exe -v -X post http://localhost:11451/api/logout?no-csrf
     """
 
     return 204
 
-weiruzhu = []
-print(weiruzhu)
+weiruzhu = ['test']
 # 管理员加房
 # 理解是增加一个未入住房间
 @app.route('/api/admin/device', methods=['put'])
@@ -78,6 +81,7 @@ def add_room():
                     type: string
             401
 
+curl.exe -v -X put -d '{"room":"test", "public_key":"RSA 4096"}' http://localhost:11451/api/admin/device?no-csrf
     """
 
     params = request.get_json(force=True)
@@ -104,7 +108,7 @@ def delete_room():
     :return: 200 room:
                     type: string
             401
-
+curl.exe -v -X delete -d '{"room":"test"}' http://localhost:11451/api/admin/device?no-csrf
     """
 
     params = request.get_json(force=True)
@@ -142,17 +146,17 @@ def get_room_list():
             401
 
     调数据库
+
+curl.exe -v -X get http://localhost:11451/api/admin/devices?no-csrf
     """
     try:
         available = scheduler.get_available_room()
-        for room in weiruzhu:
-            available.append(room)
+        # for room in weiruzhu:
+        #     available.append(room)
         return jsonify(available), 200
     except:
         return jsonify({'error_code': 100}), 401
 
-
-#def control_device(is_on:bool, target_temp, wind)
 
 # 管理员控制某一设备
 @app.route('/api/admin/devices/<string:room_id>', methods=['post'])
@@ -171,7 +175,7 @@ def control_device(room_id):
     :return: 200 返回房间列表？？   ？？？？
             401
 
-
+curl.exe -v -X post -d '{"operation":"start, stop, temperature, wind_speed", "data":"1, 0, 23, 3"}' http://localhost:11451/api/admin/devices/test?no-csrf
     """
     params = request.get_json(force=True)
     print(request.path, " : ", params)
@@ -225,7 +229,7 @@ def get_one_status(room_id):
 
     :return: 200 room, temperature, wind_speed, mode, sweep, is_on, last_update
             401
-
+curl.exe -v -X get http://localhost:11451/api/status/test?no-csrf
     """
     #params = request.get_json(force=True)
     #print(request.path, " : ", params)
@@ -233,7 +237,7 @@ def get_one_status(room_id):
 
     try:
         if room_id in weiruzhu:
-            return jsonify({
+            json = jsonify({
                 'room': room_id,
                 'temperature': 25,
                 'wind_speed': 2,
@@ -241,7 +245,9 @@ def get_one_status(room_id):
                 # 'sweep': sweep,
                 'is_on': False,
                 'is_ruzhu': False
-            }), 200
+            })
+            print(json)
+            return json, 200
 
         for room in scheduler.room_threads.values():
             if room.room_id == room_id:
@@ -259,7 +265,7 @@ def get_one_status(room_id):
                 mode = 'cold'
                 sweep = room.running
                 #last_update =
-            return jsonify({
+            json = jsonify({
                 'room': room_id,
                 'temperature': temperature,
                 'wind_speed': wind_speed,
@@ -268,7 +274,9 @@ def get_one_status(room_id):
                 'is_on': is_on,
                 #'last_update': last_update，
                 'is_ruzhu': True
-            }), 200
+            })
+            print(json)
+            return json, 200
     except:
         return jsonify({'error_code': 100}), 401
 
@@ -284,6 +292,7 @@ def get_all_status():
 
             401
 
+curl.exe -v -X get http://localhost:11451/api/status?no-csrf
     """
     try:
         status = {}
@@ -304,21 +313,27 @@ def check_in():
     :return: 200 room,
 
             401
+
+    curl.exe -v -X POST -d '{"room": "test"}' http://localhost:11451/api/room/check_in?no-csrf
     """
     params = request.get_json(force=True)
     print(request.path, " : ", params)
     room = params['room']
 
     if room not in weiruzhu:
+        print(weiruzhu)
         print('这房间您的管理员没加呢，不存在这房间号。')
         return jsonify({'error_code': 100}), 401
     else:
         try:
             rooms = []
             rooms.append(room)
+            print("123")
             scheduler.add_room(rooms)
+            print("456")    #上一行代码报错
             json = jsonify('room',room)
             weiruzhu.pop(room)
+            print("已入住")
             return json, 200
         except:
             return jsonify({'error_code': 100}), 401
@@ -347,12 +362,17 @@ def check_out():
                     cost
 
     调数据库
+curl.exe -v -X POST -d '{"room": "test"}' http://localhost:11451/api/room/check_out?no-csrf
     """
     params = request.get_json(force=True)
     print(request.path, " : ", params)
     room = params['room']
 
     order = Order.query.filter_by(room_id=room).order_by(Order.checkin.desc()).first()
+    if order is None:
+        print("数据库中没有找到与之匹配的房间号")
+        return jsonify({'error_code': 100}), 401
+
     checkin = order.checkin
     checkout = order.checkout
     total_time = checkout - checkin
@@ -399,6 +419,8 @@ def client_connect():
 
     :return:204 succes
             401
+
+curl.exe -v -X POST -d '{"room_id": "test"}' http://localhost:11451/api/device/client?no-csrf
     """
     data = request.json
     room_id = data.get('room_id')
@@ -428,16 +450,15 @@ def control_client(is_on:bool, target_temp, wind):
     """
 
 
-    webhook_url = 'http://' + client_ip + ':' + port + '/api'  # 前端提供的Webhook URL
-    data = {
-        'start': is_on,
-        'stop': not is_on,
-        'temperature': target_temp,
-        'wind_speed': wind,
-        'mode': 'cold'
+    webhook_url = 'http://' + client_ip + ':' + port + '/api/admin/devices/test'  # 前端提供的Webhook URL
+    operation = "start, stop, temperature, wind_speed, mode"
+    data = str(is_on) +','+ str(not is_on) +','+ str(target_temp) +','+ str(wind) +','+ 'cold'
+    json = {
+        "operation": operation,
+        "data": data
     }
     try:
-        response = requests.post(webhook_url, json=data)
+        response = requests.post(webhook_url, json=json)
         response.raise_for_status()
     except requests.RequestException as e:
         print(f"Error sending webhook: {e}")
@@ -490,10 +511,13 @@ def client_change(room_id):
 
 if __name__ == '__main__':
     db_init()
-    scheduler.schedule()
+    #scheduler.schedule()
     #api = Blueprint('api', __name__, url_prefix='/api')
-
     #app.register_blueprint(api)
     with app.app_context():
         app.run(port=11451, debug=True, host='0.0.0.0')
+
+    #control_client(1, 23, 1)
+
+
 
