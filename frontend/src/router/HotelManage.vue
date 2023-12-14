@@ -71,6 +71,7 @@
 <script>
 import { ref, onMounted } from "vue";
 import axios from "axios";
+import api from "../main.ts";
 
 export default {
   setup() {
@@ -79,25 +80,34 @@ export default {
     const allDevices = ref([]);
     const roomId = ref(null);
     const csrfToken = ref("abcde12345"); // 替换为实际的 CSRF token
-    const requestData = ref({
-      room: "2-233",
-      public_key: "your_rsa_public_key_here" // 替换为实际的 RSA 4096 公钥
-    });
+    const requestData = ref(null);
+    const roomToAdd = ref("");
     const roomToDelete = ref("");
 
     // 获取所有设备
     const getAllDevices = async () => {
-      // try {
-      //   const response = await axios.get("/admin/devices", {
-      //     headers: {
-      //       "X-CSRF-Token": csrfToken.value
-      //     }
-      //   });
-      //   allDevices.value = response.data;
-      // } catch (error) {
-      //   console.error("Failed to get devices:", error.response.data);
-      // }
-      allDevices.value = ["101", "102", "103"];
+      try {
+        const response = await api.get("/admin/devices", {
+          headers: {
+            "X-CSRF-Token": csrfToken.value
+          },
+          timeout: 5000 // 设置超时时间为5秒
+        });
+        allDevices.value = response.data;
+      } catch (error) {
+        if (axios.isCancel(error)) {
+          console.error("Request canceled:", error.message);
+        } else if (error.response) {
+          // 请求已发出，但服务器响应状态码不在 2xx 范围内
+          console.error("Failed to get devices. Server responded with:", error.response.status, error.response.data);
+        } else if (error.request) {
+          // 请求已发出，但没有收到响应
+          console.error("Failed to get devices. No response received:", error.request);
+        } else {
+          // 其他错误
+          console.error("Failed to get devices. Error:", error.message);
+        }
+      }
     };
 
     // 打开添加房间对话框
@@ -121,8 +131,13 @@ export default {
 
     // 添加房间
     const addRoom = async () => {
+      requestData.room = roomToAdd.value;
+      requestData.public_key = "";
+      console.log(requestData);
+      const jsonData = JSON.stringify(requestData);
+      console.log(jsonData);
       try {
-        const response = await axios.put("/admin/device", requestData.value, {
+        const response = await api.put("/admin/device", jsonData, {
           headers: {
             "X-CSRF-Token": csrfToken.value
           }
@@ -137,7 +152,7 @@ export default {
 
     const deleteRoom = async () => {
       try {
-        await axios.delete("/admin/device", {
+        await api.delete("/admin/device", {
           headers: {
             "X-CSRF-Token": csrfToken.value
           },
@@ -163,6 +178,7 @@ export default {
       isDeleteOpen,
       allDevices,
       roomId,
+      roomToAdd,
       roomToDelete,
       openAdd,
       closeAdd,
