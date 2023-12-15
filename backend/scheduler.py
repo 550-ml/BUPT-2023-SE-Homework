@@ -58,18 +58,18 @@ class Scheduler:
             self.room_threads[room_id].target_temp = target_temp
             self.room_threads[room_id].target_speed = target_speed
             self.queues.add_into_ready_queue(room_id, room_priority)
-            return 0
+            return 'on'
         else:
             if self.queues.remove_from_suspend_queue(room_id):
-                return 0
+                return 'off_remove_from_suspend'
             elif self.queues.remove_from_ready_queue(room_id):
-                return 0
+                return 'off_remove_from_ready'
             else:
                 self.room_threads[room_id].stop()
                 self.room_threads[room_id].state = 'FINISH'
                 self.room_threads[room_id].power = False
                 self.queues.pop_service_by_room_id(room_id)
-                return 0
+                return 'off_remove_from_running'
 
     def deal_with_speed_temp_change(self, room_id, target_temp, target_speed):
         if target_temp is None and target_speed is not None:
