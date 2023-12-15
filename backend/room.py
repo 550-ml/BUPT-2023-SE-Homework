@@ -25,7 +25,7 @@ class Room(threading.Thread):
         self.last_fee = 0
         self.fee = 0
 
-        self.last_off_temp = None
+        self.last_off_temp = 0
 
         self.running = True
         self.target = target
