@@ -25,6 +25,8 @@ class Room(threading.Thread):
         self.last_fee = 0
         self.fee = 0
 
+        self.last_off_temp = None
+
         self.running = True
         self.target = target
         self.running_lock = threading.Lock()
@@ -81,6 +83,7 @@ class Room(threading.Thread):
                 self.end_time = datetime.now()
                 self.power = False
                 self.state = 'FINISH'
+                self.last_off_temp = self.current_temp
 
                 self.write_into_db(self.end_time)
 
@@ -93,6 +96,7 @@ class Room(threading.Thread):
         self.running_lock.acquire()
 
         self.end_time = datetime.now()
+        self.last_off_temp = self.current_temp
         self.write_into_db(self.end_time)
 
         self.running_lock.release()
