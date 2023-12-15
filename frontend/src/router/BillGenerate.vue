@@ -46,7 +46,7 @@
           <table class="w-full">
             <tbody class="relative flex flex-col h-full min-w-0 break-words border-0 shadow-xl rounded-2xl">
               <tr
-                v-for="deviceId in allDevices"
+                v-for="deviceId in allUnCheckedDevices"
                 :key="deviceId"
                 class="flex justify-between items-center px-6 py-4 border-b border-solid rounded-t-2xl border-b-slate-100"
               >
@@ -203,14 +203,13 @@ export default {
     };
 
     const getAllUnCheckedDevices = async () => {
-      // allDevices.value = ["1-102", "2-202", "4-412"];
       try {
         const response = await api.get("/admin/uncheck_in", {
           headers: {
             "X-CSRF-Token": "abcde12345" // Include the CSRF token if available
           }
         });
-
+        console.log(response.data);
         allUnCheckedDevices.value = response.data;
       } catch (error) {
         console.error("Failed to get devices:", error.response.data);
@@ -218,7 +217,6 @@ export default {
     };
 
     const getAllDevices = async () => {
-      // allDevices.value = ["1-101", "2-203", "4-416"];
       try {
         const response = await api.get("/admin/devices", {
           headers: {
@@ -296,6 +294,7 @@ export default {
       isDetailedOrderOpen,
       activeTab,
       allDevices,
+      allUnCheckedDevices,
       roomId,
       executeSearch,
       getSingleDevice,
