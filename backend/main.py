@@ -132,25 +132,26 @@ curl.exe -v -X delete -d '{"room":"test"}' http://localhost:11451/api/admin/devi
     print(request.path, " : ", params)
     room = params['room']
 
-    try:
-        if room in weiruzhu:
-            weiruzhu.remove(room)
-            print(f"未入住'{room}' 已删除")
-            rooms_ip = [room_info for room_info in rooms_ip if room_info["room"] != room]
-            print(weiruzhu)
-            return jsonify({'room': room}), 200
-        elif room in scheduler.room_threads:
-            del scheduler.room_threads[room]  # 此处等于scheduler函数中的删房函数
-            print(f"已入住'{room}' 已删除")
-            return jsonify({'room': room}), 200
-        else:
-            print(f"Room '{room}' not found 未入住或已入住.")
-            return jsonify({'error_code': 100}), 401
-
-    except:
-        # raise ValueError(f"Room '{room}' not found 未入住或已入住.")
-        print(f"except")
+    # try:
+    if room in weiruzhu:
+        weiruzhu.remove(room)
+        print(f"未入住'{room}' 已删除")
+        rooms_ip = [room_info for room_info in rooms_ip if room_info["room"] != room]
+        print(weiruzhu)
+        return jsonify({'room': room}), 200
+    elif room in scheduler.room_threads:
+        del scheduler.room_threads[room]  # 此处等于scheduler函数中的删房函数
+        print(f"已入住'{room}' 已删除")
+        rooms_ip = [room_info for room_info in rooms_ip if room_info["room"] != room]
+        return jsonify({'room': room}), 200
+    else:
+        print(f"Room '{room}' not found 未入住或已入住.")
         return jsonify({'error_code': 100}), 401
+
+    # except:
+    #     # raise ValueError(f"Room '{room}' not found 未入住或已入住.")
+    #     print(f"except")
+    #     return jsonify({'error_code': 100}), 401
 
 
 # 管理员给出所有可利用的设备
