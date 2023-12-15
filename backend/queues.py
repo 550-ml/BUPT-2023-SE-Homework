@@ -15,18 +15,15 @@ class Queues:
     def add_into_off_queue(self, room_id):
         self.off_queue.append(room_id)
 
-
     def get_all_rooms_from_off_queue(self):
         if not self.off_queue:
             return False
         return self.off_queue
-    
 
     def pop_off_queue(self, room_id):
         if room_id not in self.off_queue:
             return None
         del self.off_queue[room_id]
-
 
     # 将服务对象加入等待/待调度队列
     def add_into_ready_queue(self, room_id, priority):

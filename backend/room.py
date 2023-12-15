@@ -10,6 +10,7 @@ class Room(threading.Thread):
                  state_lock: threading.Lock, write_lock: threading.Lock,
                  **kwargs):
         super().__init__(**kwargs)
+        self.count = 0
         self.power = False
         self.room_id = room_id
         self.state = state
@@ -60,6 +61,7 @@ class Room(threading.Thread):
         new_room.state_lock = self.state_lock
         new_room.write_lock = self.write_lock
         # new_room.read_lock = self.read_lock
+        new_room.count = self.count
 
         return new_room
 
@@ -72,11 +74,12 @@ class Room(threading.Thread):
 
             self.is_changed()
 
-            self.current_temp, self.current_fee = self.target(
+            self.current_temp, self.current_fee, self.count = self.target(
                 self.current_temp,
                 self.target_temp,
                 self.target_speed,
-                self.current_fee
+                self.current_fee,
+                self.count
             )
             if self.current_temp == self.target_temp:
                 self.running = False
@@ -94,6 +97,8 @@ class Room(threading.Thread):
     def stop(self):
         self.running = False
         self.running_lock.acquire()
+
+        print(self.count)
 
         self.end_time = datetime.now()
         self.last_off_temp = self.current_temp

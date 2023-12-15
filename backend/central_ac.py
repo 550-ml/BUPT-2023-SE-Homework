@@ -19,13 +19,14 @@ class CentralAc:
         self.default_temp = default_temp
         self.default_speed = default_speed
 
-    def service(self, current_temp, target_temp, target_speed, total_cost):
+    def service(self, current_temp, target_temp, target_speed, total_cost, count):
         time.sleep(0.01)
+        count += 0.01
         print(target_speed)
         current_temp = self.update_temperature(current_temp, target_temp, target_speed)
         total_cost = self.update_cost(total_cost, target_speed)
 
-        return current_temp, total_cost
+        return current_temp, total_cost, count
 
     def update_temperature(self, current_temp, target_temp, target_speed):
         temp = current_temp - self.temperature_change_rate[target_speed] / 60 * 0.01
