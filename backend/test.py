@@ -10,4 +10,5 @@
 
 # scheduler.schedule
 
-print(None < 25)
+a = []
+print(not a)
