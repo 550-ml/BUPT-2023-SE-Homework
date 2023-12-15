@@ -21,13 +21,13 @@ import threading
 # 生成唯一标识符
 unique_id = ''.join(random.choices('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', k=16))
 # 请求数据
-room_id = '2-233'#房间号运行前更改
-port = '11451'
+room_id = 'test'#房间号运行前更改
+port = '5677'#我的端口
 #data = '26'#温度temperature
 #operation = 'start'#空调状态power
 #time = datetime.now().isoformat()#时间timestamp
 # 配置服务器的URL
-base_url = 'http://10.129.37.107:11451/api'#host:port
+base_url = 'http://10.129.37.107:11451'#host:port
 # 生成签名文本
 sign_text = room_id + unique_id + port
 signature = hashlib.sha256(sign_text.encode()).hexdigest()
@@ -229,15 +229,15 @@ class Ui_Form(object):
             self.get_current_status(room_id,postdata,time)
     
     def client_online(self,room_id, port, unique_id, signature):
-        url = 'http://10.129.37.107:11451/api/device/client'
+        url = f'{base_url}/api/device/client'
         headers = {'Content-Type': 'application/json'}
-        postdata = {
+        postdata2 = {
             'room_id': room_id,
             'port': port,
             'unique_id': unique_id,
             'signature': signature
         }
-        response = requests.post(url, headers=headers, data=json.dumps(postdata))
+        response = requests.post(url, headers=headers, data=json.dumps(postdata2))
         if response.status_code == 204:
             print('客户端连接成功')
         elif response.status_code == 401:
@@ -246,12 +246,13 @@ class Ui_Form(object):
             print('连接请求失败')
     
     def get_current_status(self,room_id,data,time):
-        url = f'http://10.129.37.107:11451/api/device/client/{room_id}'
+        url = f'{base_url}/api/device/client/{room_id}'
         headers = {'Content-Type': 'application/json'}
+        data_string=', '.join(map(str, data))
         postdata = {
             'room_id': room_id,
             'operation': "start,  stop, temperature, wind_speed, mode",# start, stop, temperature, wind_speed, mode, sweep;开关,温度,风速,设定模式,是否送风.
-            'data': data,# example: 26  operations
+            'data': data_string,# example: 26  operations
             'time': time,
             'unique_id': unique_id,
             'signature': signature

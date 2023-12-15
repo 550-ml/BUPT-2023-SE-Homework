@@ -110,6 +110,7 @@ class Room(threading.Thread):
             self.end_time,
             self.current_speed,
             self.fee,
-            duration
+            duration,
+            self.target_temp
         )
         self.write_lock.release()

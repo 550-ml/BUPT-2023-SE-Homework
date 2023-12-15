@@ -73,9 +73,7 @@
                 </el-form-item>
 
                 <el-form-item>
-                  <el-button type="primary" class="custom-button" @click="sendDataToBackend">
-                    设置默认参数
-                  </el-button>
+                  <el-button type="primary" class="custom-button" @click="sendDataToBackend"> 设置默认参数 </el-button>
                 </el-form-item>
               </el-form>
             </el-tab-pane>
@@ -89,10 +87,9 @@
   </div>
 </template>
 
-
 <script lang="ts" setup>
-
 import { ref } from "vue";
+<<<<<<< HEAD
 import { ElMessageBox } from 'element-plus';
 import axios from 'axios';
 // 定义默认房间信息
@@ -191,13 +188,17 @@ const GetroomName = async () => {
   //   });
   // }, 10000);
 };
+=======
+import { ElMessageBox } from "element-plus";
+import axios from "axios";
+>>>>>>> a4b276adce1b4e2ccfefb3608669be0fcb9c6908
 const dialogVisible = ref(false);
 const form = ref({
-  operation: '',
-  data: '',
+  operation: "",
+  data: ""
 });
 const handleClose = (done: () => void) => {
-  ElMessageBox.confirm('确定要关闭这个对话框吗？')
+  ElMessageBox.confirm("确定要关闭这个对话框吗？")
     .then(() => {
       done();
     })
@@ -205,12 +206,12 @@ const handleClose = (done: () => void) => {
       // catch error
     });
 };
-const submitForm = async (_formName) => {
+const submitForm = async _formName => {
   const room = roomsInfo.value[0].roomId; // 你需要根据实际情况获取房间 ID
   try {
     const response = await axios.post(`/admin/devices/${room}`, {
       operation: form.value.operation,
-      data: form.value.data,
+      data: form.value.data
     });
     if (response.status === 200) {
       // 请求成功，处理响应数据
@@ -225,6 +226,7 @@ const submitForm = async (_formName) => {
   }
 };
 
+<<<<<<< HEAD
 
 
 
@@ -232,6 +234,124 @@ const submitForm = async (_formName) => {
 
 // // 每秒获取所有房间的信息
 
+=======
+const roomsInfo = ref([
+  {
+    roomId: "Room 1",
+    is_on: "是",
+    mode: "Cold",
+    eed: "Medium",
+    currTemp: "20°C",
+    targetTemp: "接口没有",
+    servedTime: "2 hours",
+    fee: "$15"
+  },
+  {
+    roomId: "Room 2",
+    is_on: "是",
+    mode: "Hot",
+    speed: "High",
+    currTemp: "30°C",
+    targetTemp: "接口没有",
+    servedTime: "3 hours",
+    fee: "$20"
+  },
+  {
+    roomId: "Room 2",
+    is_on: "是",
+    mode: "Hot",
+    speed: "High",
+    currTemp: "30°C",
+    targetTemp: "接口没有",
+    servedTime: "3 hours",
+    fee: "$20"
+  },
+  {
+    roomId: "Room 1",
+    is_on: "是",
+    mode: "Cold",
+    speed: "Medium",
+    currTemp: "20°C",
+    targetTemp: "接口没有",
+    servedTime: "2 hours",
+    fee: "$15"
+  },
+  {
+    roomId: "Room 1",
+    is_on: "是",
+    mode: "Cold",
+    speed: "Medium",
+    currTemp: "20°C",
+    targetTemp: "接口没有",
+    servedTime: "2 hours",
+    fee: "$15"
+  },
+  {
+    roomId: "Room 1",
+    is_on: "是",
+    mode: "Cold",
+    speed: "Medium",
+    currTemp: "20°C",
+    targetTemp: "25°C",
+    servedTime: "2 hours",
+    fee: "$15"
+  }
+  // Add more rooms as needed...
+]);
+// 获取特定房间的信息
+const fetchRoomInfo = async roomId => {
+  try {
+    // const sentData = {
+    //   room: roomId
+    // };
+    // const jsonData = JSON.stringify(sentData);
+    const response = await axios.get(`http://10.129.37.107:11451/api/status/${roomId}`);
+    const roomData = response.data;
+
+    // 根据接口返回的数据结构更新房间信息
+    const updatedRooms = roomsInfo.value.map(room => {
+      if (room.roomId === roomId) {
+        if (roomData.is_on) {
+          // 更新特定房间的信息
+          room.mode = roomData.mode;
+          room.speed = roomData.wind_speed;
+          room.currTemp = `${roomData.temperature}°C`;
+          // room.targetTemp = `${roomData.target_temperature}°C`;
+          room.servedTime = roomData.served_time;
+          // room.fee = roomData.fee;
+          // 其他属性更新...
+        } else {
+          // 如果空调未开启，将所有值设为空值
+          room.mode = "";
+          room.speed = "";
+          room.currTemp = "";
+          // room.targetTemp = '';
+          room.servedTime = "";
+          // room.fee = '';
+          // 其他属性更新...
+        }
+        return room;
+      }
+      return room;
+    });
+
+    // 将更新后的房间信息重新赋值给roomsInfo
+    roomsInfo.value = updatedRooms;
+  } catch (error) {
+    console.error("获取房间信息时出错:", error);
+    // 在这里处理错误，例如向用户显示错误消息
+  }
+};
+
+// 假设你有一个包含所有房间ID的数组
+const roomIds = ["222", "223", "224", "222", "223", "224"];
+// 每秒获取所有房间的信息
+setInterval(() => {
+  roomIds.forEach(roomId => {
+    fetchRoomInfo(roomId);
+  });
+}, 1000000000000000000000000000000000);
+>>>>>>> a4b276adce1b4e2ccfefb3608669be0fcb9c6908
 
 // This code keeps track of the current date and time
 // const currentDate = ref(new Date());
@@ -239,11 +359,11 @@ const submitForm = async (_formName) => {
 //   currentDate.value = new Date();
 // }, 1000);
 
-const radioValue = ref('cold'); // 初始化为默认值
-const minTemperature = ref('');
-const maxTemperature = ref('');
-const defaultTemperature = ref('');
-const rate = ref('');
+const radioValue = ref("cold"); // 初始化为默认值
+const minTemperature = ref("");
+const maxTemperature = ref("");
+const defaultTemperature = ref("");
+const rate = ref("");
 const sendDataToBackend = () => {
   // 收集输入框中的数据
   const dataToSend = {
@@ -256,23 +376,22 @@ const sendDataToBackend = () => {
   };
 
   // 使用 fetch 或 Axios 将数据发送到后端（这是一个假设的函数）
-  fetch('你的后端接口地址', {
-    method: 'POST',
+  fetch("你的后端接口地址", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json'
+      "Content-Type": "application/json"
     },
     body: JSON.stringify(dataToSend)
   })
     .then(response => {
       // 处理来自后端的响应
-      console.log('服务器返回的响应:', response);
+      console.log("服务器返回的响应:", response);
     })
     .catch(error => {
       // 处理发送数据时的错误
-      console.error('发送数据时出现错误:', error);
+      console.error("发送数据时出现错误:", error);
     });
-}
-
+};
 </script>
 
 <style lang="scss">
@@ -311,7 +430,7 @@ const sendDataToBackend = () => {
   /* 增大字体大小 */
   color: #17547c;
   /* 改变字体颜色 */
-  font-family: 'Courier New', Courier, monospace;
+  font-family: "Courier New", Courier, monospace;
   /* 改变字体 */
   font-weight: 700;
   /* 增大字重 */
@@ -376,7 +495,7 @@ const sendDataToBackend = () => {
   /* 增大字体大小 */
   color: #050505;
   /* 改变字体颜色为白色 */
-  font-family: 'Courier New', Courier, monospace;
+  font-family: "Courier New", Courier, monospace;
   /* 改变字体 */
   font-weight: 700;
   /* 增大字重 */
@@ -386,12 +505,11 @@ const sendDataToBackend = () => {
   /* 添加内边距 */
 }
 
-
 /* 按钮样式 */
 .button {
   padding: 8px 8px;
   border-radius: 5px;
-  background-color: #007BFF;
+  background-color: #007bff;
   color: #a01818;
   transition: background-color 0.3s ease;
   /* 添加背景色过渡效果 */
@@ -427,7 +545,6 @@ const sendDataToBackend = () => {
     width: 40%;
     /* 设置标签宽度 */
   }
-
 
   .el-form-item__content {
     font-size: 30px;
