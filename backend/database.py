@@ -43,15 +43,15 @@ class Order(db.Model):
         return self.__str__()
 
 
-def add_to_detail(room_id, star_time=datetime.datetime.now(), end_time=0, speed='mid', fee=0,
-                  time_used=0, target_temp=25):
+def add_to_detail(room_id, start_time=datetime.datetime.now(), end_time=0, speed='mid', fee=0,
+                  times_used=0, target_temp=25):
     with app.app_context():
         db.session.add(Detail(room_id=room_id,
-                              star_time=star_time,
+                              start_time=start_time,
                               end_time=end_time,
                               speed=speed,
                               fee=fee,
-                              time_used=time_used,
+                              times_used=times_used,
                               target_temp=target_temp))
         db.session.commit()
 
