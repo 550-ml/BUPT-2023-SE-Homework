@@ -18,30 +18,34 @@
                       <p>空调模式: {{ room.mode }}</p>
                       <p>当前风速: {{ room.speed }}</p>
                       <p>当前温度: {{ room.currTemp }}</p>
-                      <p>扫风: {{ room.sweep }}</p>
-                      <el-button text class="button" @click="dialogVisible = true">操作</el-button>
+                      <el-button text class="button" @click="openDialog(room.roomId)">操作</el-button>
                     </div>
                   </div>
                 </el-card>
-                <el-dialog v-model="dialogVisible" title="设置空调状态" width="30%" :before-close="handleClose">
+                <el-dialog v-model="dialogVisible" title="设置空调状态" width="30%" :close-on-click-modal="false"
+                  :close-on-press-escape="false">
                   <el-form ref="form" :model="form" label-width="120px">
-                    <el-form-item label="操作">
-                      <el-select v-model="form.operation" placeholder="请选择">
-                        <el-option label="开始" value="start"></el-option>
-                        <el-option label="停止" value="stop"></el-option>
-                        <el-option label="温度" value="temperature"></el-option>
-                        <el-option label="风速" value="wind_speed"></el-option>
-                        <el-option label="模式" value="mode"></el-option>
-                      </el-select>
+                    <el-form-item label="空调状态设置">
+                      <el-radio-group v-model="startvalue" class="up_set_start">
+                        <el-radio label="1" value="1" border class="start_text">开启</el-radio>
+                        <el-radio label="0" value="0" border class="start_text">关闭</el-radio>
+                      </el-radio-group>
                     </el-form-item>
-                    <el-form-item label="数据">
-                      <el-input v-model="form.data"></el-input>
+                    <el-form-item label="目标温度(°C)">
+                      <el-input v-model="targetTemperature" type="number" placeholder="目标温度"></el-input>
+                    </el-form-item>
+                    <el-form-item label="风速设置">
+                      <el-select v-model="selectwindspeed" placeholder="风速选择" clearable>
+                        <el-option label="低风速" value="1" />
+                        <el-option label="中风速" value="2" />
+                        <el-option label="高风速" value="3" />
+                      </el-select>
                     </el-form-item>
                   </el-form>
                   <template #footer>
                     <span class="dialog-footer">
-                      <el-button @click="dialogVisible = false">取消</el-button>
-                      <el-button type="primary" @click="submitForm('form')">确定</el-button>
+                      <el-button @click="dialogVisible = false">取消操作</el-button>
+                      <el-button type="primary" @click="submitForm()">确定发送</el-button>
                     </span>
                   </template>
                 </el-dialog>
@@ -91,9 +95,9 @@
 
 
 <script lang="ts" setup>
-
+import api from "../main.ts";
 import { ref } from "vue";
-import { ElMessageBox } from 'element-plus';
+// import { ElMessageBox } from 'element-plus';
 import axios from 'axios';
 // 定义默认房间信息
 const roomIds = ['test', '223', '224', '222', '223'];
@@ -103,7 +107,6 @@ const roomsInfo = ref([
     is_on: '未开启',
     mode: '未开启',
     speed: '未开启',
-    sweep: '未开启',
     currTemp: '未开启',
   },
   {
@@ -111,7 +114,6 @@ const roomsInfo = ref([
     is_on: '未开启',
     mode: '未开启',
     speed: '未开启',
-    sweep: '未开启',
     currTemp: '未开启',
   },
   {
@@ -119,14 +121,13 @@ const roomsInfo = ref([
     is_on: '未开启',
     mode: '未开启',
     speed: '未开启',
-    sweep: '未开启',
     currTemp: '未开启',
-  }, {
+  },
+  {
     roomId: roomIds[3],
     is_on: '未开启',
     mode: '未开启',
     speed: '未开启',
-    sweep: '未开启',
     currTemp: '未开启',
   },
   {
@@ -134,7 +135,6 @@ const roomsInfo = ref([
     is_on: '未开启',
     mode: '未开启',
     speed: '未开启',
-    sweep: '未开启',
     currTemp: '未开启',
   }
 ])
@@ -151,14 +151,12 @@ const fetchRoomInfo = async (roomId) => {
           room.is_on = '已开启';
           room.mode = roomData.mode;
           room.speed = roomData.wind_speed;
-          room.sweep = roomData.sweep ? '是' : '否';
           room.currTemp = `${roomData.temperature}°C`;
         } else {
           room.is_on = '未开启';
           room.mode = '未开启';
           room.speed = '未开启';
-          room.sweep = '未开启';
-          room.currTemp = '未开启';
+          room.currTemp = `${roomData.temperature}°C`;
         }
         return room;
       }
@@ -172,9 +170,11 @@ const fetchRoomInfo = async (roomId) => {
 };
 // 向后端请求房间名称
 const GetroomName = async () => {
-  // const response = await axios.get('http://10.129.37.107:11451/api/status');
-  // const responseData = response.data;
-  const responseData = [{ room: 'test1', is_on: 0 }, { room: 'test2', is_on: 0 }, { room: 'test224', is_on: 0 }, { room: 'test225', is_on: 0 }, { room: '225', is_on: 0 }]
+  const response = await axios.get('http://10.129.37.107:11451/api/status');
+  const responseData = response.data;
+
+  // const responseData = [{ room: 'test1', is_on: 0 }, { room: 'test2', is_on: 0 }]
+  console.log(responseData);
   roomIds.splice(0, roomIds.length, ...responseData.map(room => room.room));
   console.log(roomIds); // 输出更新后的 roomIds 数组
   roomsInfo.value = responseData.map(room => ({
@@ -182,63 +182,57 @@ const GetroomName = async () => {
     is_on: room.is_on === 0 ? '否' : '是',
     mode: 'Cold',
     speed: 'Medium',
-    sweep: '是',
     currTemp: '20°C',
   }));
-  // setInterval(() => {
-  //   roomIds.forEach(roomId => {
-  //     fetchRoomInfo(roomId);
-  //   });
-  // }, 10000);
+  console.log(roomsInfo.value);
+  setInterval(() => {
+    roomIds.forEach(roomId => {
+      fetchRoomInfo(roomId);
+    });
+  }, 1000);
 };
+
+
+// 控制某一个房间信息
 const dialogVisible = ref(false);
-const form = ref({
-  operation: '',
-  data: '',
-});
-const handleClose = (done: () => void) => {
-  ElMessageBox.confirm('确定要关闭这个对话框吗？')
-    .then(() => {
-      done();
-    })
-    .catch(() => {
-      // catch error
-    });
+const startvalue = ref('0'); // 初始化为默认值
+const targetTemperature = ref('');
+const selectwindspeed = ref('');
+const selectedRoomId = ref('');
+const openDialog = (roomId) => {
+  selectedRoomId.value = roomId;
+  dialogVisible.value = true; // 打开对话框
+  console.log(selectedRoomId.value);
 };
-const submitForm = async (_formName) => {
-  const room = roomsInfo.value[0].roomId; // 你需要根据实际情况获取房间 ID
-  try {
-    const response = await axios.post(`/admin/devices/${room}`, {
-      operation: form.value.operation,
-      data: form.value.data,
-    });
-    if (response.status === 200) {
-      // 请求成功，处理响应数据
-      // ...
-    } else {
-      // 请求失败，处理错误
-      // ...
-    }
-  } catch (error) {
-    // 网络错误，处理错误
-    // ...
+const submitForm = () => {
+  // 收集输入框中的数据
+  let dataToSend = {
+    operation: "start, stop, temperature, wind_speed",
+    data: `${startvalue.value}, ${startvalue.value === '1' ? '0' : '1'}, ${targetTemperature.value}, ${selectwindspeed.value}`
+  };
+  if (startvalue.value === '1') {
+
+    dataToSend.data = '1,0,' + targetTemperature.value + ',' + selectwindspeed.value;
+  } else {
+    dataToSend.data = '0,1,' + targetTemperature.value + ',' + selectwindspeed.value;
   }
+  const jsonData = JSON.stringify(dataToSend);
+  console.log(jsonData);
+  api.post(`/admin/devices/${selectedRoomId.value}`, jsonData)
+    .then(response => {
+      // 处理请求成功的响应
+      console.log('POST 请求成功:', response);
+      // 这里可以根据返回的响应执行相应的逻辑
+    })
+    .catch(error => {
+      // 处理请求错误
+      console.error('POST 请求出错:', error);
+      // 这里可以根据错误执行相应的逻辑
+    });
 };
 
 
-
-
-// 假设你有一个包含所有房间ID的数组
-
-// // 每秒获取所有房间的信息
-
-
-// This code keeps track of the current date and time
-// const currentDate = ref(new Date());
-// setInterval(() => {
-//   currentDate.value = new Date();
-// }, 1000);
-
+// 以下是中央空调设置
 const radioValue = ref('cold'); // 初始化为默认值
 const minTemperature = ref('');
 const maxTemperature = ref('');

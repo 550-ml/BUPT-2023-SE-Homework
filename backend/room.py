@@ -7,7 +7,7 @@ from database import add_to_detail
 
 class Room(threading.Thread):
     def __init__(self, room_id, state, target, 
-                 state_lock: threading.Lock, write_lock: threading.Lock,  read_lock: threading.Lock,
+                 state_lock: threading.Lock, write_lock: threading.Lock,
                  **kwargs):
         super().__init__(**kwargs)
         self.power = False
@@ -30,7 +30,7 @@ class Room(threading.Thread):
         self.running_lock = threading.Lock()
         self.state_lock = state_lock
         self.write_lock = write_lock
-        self.read_lock = read_lock
+        # self.read_lock = read_lock
         self.change_flag = 0
 
     def __deepcopy__(self, memo):
@@ -66,7 +66,7 @@ class Room(threading.Thread):
         while self.running:
             self.running_lock.acquire()
             self.state_lock.acquire()
-            self.read_lock.acquire()
+            # self.read_lock.acquire()
 
             self.is_changed()
 
@@ -84,7 +84,7 @@ class Room(threading.Thread):
 
                 self.write_into_db(self.end_time)
 
-            self.read_lock.release()
+            # self.read_lock.release()
             self.state_lock.release()
             self.running_lock.release()
 

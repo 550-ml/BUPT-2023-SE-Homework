@@ -1,25 +1,33 @@
 <template>
-  <div class="login-container">
-    <el-form :model="form" label-width="120px" class="login-form">
-      <div class="title-container">
-        <h3 class="title">登录</h3>
+  <div class="hotel-management">
+    <div class="left-panel">
+      <h1 class="title">BUPT酒店管理系统</h1>
+      <!-- 其他内容 -->
+    </div>
+    <div class="right-panel">
+      <div class="login-container">
+        <el-form :model="form" label-width="120px" class="login-form">
+          <div class="title-container">
+            <h3 class="title">登录</h3>
+          </div>
+          <el-form-item>
+            <el-icon :size="20" class="svg-container icon-user">
+              <User />
+            </el-icon>
+            <el-input v-model="form.name" placeholder="Username" class="custom-input"></el-input>
+          </el-form-item>
+          <el-form-item>
+            <el-icon :size="20" class="svg-container icon-edit">
+              <Edit />
+            </el-icon>
+            <el-input v-model="form.password" placeholder="Password" class="custom-input" show-password></el-input>
+          </el-form-item>
+          <el-form-item>
+            <el-button class="login-button" type="primary" @click="login">登录</el-button>
+          </el-form-item>
+        </el-form>
       </div>
-      <el-form-item>
-        <el-icon :size="20" class="svg-container icon-user">
-          <User />
-        </el-icon>
-        <el-input v-model="form.name" placeholder="Username" class="custom-input"></el-input>
-      </el-form-item>
-      <el-form-item>
-        <el-icon :size="20" class="svg-container icon-edit">
-          <Edit />
-        </el-icon>
-        <el-input v-model="form.password" placeholder="Password" class="custom-input" show-password></el-input>
-      </el-form-item>
-      <el-form-item>
-        <el-button class="login-button" type="primary" @click="login">登录</el-button>
-      </el-form-item>
-    </el-form>
+    </div>
   </div>
 </template>
 
@@ -32,7 +40,8 @@ const form = ref({
 });
 import axios from "axios";
 import api from "../../main.ts";
-
+import { useRouter } from 'vue-router';
+const router = useRouter();
 const login = () => {
   const loginData = {
     username: form.value.name,
@@ -74,6 +83,29 @@ $bg: #2d3a4b;
 $dark_gray: #889aa4;
 $light_gray: #eee;
 $cursor: #fff;
+
+.hotel-management {
+  display: flex;
+  background-color: #f0f0f0;
+}
+
+.left-panel {
+  flex: 1;
+
+  padding: 20px;
+}
+
+.right-panel {
+  flex: 2;
+  /* 右侧内容的样式 */
+}
+
+.title {
+  font-size: 36px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20px;
+}
 
 .login-container {
   min-height: 100%;

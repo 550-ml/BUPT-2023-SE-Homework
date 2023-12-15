@@ -20,7 +20,7 @@ class Scheduler:
         self.RR_SLOT = 120
 
         self.state_lock = {}
-        self.read_lock = {}
+        # self.read_lock = {}
         self.write_lock = threading.Lock()
         self.recover_lock = threading.Lock()
 
@@ -29,7 +29,7 @@ class Scheduler:
             self.state_lock[room_id] = threading.Lock()
             self.read_lock[room_id] = threading.Lock()
             room = Room(room_id, 'INIT', self.central_ac.service, 
-                        self.state_lock[room_id], self.write_lock, self.read_lock[room_id])
+                        self.state_lock[room_id], self.write_lock)
             self.room_threads[room_id] = room
 
             add_to_order(room_id)
@@ -45,7 +45,7 @@ class Scheduler:
         return available_room_ids
     
     def get_room_message(self, room_id): 
-        self.read_lock[room_id].acquire()
+        # self.read_lock[room_id].acquire()
         self.recover_lock.acquire()
         room_message = {
             'room': self.room_threads[room_id].room_id,
@@ -56,7 +56,7 @@ class Scheduler:
             'is_ruzu': True
         }
         self.recover_lock.release()
-        self.read_lock[room_id].release()
+        # self.read_lock[room_id].release()
         return room_message
 
     def set_room_initial_env_temp(self, room_ids: list, initial_env_temp: list):
@@ -76,6 +76,7 @@ class Scheduler:
             self.room_threads[room_id].current_speed = target_speed
             self.room_threads[room_id].target_temp = target_temp
             self.room_threads[room_id].target_speed = target_speed
+            self.queues.pop_off_queue(room_id)
             self.queues.add_into_ready_queue(room_id, room_priority)
             return 'on'
         else:
@@ -88,6 +89,7 @@ class Scheduler:
                 self.room_threads[room_id].state = 'FINISH'
                 self.room_threads[room_id].power = False
                 self.queues.pop_service_by_room_id(room_id)
+                self.queues.add_into_off_queue(room_id)
                 return 'off_remove_from_running'
 
     def deal_with_speed_temp_change(self, room_id, target_temp, target_speed):
@@ -113,8 +115,14 @@ class Scheduler:
     def schedule(self):
         while 1:
             # recover temp
-            ready_to_recover_in_ready = self.queues.get_all_rooms_from_ready_queue
-            ready_to_recover_in_suspend = self.queues.get_all_rooms_from_suspend_queue
+            read_to_recover_in_off = self.queues.get_all_rooms_from_off_queue()
+            ready_to_recover_in_ready = self.queues.get_all_rooms_from_ready_queue()
+            ready_to_recover_in_suspend = self.queues.get_all_rooms_from_suspend_queue()
+            if read_to_recover_in_off:
+                self.recover_lock.acquire()
+                for room_id in read_to_recover_in_off:
+                    recover_temp(copy.deepcopy(self.room_threads[room_id]))
+                self.recover_lock.release()
             if ready_to_recover_in_ready:
                 self.recover_lock.acquire()
                 for room_id in ready_to_recover_in_ready:
