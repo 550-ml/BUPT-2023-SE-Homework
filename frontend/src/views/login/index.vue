@@ -31,6 +31,7 @@ const form = ref({
   password: ""
 });
 import axios from "axios";
+import api from "../../main.ts";
 
 const login = () => {
   const loginData = {
@@ -38,26 +39,31 @@ const login = () => {
     password: form.value.password
   };
   const jsonData = JSON.stringify(loginData);
-  axios.post("http://10.129.37.107:11451/api/login", jsonData)
+
+  api.post("/login", jsonData)
     .then(response => {
-      // 处理后端返回的数据
-      const { error, role } = response.data;
-      if (!error) {
-        // username
-        // role
-        // 登录成功，处理角色信息
-        console.log("登录成功，角色是:", role);
-        // 可以将角色信息存储在前端，进行后续操作
-      } else {
-        // 登录失败，处理错误信息
-        console.error("登录失败");
-        // 可以根据错误信息给用户相应提示
+      const { username, role } = response.data;
+      console.log("登录成功，角色是:", role);
+
+      // 根据角色进行页面跳转
+      switch (role) {
+        case 'manager':
+          router.push('/manager'); // 跳转到经理仪表盘页面
+          break;
+        case 'checkout':
+          router.push('/check'); // 跳转到结账仪表盘页面
+          break;
+        case 'AC admin':
+          router.push('/airconditionermanage'); // 跳转到空调管理员仪表盘页面
+          break;
+        default:
+          router.push('/airconditionermanage'); // 跳转到默认仪表盘页面，处理其他角色
+          break;
       }
     })
     .catch(error => {
-      // 处理网络请求失败等情况
       console.error("登录失败", error);
-      // 可以显示一般性错误信息给用户
+      // 处理登录失败的情况
     });
 };
 </script>
