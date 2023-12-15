@@ -27,7 +27,7 @@ class Scheduler:
     def add_room(self, room_ids: list):
         for room_id in room_ids:
             self.state_lock[room_id] = threading.Lock()
-            self.read_lock[room_id] = threading.Lock()
+            # self.read_lock[room_id] = threading.Lock()
             room = Room(room_id, 'INIT', self.central_ac.service, 
                         self.state_lock[room_id], self.write_lock)
             self.room_threads[room_id] = room
