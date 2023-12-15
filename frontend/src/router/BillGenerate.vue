@@ -39,6 +39,7 @@
         <button class="bg-blue-500 text-white py-2 px-4 rounded item-center" @click="cancelSearch">返回房间列表</button>
       </div>
     </div>
+
     <div v-else>
       <div class="flex justify-center">
         <div v-if="activeTab === 'tab1'" class="mt-4 w-1/2">
@@ -51,7 +52,7 @@
               >
                 <td>{{ deviceId }}</td>
                 <td>
-                  <button class="bg-blue-500 text-white py-2 px-4 rounded item-center" @click="checkIn(deviceId)">
+                  <button class="bg-blue-500 text-white py-2 px-4 rounded item-center" @click="openCheckIn">
                     入住
                   </button>
                 </td>
@@ -93,7 +94,22 @@
   </div>
 
   <div v-if="isCheckInOpen" class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
-    <div class="bg-white p-6 rounded shadow-md">
+    <div v-if="isUnCheckIn" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+      <div class="bg-white p-8 max-w-md rounded shadow-md">
+        <input
+          v-model="initTemperature"
+          class="p-2 border border-gray-300 rounded w-full mb-4"
+          placeholder="请输入默认温度"
+        />
+        <div class="flex justify-end">
+          <button @click="checkIn(roomId, initTemperature)" class="bg-blue-500 text-white py-2 px-4 rounded mr-2">
+            入住
+          </button>
+          <button @click="closeCheckIn" class="bg-gray-300 text-gray-700 py-2 px-4 rounded">取消</button>
+        </div>
+      </div>
+    </div>
+    <div v-else class="bg-white p-6 rounded shadow-md">
       <h2>入住成功！</h2>
       <button @click="closeCheckIn" class="mt-4 bg-blue-500 text-white py-2 px-4 rounded">返回</button>
     </div>
@@ -113,7 +129,7 @@
 </template>
 
 <script>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onUpdated } from "vue";
 import RoomStates from "../components/RoomState.vue";
 import axios from "axios";
 import api from "../main.ts";
@@ -125,6 +141,7 @@ export default {
   setup() {
     const searchTerm = ref("");
     const searchedDeviceData = ref(null);
+    const isUnCheckIn = ref(true);
     const isCheckInOpen = ref(false);
     const isCheckOutOpen = ref(false);
     const isDetailedOrderOpen = ref(false);
@@ -132,6 +149,7 @@ export default {
     const allDevices = ref([]);
     const allUnCheckedDevices = ref([]);
     const roomId = ref(null);
+    const initTemperature = ref(0);
 
     const executeSearch = () => {
       // if (!searchTerm.value) {
@@ -163,6 +181,7 @@ export default {
 
     const closeCheckIn = () => {
       isCheckInOpen.value = false;
+      isUnCheckIn.value = true;
     };
 
     const openCheckOut = () => {
@@ -184,6 +203,7 @@ export default {
     };
 
     const getAllUnCheckedDevices = async () => {
+      // allDevices.value = ["1-102", "2-202", "4-412"];
       try {
         const response = await api.get("/admin/uncheck_in", {
           headers: {
@@ -192,13 +212,13 @@ export default {
         });
 
         allUnCheckedDevices.value = response.data;
-        // allDevices.value = ["1-101", "2-203", "4-416"];
       } catch (error) {
         console.error("Failed to get devices:", error.response.data);
       }
     };
 
     const getAllDevices = async () => {
+      // allDevices.value = ["1-101", "2-203", "4-416"];
       try {
         const response = await api.get("/admin/devices", {
           headers: {
@@ -207,14 +227,14 @@ export default {
         });
 
         allDevices.value = response.data;
-        // allDevices.value = ["1-101", "2-203", "4-416"];
       } catch (error) {
         console.error("Failed to get devices:", error.response.data);
       }
     };
 
-    const checkIn = async roomId => {
-      openCheckIn();
+    const checkIn = async (roomId, initTemperature) => {
+      isUnCheckIn.value = false;
+      console.log(initTemperature.value); // 输出温度值F
       try {
         const response = await api.post(
           "/room/check_in",
@@ -263,12 +283,14 @@ export default {
 
     onMounted(() => {
       getAllDevices();
+      getAllUnCheckedDevices();
     });
 
     return {
       // errorMessage,
       searchTerm,
       searchedDeviceData,
+      isUnCheckIn,
       isCheckInOpen,
       isCheckOutOpen,
       isDetailedOrderOpen,
