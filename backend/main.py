@@ -225,11 +225,11 @@ curl.exe -v -X post -d '{"operation":"start, stop, temperature, wind_speed", "da
             power = room.power
 
     # try:
+    print("请求的开关机", bool(int(start)))
+    print("房间当前的开关机", power)
     if bool(int(start)) == bool(power) and bool(start):
         print("更改风速温度")
-        if start == '1':
-            start = 'ON'
-        scheduler.deal_with_speed_temp_change(room_id, target_temp, wind_speed)
+        scheduler.deal_with_speed_temp_change(room_id, int(target_temp), wind_speed)
 
         #control_client(room_id, True, target_temp, wind_speed)
     else:
@@ -238,7 +238,7 @@ curl.exe -v -X post -d '{"operation":"start, stop, temperature, wind_speed", "da
             print(room_id, "开机")
         else:
             print(room_id, "关机")
-        scheduler.deal_with_on_and_off(room_id, target_temp, wind_speed, start)
+        scheduler.deal_with_on_and_off(room_id, int(target_temp), wind_speed, start)
 
         #control_client(room_id, False, target_temp, wind_speed)
 
@@ -276,10 +276,10 @@ curl.exe -v -X get http://localhost:11451/api/status/test?no-csrf
         #     print(json)
         #     return json, 200
     speed_to_num = {'HIGH': 3, 'MID': 2, 'LOW': 1}
-
+    print(room_id)
+    print(scheduler.room_threads.keys())
     room_message = scheduler.get_room_message(room_id)
-    room_message['wind_speed'] = speed_to_num[room_message['wind_speed']]
-    if room_message["temperature"] == None:
+    if room_message["wind_speed"] == None:
         init_temp = room_temp[room_id]
         room_message = {
             'room': room_id,
@@ -290,6 +290,8 @@ curl.exe -v -X get http://localhost:11451/api/status/test?no-csrf
             'is_on': False,
             'is_ruzhu': False
         }
+    else:
+        room_message['wind_speed'] = speed_to_num[room_message['wind_speed']]
     json = jsonify(room_message)
     print(json)
     return json, 200
@@ -338,6 +340,8 @@ curl.exe -v -X POST -d '{"room": "test"}' http://localhost:11451/api/room/check_
     print(request.path, " : ", params)
     room = params['room']
     temp = params['temperature']
+    print(temp)
+    temp = int(temp)
 
     if room not in room_temp.keys():
         room_temp[room] = temp
@@ -607,13 +611,15 @@ if __name__ == '__main__':
 调试：
 http://localhost:11451/__debugger__/683-942-319
 开房test
-curl.exe -v -X POST -d '{"room": "test"}' http://localhost:11451/api/room/check_in?no-csrf
+curl.exe -v -X POST -d '{"room": "test", "temperature": 30}' http://localhost:11451/api/room/check_in?no-csrf
 客户端更改状态：开机
 curl.exe -v -X POST -d '{"room_id": "test", "operation": "start, stop, temperature, wind_speed, mode", "data": "1, 0, 16, 3, cold", "time": "2023-09-18T11:45:14+08:0", "unique_id": "1145141919810abc", "signature": "SHA256withRSA"}' http://localhost:11451/api/device/client/test?no-csrf
 关机
 curl.exe -v -X POST -d '{"room_id": "test", "operation": "start, stop, temperature, wind_speed, mode", "data": "0, 1, 16, 3, cold", "time": "2023-09-18T11:45:14+08:0", "unique_id": "1145141919810abc", "signature": "SHA256withRSA"}' http://localhost:11451/api/device/client/test?no-csrf
 
-管理员更改装状态
-curl.exe -v -X post -d '{"operation":"start, stop, temperature, wind_speed", "data":"1, 0, 23, 3"}' http://localhost:11451/api/admin/devices/test?no-csrf
-123123123
+管理员开机
+curl.exe -v -X post -d '{"operation":"start, stop, temperature, wind_speed", "data":"1, 0, 18, 3"}' http://localhost:11451/api/admin/devices/test?no-csrf
+管理员关机
+curl.exe -v -X post -d '{"operation":"start, stop, temperature, wind_speed", "data":"0, 1, 18, 3"}' http://localhost:11451/api/admin/devices/test?no-csrf
+
 """
