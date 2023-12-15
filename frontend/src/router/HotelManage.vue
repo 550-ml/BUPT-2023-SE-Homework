@@ -50,7 +50,7 @@
 
   <div v-if="isDeleteOpen" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
     <div class="bg-white p-8 max-w-md rounded shadow-md">
-      <h2 class="text-2xl font-bold mb-4">添加房间</h2>
+      <h2 class="text-2xl font-bold mb-4">删除房间</h2>
 
       <!-- 输入框 -->
       <input
@@ -80,7 +80,7 @@ export default {
     const allDevices = ref([]);
     const roomId = ref(null);
     const csrfToken = ref("abcde12345"); // 替换为实际的 CSRF token
-    const requestData = ref(null);
+    // const requestData = ref(null);
     const roomToAdd = ref("");
     const roomToDelete = ref("");
 
@@ -131,37 +131,38 @@ export default {
 
     // 添加房间
     const addRoom = async () => {
-      requestData.room = roomToAdd.value;
-      requestData.public_key = "";
-      console.log(requestData);
-      const jsonData = JSON.stringify(requestData);
-      console.log(jsonData);
       try {
-        const response = await api.put("/admin/device", jsonData, {
+        const response = await api.request({
+          url: "/admin/device",
+          method: "put",
+          data: {
+            room: roomToAdd.value,
+            public_key: ""
+          },
           headers: {
             "X-CSRF-Token": csrfToken.value
           }
         });
-        const addedDevice = response.data;
-        console.log("添加设备成功:", addedDevice);
         closeAdd(); // 添加成功后关闭对话框
       } catch (error) {
         console.error("添加设备失败:", error.response.data);
       }
+      // requestData = ref(null);
     };
 
     const deleteRoom = async () => {
       try {
-        await api.delete("/admin/device", {
-          headers: {
-            "X-CSRF-Token": csrfToken.value
-          },
+        const response = await api.request({
+          url: "/admin/device",
+          method: "delete",
           data: {
             room: roomToDelete.value
+          },
+          headers: {
+            "X-CSRF-Token": csrfToken.value
           }
         });
-
-        console.log("删除设备成功");
+        closeAdd(); // 添加成功后关闭对话框
       } catch (error) {
         console.error("删除设备失败:", error.response.data);
       }
