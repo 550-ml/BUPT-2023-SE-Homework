@@ -11,8 +11,9 @@ class Room(threading.Thread):
         self.power = False
         self.room_id = room_id
         self.state = state
-        self.initial_env_temp = None
-        self.current_temp = None
+        # need to change
+        self.initial_env_temp = 25
+        self.current_temp = 25
         self.current_speed = None
         self.target_temp = None
         self.target_speed = None
