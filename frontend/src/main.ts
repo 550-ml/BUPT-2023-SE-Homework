@@ -1,4 +1,6 @@
 import { createApp } from "vue";
+import ElementPlus from 'element-plus'
+import 'element-plus/dist/index.css'
 import "./style.css";
 import App from "./App.vue";
 // import router from "./router/router.ts";
@@ -58,5 +60,5 @@ export default api;
 const app = createApp(App);
 // 导入style 文件
 import "./styles/index.scss";
-
+app.use(ElementPlus)
 app.use(router).mount("#app");

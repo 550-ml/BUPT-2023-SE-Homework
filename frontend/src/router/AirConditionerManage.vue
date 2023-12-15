@@ -24,7 +24,7 @@
                 </el-card>
                 <el-dialog v-model="dialogVisible" title="设置空调状态" width="30%" :close-on-click-modal="false"
                   :close-on-press-escape="false">
-                  <el-form ref="form" :model="form" label-width="120px">
+                  <el-form ref="form" label-width="120px">
                     <el-form-item label="空调状态设置">
                       <el-radio-group v-model="startvalue" class="up_set_start">
                         <el-radio label="1" value="1" border class="start_text">开启</el-radio>
@@ -45,7 +45,7 @@
                   <template #footer>
                     <span class="dialog-footer">
                       <el-button @click="dialogVisible = false">取消操作</el-button>
-                      <el-button type="primary" @click="submitForm()">确定发送</el-button>
+                      <el-button type="primary" @click="submitForm">确定发送</el-button>
                     </span>
                   </template>
                 </el-dialog>
@@ -97,7 +97,7 @@
 <script lang="ts" setup>
 import api from "../main.ts";
 import { ref } from "vue";
-// import { ElMessageBox } from 'element-plus';
+import { ElMessage } from 'element-plus'
 import axios from 'axios';
 // 定义默认房间信息
 const roomIds = ['test', '223', '224', '222', '223'];
@@ -151,12 +151,12 @@ const fetchRoomInfo = async (roomId) => {
           room.is_on = '已开启';
           room.mode = roomData.mode;
           room.speed = roomData.wind_speed;
-          room.currTemp = `${roomData.temperature}°C`;
+          room.currTemp = `${roomData.temperature.toFixed(3)}°C`;
         } else {
           room.is_on = '未开启';
           room.mode = '未开启';
           room.speed = '未开启';
-          room.currTemp = `${roomData.temperature}°C`;
+          room.currTemp = `${roomData.temperature.toFixed(3)}°C`;
         }
         return room;
       }
@@ -166,6 +166,10 @@ const fetchRoomInfo = async (roomId) => {
 
   } catch (error) {
     console.error('获取房间信息时出错:', error);
+    ElMessage({
+      message: `获取房间${roomId}信息时出错`,
+      type: 'error',
+    })
   }
 };
 // 向后端请求房间名称
@@ -180,11 +184,15 @@ const GetroomName = async () => {
   roomsInfo.value = responseData.map(room => ({
     roomId: room.room,
     is_on: room.is_on === 0 ? '否' : '是',
-    mode: 'Cold',
-    speed: 'Medium',
-    currTemp: '20°C',
+    mode: '未开启',
+    speed: '未开启',
+    currTemp: '未开启',
   }));
   console.log(roomsInfo.value);
+  ElMessage({
+    message: '房间加载成功',
+    type: 'success',
+  })
   setInterval(() => {
     roomIds.forEach(roomId => {
       fetchRoomInfo(roomId);
@@ -199,12 +207,18 @@ const startvalue = ref('0'); // 初始化为默认值
 const targetTemperature = ref('');
 const selectwindspeed = ref('');
 const selectedRoomId = ref('');
+
 const openDialog = (roomId) => {
   selectedRoomId.value = roomId;
   dialogVisible.value = true; // 打开对话框
+  ElMessage({
+    message: `设置${selectedRoomId.value}房间状态`,
+    type: 'success',
+  })
   console.log(selectedRoomId.value);
 };
 const submitForm = () => {
+
   // 收集输入框中的数据
   let dataToSend = {
     operation: "start, stop, temperature, wind_speed",
@@ -221,11 +235,19 @@ const submitForm = () => {
   api.post(`/admin/devices/${selectedRoomId.value}`, jsonData)
     .then(response => {
       // 处理请求成功的响应
+      ElMessage({
+        message: '空调设置成功',
+        type: 'success',
+      })
       console.log('POST 请求成功:', response);
       // 这里可以根据返回的响应执行相应的逻辑
     })
     .catch(error => {
       // 处理请求错误
+      ElMessage({
+        message: '空调设置失败',
+        type: 'error',
+      })
       console.error('POST 请求出错:', error);
       // 这里可以根据错误执行相应的逻辑
     });
