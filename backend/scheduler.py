@@ -120,8 +120,8 @@ class Scheduler:
             if read_to_recover_in_off:
                 # self.recover_lock.acquire()
                 for room_id in read_to_recover_in_off:
-                    recover_temp(copy.deepcopy(self.room_threads[room_id]))
-                    # recover_temp(self.room_threads[room_id])
+                    # recover_temp(copy.deepcopy(self.room_threads[room_id]))
+                    recover_temp(self.room_threads[room_id])
                     # print(self.room_threads['test'].current_temp)
                 # self.recover_lock.release()
             if ready_to_recover_in_ready:
@@ -134,7 +134,6 @@ class Scheduler:
                 for room_id in ready_to_recover_in_suspend:
                     recover_temp(copy.deepcopy(self.room_threads[room_id]))
                 # self.recover_lock.release()
-
 
             # if room's current_temp <= target_temp, pop running_queue and add into suspend_queue
             for room in self.room_threads.values():
