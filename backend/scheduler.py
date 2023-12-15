@@ -122,7 +122,9 @@ class Scheduler:
             if read_to_recover_in_off:
                 self.recover_lock.acquire()
                 for room_id in read_to_recover_in_off:
+                    print(1)
                     recover_temp(copy.deepcopy(self.room_threads[room_id]))
+                    print(2)
                 self.recover_lock.release()
             if ready_to_recover_in_ready:
                 self.recover_lock.acquire()
