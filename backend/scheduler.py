@@ -46,7 +46,6 @@ class Scheduler:
     
     def get_room_message(self, room_id): 
         # self.read_lock[room_id].acquire()
-        self.recover_lock.acquire()
         room_message = {
             'room': self.room_threads[room_id].room_id,
             'temperature': self.room_threads[room_id].current_temp,
@@ -55,7 +54,7 @@ class Scheduler:
             'is_on': self.room_threads[room_id].power,
             'is_ruzu': True
         }
-        self.recover_lock.release()
+        # self.recover_lock.release()
         # self.read_lock[room_id].release()
         return room_message
 
@@ -119,20 +118,20 @@ class Scheduler:
             ready_to_recover_in_ready = self.queues.get_all_rooms_from_ready_queue()
             ready_to_recover_in_suspend = self.queues.get_all_rooms_from_suspend_queue()
             if read_to_recover_in_off:
-                self.recover_lock.acquire()
+                # self.recover_lock.acquire()
                 for room_id in read_to_recover_in_off:
                     recover_temp(copy.deepcopy(self.room_threads[room_id]))
-                self.recover_lock.release()
+                # self.recover_lock.release()
             if ready_to_recover_in_ready:
-                self.recover_lock.acquire()
+                # self.recover_lock.acquire()
                 for room_id in ready_to_recover_in_ready:
                     recover_temp(copy.deepcopy(self.room_threads[room_id]))
-                self.recover_lock.release()
+                # self.recover_lock.release()
             if ready_to_recover_in_suspend:
-                self.recover_lock.acquire()
+                # self.recover_lock.acquire()
                 for room_id in ready_to_recover_in_suspend:
                     recover_temp(copy.deepcopy(self.room_threads[room_id]))
-                self.recover_lock.release()
+                # self.recover_lock.release()
 
 
             # if room's current_temp <= target_temp, pop running_queue and add into suspend_queue
