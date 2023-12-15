@@ -19,7 +19,7 @@ client_state = {
 #def hello():
 #    return 'Hello'
 # 处理服务器更改客户端状态请求
-@app.route('/control', methods=['POST'])
+@app.route('/api/control', methods=['POST'])
 def control_device(data):
     data = request.json
     # 处理服务器更改客户端状态请求
