@@ -113,8 +113,8 @@ class Scheduler:
     def schedule(self):
         while 1:
             # recover temp
-            ready_to_recover_in_ready = self.queues.get_all_rooms_from_ready_queue
-            ready_to_recover_in_suspend = self.queues.get_all_rooms_from_suspend_queue
+            ready_to_recover_in_ready = self.queues.get_all_rooms_from_ready_queue()
+            ready_to_recover_in_suspend = self.queues.get_all_rooms_from_suspend_queue()
             if ready_to_recover_in_ready:
                 self.recover_lock.acquire()
                 for room_id in ready_to_recover_in_ready:

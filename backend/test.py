@@ -10,5 +10,11 @@
 
 # scheduler.schedule
 
-a = []
-print(not a)
+a = [1, 2, 3]
+
+def get():
+    if not a:
+        return False
+    return [item for item in a]
+
+b = get()
