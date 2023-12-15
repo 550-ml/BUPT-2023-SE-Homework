@@ -19,21 +19,20 @@ class CentralAc:
         self.default_temp = default_temp
         self.default_speed = default_speed
 
-    def service(self, current_temp, target_temp, target_speed, total_cost, count):
-        time.sleep(0.01)
-        count += 0.01
-        print(target_speed)
-        current_temp = self.update_temperature(current_temp, target_temp, target_speed)
-        total_cost = self.update_cost(total_cost, target_speed)
+    def service(self, on_temp, target_temp, target_speed, total_cost, start_time):
+        duration = (datetime.now() - start_time).total_seconds()
+        current_temp = self.update_temperature(on_temp, target_temp, target_speed, duration)
+        total_cost = self.update_cost(total_cost, target_speed, duration)
 
-        return current_temp, total_cost, count
+        return current_temp, total_cost
 
-    def update_temperature(self, current_temp, target_temp, target_speed):
-        temp = current_temp - self.temperature_change_rate[target_speed] / 60 * 0.01
-        if temp >= target_temp:
-            current_temp = temp
-        return current_temp
+    def update_temperature(self, on_temp, target_temp, target_speed, duration):
+        current_temp = on_temp - self.temperature_change_rate[target_speed] / 60 * duration
+        if current_temp >= target_temp:
+            return current_temp
+        else:
+            return target_temp
 
-    def update_cost(self, total_cost, target_speed):
-        total_cost += self.fee_rate * self.power_rate[target_speed] / 60 * 0.01
+    def update_cost(self, total_cost, target_speed, duration):
+        total_cost += self.fee_rate * self.power_rate[target_speed] / 60 * duration
         return total_cost
