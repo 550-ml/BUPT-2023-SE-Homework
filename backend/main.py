@@ -18,6 +18,13 @@ scheduler = Scheduler(central_ac)
 
 t = Thread(target=scheduler.schedule)
 
+rooms_ip = [{
+    "room": "test",
+    "port": "",
+    "ip": ""
+}]
+
+
 
 # 登录
 @app.route('/api/login', methods=['POST'])
@@ -97,6 +104,11 @@ curl.exe -v -X put -d '{"room":"test", "public_key":"RSA 4096"}' http://localhos
 
     try:
         weiruzhu.append(room)
+        rooms_ip.append({
+            "room": room,
+            "port": "",
+            "ip": ""
+        })
         print(weiruzhu)
         return jsonify({'room': room}), 200
     except:
@@ -124,6 +136,7 @@ curl.exe -v -X delete -d '{"room":"test"}' http://localhost:11451/api/admin/devi
         if room in weiruzhu:
             weiruzhu.remove(room)
             print(f"未入住'{room}' 已删除")
+            rooms_ip = [room_info for room_info in rooms_ip if room_info["room"] != room]
             print(weiruzhu)
             return jsonify({'room': room}), 200
         elif room in scheduler.room_threads:
@@ -171,7 +184,7 @@ def control_device(room_id):
 
     operation:
           type: string
-          example:  'start, stop, temperature, wind_speed, mode, sweep不要了'
+          example:  'start, stop, temperature, wind_speed, mode,'
     data:
           type: string
           example: 26   # different for operations
@@ -181,12 +194,14 @@ def control_device(room_id):
 
 curl.exe -v -X post -d '{"operation":"start, stop, temperature, wind_speed", "data":"1, 0, 23, 3"}' http://localhost:11451/api/admin/devices/test?no-csrf
     """
+    if room_id not in scheduler.room_threads.keys():
+        print("该房间不存在")
+        return jsonify({'error_code': 100}), 401
     params = request.get_json(force=True)
     print(request.path, " : ", params)
 
     operation = params['operation']
     data = params['data']
-    # 数据元素是字符串，还未转换
 
     operations = [element.strip() for element in operation.split(',')]
     datas = [datas.strip() for datas in data.split(',')]
@@ -196,31 +211,39 @@ curl.exe -v -X post -d '{"operation":"start, stop, temperature, wind_speed", "da
     target_temp = operation_data.get('temperature')
     wind_speed = operation_data.get('wind_speed')
 
-    # 这里需要注意一下
-    if wind_speed == 3:
+    if wind_speed == '3':
         wind_speed = 'HIGH'
-    elif wind_speed == 2:
+    elif wind_speed == '2':
         wind_speed = 'MID'
-    elif wind_speed == 1:
+    elif wind_speed == '1':
         wind_speed = 'LOW'
 
-    for room in scheduler.room_threads:
+    power = True
+    for room in scheduler.room_threads.values():
         if room.room_id == room_id:
             power = room.power
 
-    try:
-        if bool(start) == bool(power) == True:
-            scheduler.deal_with_speed_temp_change(room_id, target_temp, wind_speed)
+    # try:
+    if bool(int(start)) == bool(power) and bool(start):
+        print("更改风速温度")
+        if start == '1':
+            start = 'ON'
+        scheduler.deal_with_speed_temp_change(room_id, target_temp, wind_speed)
 
-            control_client(True, target_temp, wind_speed)
+        control_client(room_id, True, target_temp, wind_speed)
+    else:
+        if start == '1':
+            start = 'ON'
+            print(room_id, "开机")
         else:
-            scheduler.deal_with_on_and_off(room_id, target_temp, wind_speed, start)
+            print(room_id, "关机")
+        scheduler.deal_with_on_and_off(room_id, target_temp, wind_speed, start)
 
-            control_client(False, target_temp, wind_speed)
+        control_client(room_id, False, target_temp, wind_speed)
 
-        return jsonify({'room': room_id}), 200
-    except:
-        return jsonify({'error_code': 100}), 401
+    return jsonify({'room': room_id}), 200
+    # except:
+    #     return jsonify({'error_code': 100}), 401
 
 
 # 对某一房间进行状态查询
@@ -235,54 +258,29 @@ def get_one_status(room_id):
             401
 curl.exe -v -X get http://localhost:11451/api/status/test?no-csrf
     """
-    # params = request.get_json(force=True)
-    # print(request.path, " : ", params)
-    # public_key = params['public_key']
 
-    try:
-        if room_id in weiruzhu:
-            json = jsonify({
-                'room': room_id,
-                'temperature': 25,
-                'wind_speed': 2,
-                'mode': 'cold',
-                # 'sweep': sweep,
-                'is_on': False,
-                'is_ruzhu': False
-            })
-            print(json)
-            return json, 200
+    # try:
+        # if room_id in weiruzhu:
+        #     json = jsonify({
+        #         'room': room_id,
+        #         'temperature': 25,
+        #         'wind_speed': 2,
+        #         'mode': 'cold',
+        #         # 'sweep': sweep,
+        #         'is_on': False,
+        #         'is_ruzhu': False
+        #     })
+        #     print(json)
+        #     return json, 200
+    speed_to_num = {'HIGH': 3, 'MID': 2, 'LOW': 1}
 
-        for room in scheduler.room_threads.values():
-            if room.room_id == room_id:
-                is_on = room.power
-                temperature = room.current_temp
-                wind_speed = room.current_speed
-
-                if wind_speed.low() == 'high':
-                    wind_speed = 3
-                elif wind_speed.low() == 'mid':
-                    wind_speed = 2
-                elif wind_speed.low() == 'low':
-                    wind_speed = 1
-
-                mode = 'cold'
-                sweep = room.running
-                # last_update =
-            json = jsonify({
-                'room': room_id,
-                'temperature': temperature,
-                'wind_speed': wind_speed,
-                'mode': mode,
-                # 'sweep': sweep,
-                'is_on': is_on,
-                # 'last_update': last_update，
-                'is_ruzhu': True
-            })
-            print(json)
-            return json, 200
-    except:
-        return jsonify({'error_code': 100}), 401
+    room_message = scheduler.get_room_message(room_id)
+    room_message['wind_speed'] = speed_to_num[room_message['wind_speed']]
+    json = jsonify(room_message)
+    print(json)
+    return json, 200
+    # except:
+    #     return jsonify({'error_code': 100}), 401
 
 
 # 获取所有房间开关信息
@@ -331,18 +329,18 @@ curl.exe -v -X POST -d '{"room": "test"}' http://localhost:11451/api/room/check_
         print('这房间您的管理员没加呢，不存在这房间号。')
         return jsonify({'error_code': 100}), 401
     else:
-        try:
-            rooms = []
-            rooms.append(room)
-            print(rooms)
-            scheduler.add_room(rooms)
-            json = jsonify('room', room)
-            weiruzhu.remove(room)
-            print("已入住")
-            print(weiruzhu)
-            return json, 200
-        except:
-            return jsonify({'error_code': 100}), 401
+        # try:
+        rooms = []
+        rooms.append(room)
+        print(rooms)
+        scheduler.add_room(rooms)
+        json = jsonify('room', room)
+        weiruzhu.remove(room)
+        print("已入住")
+        print(weiruzhu)
+        return json, 200
+        # except:
+        #     return jsonify({'error_code': 100}), 401
 
 
 # 退房
@@ -412,9 +410,6 @@ curl.exe -v -X POST -d '{"room": "test"}' http://localhost:11451/api/room/check_
 
 
 # 客户端连接
-port = ''
-client_ip = ''
-
 
 @app.route('/api/device/client', methods=['POST'])
 def client_connect():
@@ -444,12 +439,17 @@ curl.exe -v -X POST -d '{"room_id": "test"}' http://localhost:11451/api/device/c
     # else:
     #     return jsonify({'error_code': 100}), 401
 
+    for room_ip in rooms_ip:
+        if room_ip["room"] == room_id:
+            room_ip["port"] = port
+            room_ip["ip"] = client_ip
+
     return jsonify({"message": "succeed"}), 200
 
 
 # 服务器更改客户端状态
-@app.route('/api/control', methods=['POST'])
-def control_client(is_on: bool, target_temp, wind):
+#@app.route('/api/control', methods=['POST'])
+def control_client(room_id, is_on: bool, target_temp, wind):
     """
     send:
     operation   # start, stop, temperature, wind_speed, mode
@@ -457,8 +457,14 @@ def control_client(is_on: bool, target_temp, wind):
 
     :return: 204 401
     """
+    port = ''
+    client_ip = ''
+    for room_ip in rooms_ip:
+        if room_ip["room"] == room_id:
+            port = room_ip["port"]
+            client_ip = room_ip["ip"]
 
-    webhook_url = 'http://' + client_ip + ':' + port + '/api/admin/devices/test'  # 前端提供的Webhook URL
+    webhook_url = 'http://' + client_ip + ':' + port + '/api/control'  # 前端提供的Webhook URL
     operation = "start, stop, temperature, wind_speed, mode"
     data = str(is_on) + ',' + str(not is_on) + ',' + str(target_temp) + ',' + str(wind) + ',' + 'cold'
     json = {
@@ -523,17 +529,21 @@ curl.exe -v -X POST -d '{"room_id": "test", "operation": "start, stop, temperatu
         if room.room_id == room_id:
             power = room.power
 
-    print(start)
-    print(power)
-    if bool(start) == bool(power) and bool(power):
+    print("请求的开关机",start)
+    print("房间当前的开关机",power)
+    if bool(int(start)) == bool(power) and bool(power):
+        print("更改风速")
         if start == '1':
             start = 'ON'
-        print(room_id, target_temp, wind_speed, start)
+        #print(room_id, target_temp, wind_speed, start)
         scheduler.deal_with_speed_temp_change(room_id, int(target_temp), wind_speed)
     else:
         if start == '1':
             start = 'ON'
-        print(room_id, target_temp, wind_speed, start)
+            print(room_id, "开机")
+        else:
+            print(room_id, "关机")
+        #print(room_id, target_temp, wind_speed, start)
         return_state = scheduler.deal_with_on_and_off(room_id, int(target_temp), wind_speed, start)
         print(return_state)
 
@@ -581,5 +591,8 @@ curl.exe -v -X POST -d '{"room": "test"}' http://localhost:11451/api/room/check_
 curl.exe -v -X POST -d '{"room_id": "test", "operation": "start, stop, temperature, wind_speed, mode", "data": "1, 0, 16, 3, cold", "time": "2023-09-18T11:45:14+08:0", "unique_id": "1145141919810abc", "signature": "SHA256withRSA"}' http://localhost:11451/api/device/client/test?no-csrf
 关机
 curl.exe -v -X POST -d '{"room_id": "test", "operation": "start, stop, temperature, wind_speed, mode", "data": "0, 1, 16, 3, cold", "time": "2023-09-18T11:45:14+08:0", "unique_id": "1145141919810abc", "signature": "SHA256withRSA"}' http://localhost:11451/api/device/client/test?no-csrf
+
+管理员更改装状态
+curl.exe -v -X post -d '{"operation":"start, stop, temperature, wind_speed", "data":"1, 0, 23, 3"}' http://localhost:11451/api/admin/devices/test?no-csrf
 
 """
