@@ -375,6 +375,10 @@ paths:
                   type: string
                   example: 2-233
                   required: true
+                temperature:
+                  type: integer
+                  example: 26
+                  required: true
       responses:
         "200":
           description: Check-in successfully
