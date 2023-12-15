@@ -114,7 +114,6 @@ class Scheduler:
 
     def schedule(self):
         while 1:
-            print(self.room_threads['test'].current_temp)
             # recover temp
             read_to_recover_in_off = self.queues.get_all_rooms_from_off_queue()
             ready_to_recover_in_ready = self.queues.get_all_rooms_from_ready_queue()
@@ -122,9 +121,7 @@ class Scheduler:
             if read_to_recover_in_off:
                 self.recover_lock.acquire()
                 for room_id in read_to_recover_in_off:
-                    print(1)
                     recover_temp(copy.deepcopy(self.room_threads[room_id]))
-                    print(2)
                 self.recover_lock.release()
             if ready_to_recover_in_ready:
                 self.recover_lock.acquire()
