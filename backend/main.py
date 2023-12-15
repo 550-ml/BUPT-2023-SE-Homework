@@ -350,8 +350,11 @@ curl.exe -v -X POST -d '{"room": "test"}' http://localhost:11451/api/room/check_
         # try:
         rooms = []
         rooms.append(room)
-        print(rooms)
+        #print(rooms)
+        temps = []
+        temps.append(temp)
         scheduler.add_room(rooms)
+        scheduler.set_room_initial_env_temp(rooms, temps)
         json = jsonify('room', room)
         weiruzhu.remove(room)
         print("已入住")
