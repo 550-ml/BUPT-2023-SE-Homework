@@ -9,7 +9,7 @@ class Queues:
     def __init__(self) -> None:
         self.ready_queue = []
         self.suspend_queue = {}
-        self.running_queue = {}  # 设计成字典类型，通过room_id访问
+        self.running_queue = {}
         self.off_queue = []
 
     def add_into_off_queue(self, room_id):
@@ -74,8 +74,7 @@ class Queues:
         time_now = datetime.now()
         for room, start_time in self.suspend_queue.items():
             duration = (time_now - start_time).total_seconds()
-            temp_now = current_temp(room, time_now)
-            if duration >= 60 and temp_now >= room.target_temp:
+            if duration >= 60 and room.current_temp >= room.target_temp:
                 ready_to_pop.append(room)
         if len(ready_to_pop) == 0:
             return None
