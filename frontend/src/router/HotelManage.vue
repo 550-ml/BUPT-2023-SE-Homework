@@ -132,17 +132,18 @@ export default {
     // 添加房间
     const addRoom = async () => {
       try {
-        const response = await api.request({
-          url: "/admin/device",
-          method: "put",
-          data: {
+        const response = await api.put(
+          "/admin/device",
+          {
             room: roomToAdd.value,
             public_key: ""
           },
-          headers: {
-            "X-CSRF-Token": csrfToken.value
+          {
+            headers: {
+              "X-CSRF-Token": csrfToken.value
+            }
           }
-        });
+        );
         closeAdd(); // 添加成功后关闭对话框
       } catch (error) {
         console.error("添加设备失败:", error.response.data);
