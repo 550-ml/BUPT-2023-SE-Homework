@@ -20,12 +20,16 @@ class Scheduler:
         self.RR_SLOT = 120
 
         self.state_lock = {}
+        self.read_lock = {}
         self.write_lock = threading.Lock()
+        self.recover_lock = threading.Lock()
 
     def add_room(self, room_ids: list):
         for room_id in room_ids:
             self.state_lock[room_id] = threading.Lock()
-            room = Room(room_id, 'INIT', self.central_ac.service, self.state_lock[room_id], self.write_lock)
+            self.read_lock[room_id] = threading.Lock()
+            room = Room(room_id, 'INIT', self.central_ac.service, 
+                        self.state_lock[room_id], self.write_lock, self.read_lock[room_id])
             self.room_threads[room_id] = room
 
             add_to_order(room_id)
@@ -39,13 +43,28 @@ class Scheduler:
         for room_id in self.room_threads.keys():
             available_room_ids.append(room_id)
         return available_room_ids
+    
+    def get_room_message(self, room_id): 
+        self.read_lock[room_id].acquire()
+        self.recover_lock.acquire()
+        room_message = {
+            'room': self.room_threads[room_id].room_id,
+            'temperature': self.room_threads[room_id].current_temp,
+            'wind_speed': self.room_threads[room_id].current_speed,
+            'mode': 'cold',
+            'is_on': self.room_threads[room_id].power,
+            'is_ruzu': True
+        }
+        self.recover_lock.release()
+        self.read_lock[room_id].release()
+        return room_message
 
     def set_room_initial_env_temp(self, room_ids: list, initial_env_temp: list):
         for index, room_id in enumerate(room_ids):
             self.room_threads[room_id].initial_env_temp = initial_env_temp[index]
             self.room_threads[room_id].current_temp = self.room_threads[room_id].initial_env_temp
 
-    def deal_with_on_and_off(self, room_id, target_temp, target_speed, ac_state):
+    def deal_with_on_and_off(self, room_id: str, target_temp: int, target_speed: str, ac_state: str):
         if target_temp is None:
             target_temp = self.central_ac.default_temp
         if target_speed is None:
@@ -93,6 +112,21 @@ class Scheduler:
 
     def schedule(self):
         while 1:
+            # recover temp
+            ready_to_recover_in_ready = self.queues.get_all_rooms_from_ready_queue
+            ready_to_recover_in_suspend = self.queues.get_all_rooms_from_suspend_queue
+            if ready_to_recover_in_ready:
+                self.recover_lock.acquire()
+                for room_id in ready_to_recover_in_ready:
+                    recover_temp(copy.deepcopy(self.room_threads[room_id]))
+                self.recover_lock.release()
+            if ready_to_recover_in_suspend:
+                self.recover_lock.acquire()
+                for room_id in ready_to_recover_in_suspend:
+                    recover_temp(copy.deepcopy(self.room_threads[room_id]))
+                self.recover_lock.release()
+
+
             # if room's current_temp <= target_temp, pop running_queue and add into suspend_queue
             for room in self.room_threads.values():
                 if room.target_temp is None:
@@ -131,7 +165,6 @@ class Scheduler:
                 self.queues.pop_ready_queue()
                 self.queues.add_into_running_queue(ready_running_room_id)
 
-                recover_temp(copy.deepcopy(self.room_threads[ready_running_room_id]))
                 self.room_threads[ready_running_room_id].state = 'RUNNING'
                 self.room_threads[ready_running_room_id].power = True
                 self.room_threads[ready_running_room_id].current_speed = \

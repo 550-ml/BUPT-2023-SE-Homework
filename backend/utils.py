@@ -7,10 +7,13 @@ def recover_temp(room: Room):
     recover_per_min = 0.5
 
     if room.end_time is None:
-        return None
+        return 0
 
     room_current_temp = room.current_temp
     room_initial_temp = room.initial_env_temp
+
+    if room_current_temp == room_initial_temp:
+        return 0
 
     time_now = datetime.now()
     end_time = room.end_time

@@ -23,6 +23,11 @@ class Queues:
             return None, None
         return service_objects[0][-1], service_objects[0][-2]  # room_id, start_waiting_time
 
+    def get_all_rooms_from_ready_queue(self):
+        if not self.ready_queue:
+            return False
+        return [item[2] for item in self.ready_queue]
+    
     # 关机时，对象在等待队列中
     def remove_from_ready_queue(self, room_id):
         # 查找与room_id匹配的元素
@@ -44,6 +49,11 @@ class Queues:
     def add_into_suspend_queue(self, room: Room):
         time_now = datetime.now()
         self.suspend_queue[room] = time_now
+
+    def get_all_rooms_from_suspend_queue(self):
+        if not self.suspend_queue:
+            return False
+        return list(self.suspend_queue.keys().room_ids)
 
     def pop_suspend_queue(self):
         ready_to_pop = []
