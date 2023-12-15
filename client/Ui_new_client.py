@@ -123,6 +123,9 @@ class Ui_Form(object):
         self.receive_thread = threading.Thread(target=self.receive_data)
         self.receive_thread.start()
 
+        #发送接受的端口号，每个客户端的端口不一样
+        self.client_online(room_id, port, unique_id, signature)
+
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
         Form.setWindowTitle(_translate("Form", "Form"))
@@ -155,9 +158,9 @@ class Ui_Form(object):
         wind_speed = data_dict.get("wind_speed", "低")#风速
         mode = data_dict.get("mode", "cold")#设定模式
         #sweep=data_dict.get("是否送风", "On")
-        if start=="True" and stop=="False":
+        if start=="1" and stop=="0":
             self.SwitchButton.setChecked(True)
-        if start=="False" and stop=="True":
+        if start=="0" and stop=="1":
             self.SwitchButton.setChecked(False)
         if temperature!=self.CompactDoubleSpinBox.value():
             self.CompactDoubleSpinBox.setProperty("value", temperature)
@@ -223,21 +226,21 @@ class Ui_Form(object):
             self.stop_timer()
             data = self.get_panel_data()
             time=data.get('更改时间')
-            postdata=[value for key, value in data.items() if key != "更改时间"]
+            post_data=[value for key, value in data.items() if key != "更改时间"]
             self.save_data_to_file(data)
-            self.client_online(room_id, port, unique_id, signature)
-            self.get_current_status(room_id,postdata,time)
+            #self.client_online(room_id, port, unique_id, signature)
+            self.get_current_status(room_id,post_data,time)
     
     def client_online(self,room_id, port, unique_id, signature):
         url = f'{base_url}/api/device/client'
         headers = {'Content-Type': 'application/json'}
-        postdata2 = {
+        post_data2 = {
             'room_id': room_id,
             'port': port,
             'unique_id': unique_id,
             'signature': signature
         }
-        response = requests.post(url, headers=headers, data=json.dumps(postdata2))
+        response = requests.post(url, headers=headers, data=json.dumps(post_data2))
         if response.status_code == 204:
             print('客户端连接成功')
         elif response.status_code == 401:
@@ -249,7 +252,7 @@ class Ui_Form(object):
         url = f'{base_url}/api/device/client/{room_id}'
         headers = {'Content-Type': 'application/json'}
         data_string=', '.join(map(str, data))
-        postdata = {
+        post_data = {
             'room_id': room_id,
             'operation': "start,  stop, temperature, wind_speed, mode",# start, stop, temperature, wind_speed, mode, sweep;开关,温度,风速,设定模式,是否送风.
             'data': data_string,# example: 26  operations
@@ -257,7 +260,7 @@ class Ui_Form(object):
             'unique_id': unique_id,
             'signature': signature
         }
-        response = requests.post(url, headers=headers,data=json.dumps(postdata))
+        response = requests.post(url, headers=headers,data=json.dumps(post_data))
         if response.status_code == 204:
             print('当前状态请求成功')
         elif response.status_code == 401:
@@ -282,16 +285,16 @@ class Ui_Form(object):
         if self.ComboBox.currentText()=="制热":
             mode="hot"
         if self.SwitchButton.isChecked():
-            start="True"
-            stop="False"
+            start="1"
+            stop="0"
         else :
-            start="False"
-            stop="True"
+            start="0"
+            stop="1"
         # 从面板上所有相关的小部件中收集数据
         panel_data = {
             "start": start,#start, stop, temperature, wind_speed, mode, sweep;开关,温度,风速,设定模式,是否送风.
             "stop":stop,
-            "temperature": self.CompactDoubleSpinBox.value(),
+            "temperature": int(self.CompactDoubleSpinBox.value()),
             "wind_speed": selected_radio_text,
             "mode": mode,
             "time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
