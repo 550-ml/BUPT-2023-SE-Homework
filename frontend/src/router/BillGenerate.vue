@@ -130,6 +130,7 @@ export default {
     const isDetailedOrderOpen = ref(false);
     const activeTab = ref("tab1");
     const allDevices = ref([]);
+    const allUnCheckedDevices = ref([]);
     const roomId = ref(null);
 
     const executeSearch = () => {
@@ -172,26 +173,41 @@ export default {
       isCheckOutOpen.value = false;
     };
 
-    const closeModal = () => {
-      // 关闭对话框
-      // errorMessage.value = null;
-    };
-
     const changeTab = tab => {
       searchedDeviceData.value = null;
       activeTab.value = tab;
+      if (tab == "tab1") {
+        getAllUnCheckedDevices();
+      } else if (tab == "tab2") {
+        getAllDevices();
+      }
+    };
+
+    const getAllUnCheckedDevices = async () => {
+      try {
+        const response = await api.get("/admin/uncheck_in", {
+          headers: {
+            "X-CSRF-Token": "abcde12345" // Include the CSRF token if available
+          }
+        });
+
+        allUnCheckedDevices.value = response.data;
+        // allDevices.value = ["1-101", "2-203", "4-416"];
+      } catch (error) {
+        console.error("Failed to get devices:", error.response.data);
+      }
     };
 
     const getAllDevices = async () => {
       try {
-        // const response = await api.get('/admin/devices', {
-        //   headers: {
-        //     'X-CSRF-Token': 'abcde12345', // Include the CSRF token if available
-        //   },
-        // });
+        const response = await api.get("/admin/devices", {
+          headers: {
+            "X-CSRF-Token": "abcde12345" // Include the CSRF token if available
+          }
+        });
 
-        // allDevices.value = response.data;
-        allDevices.value = ["1-101", "2-203", "4-416"];
+        allDevices.value = response.data;
+        // allDevices.value = ["1-101", "2-203", "4-416"];
       } catch (error) {
         console.error("Failed to get devices:", error.response.data);
       }
@@ -250,6 +266,7 @@ export default {
     });
 
     return {
+      // errorMessage,
       searchTerm,
       searchedDeviceData,
       isCheckInOpen,
@@ -265,8 +282,8 @@ export default {
       closeCheckIn,
       openCheckOut,
       closeCheckOut,
-      closeModal,
       changeTab,
+      getAllUnCheckedDevices,
       getAllDevices,
       checkIn,
       checkOut
