@@ -594,5 +594,5 @@ curl.exe -v -X POST -d '{"room_id": "test", "operation": "start, stop, temperatu
 
 管理员更改装状态
 curl.exe -v -X post -d '{"operation":"start, stop, temperature, wind_speed", "data":"1, 0, 23, 3"}' http://localhost:11451/api/admin/devices/test?no-csrf
-
+123123123
 """
