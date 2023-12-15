@@ -132,25 +132,26 @@ curl.exe -v -X delete -d '{"room":"test"}' http://localhost:11451/api/admin/devi
     print(request.path, " : ", params)
     room = params['room']
 
-    try:
-        if room in weiruzhu:
-            weiruzhu.remove(room)
-            print(f"未入住'{room}' 已删除")
-            rooms_ip = [room_info for room_info in rooms_ip if room_info["room"] != room]
-            print(weiruzhu)
-            return jsonify({'room': room}), 200
-        elif room in scheduler.room_threads:
-            del scheduler.room_threads[room]  # 此处等于scheduler函数中的删房函数
-            print(f"已入住'{room}' 已删除")
-            return jsonify({'room': room}), 200
-        else:
-            print(f"Room '{room}' not found 未入住或已入住.")
-            return jsonify({'error_code': 100}), 401
-
-    except:
-        # raise ValueError(f"Room '{room}' not found 未入住或已入住.")
-        print(f"except")
+    # try:
+    if room in weiruzhu:
+        weiruzhu.remove(room)
+        print(f"未入住'{room}' 已删除")
+        rooms_ip = [room_info for room_info in rooms_ip if room_info["room"] != room]
+        print(weiruzhu)
+        return jsonify({'room': room}), 200
+    elif room in scheduler.room_threads:
+        del scheduler.room_threads[room]  # 此处等于scheduler函数中的删房函数
+        print(f"已入住'{room}' 已删除")
+        rooms_ip = [room_info for room_info in rooms_ip if room_info["room"] != room]
+        return jsonify({'room': room}), 200
+    else:
+        print(f"Room '{room}' not found 未入住或已入住.")
         return jsonify({'error_code': 100}), 401
+
+    # except:
+    #     # raise ValueError(f"Room '{room}' not found 未入住或已入住.")
+    #     print(f"except")
+    #     return jsonify({'error_code': 100}), 401
 
 
 # 管理员给出所有可利用的设备
@@ -245,7 +246,9 @@ curl.exe -v -X post -d '{"operation":"start, stop, temperature, wind_speed", "da
     # except:
     #     return jsonify({'error_code': 100}), 401
 
-
+room_temp = {
+    "test": 30
+}
 # 对某一房间进行状态查询
 @app.route('/api/status/<string:room_id>', methods=['GET'])
 def get_one_status(room_id):
@@ -276,6 +279,17 @@ curl.exe -v -X get http://localhost:11451/api/status/test?no-csrf
 
     room_message = scheduler.get_room_message(room_id)
     room_message['wind_speed'] = speed_to_num[room_message['wind_speed']]
+    if room_message["temperature"] == None:
+        init_temp = room_temp[room_id]
+        room_message = {
+            'room': room_id,
+            'temperature': init_temp,
+            'wind_speed': 2,
+            'mode': 'cold',
+            # 'sweep': sweep,
+            'is_on': False,
+            'is_ruzhu': False
+        }
     json = jsonify(room_message)
     print(json)
     return json, 200
@@ -323,6 +337,10 @@ curl.exe -v -X POST -d '{"room": "test"}' http://localhost:11451/api/room/check_
     params = request.get_json(force=True)
     print(request.path, " : ", params)
     room = params['room']
+    temp = params['temperature']
+
+    if room not in room_temp.keys():
+        room_temp[room] = temp
 
     if room not in weiruzhu:
         print(weiruzhu)

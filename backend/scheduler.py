@@ -118,22 +118,15 @@ class Scheduler:
             ready_to_recover_in_ready = self.queues.get_all_rooms_from_ready_queue()
             ready_to_recover_in_suspend = self.queues.get_all_rooms_from_suspend_queue()
             if read_to_recover_in_off:
-                # self.recover_lock.acquire()
                 for room_id in read_to_recover_in_off:
-                    # recover_temp(copy.deepcopy(self.room_threads[room_id]))
                     recover_temp(self.room_threads[room_id])
                     # print(self.room_threads['test'].current_temp)
-                # self.recover_lock.release()
             if ready_to_recover_in_ready:
-                # self.recover_lock.acquire()
                 for room_id in ready_to_recover_in_ready:
-                    recover_temp(copy.deepcopy(self.room_threads[room_id]))
-                # self.recover_lock.release()
+                    recover_temp(self.room_threads[room_id])
             if ready_to_recover_in_suspend:
-                # self.recover_lock.acquire()
                 for room_id in ready_to_recover_in_suspend:
-                    recover_temp(copy.deepcopy(self.room_threads[room_id]))
-                # self.recover_lock.release()
+                    recover_temp(self.room_threads[room_id])
 
             # if room's current_temp <= target_temp, pop running_queue and add into suspend_queue
             for room in self.room_threads.values():
@@ -141,13 +134,13 @@ class Scheduler:
                     continue
                 if room.current_temp == room.target_temp:
                     self.queues.pop_service_by_room_id(room.room_id)
-                    self.queues.add_into_suspend_queue(copy.deepcopy(room))
+                    self.queues.add_into_suspend_queue(room)
                 elif room.current_temp < room.target_temp:
                     room.stop()
                     room.state = 'SUSPEND'
                     room.power = False
                     self.queues.pop_service_by_room_id(room.room_id)
-                    self.queues.add_into_suspend_queue(copy.deepcopy(room))
+                    self.queues.add_into_suspend_queue(room)
 
             # pop suspend_queue and add into ready_queue
             ready_to_pop_suspend = self.queues.pop_suspend_queue()
@@ -182,7 +175,7 @@ class Scheduler:
                 # running_queue is full
                 # start scheduling
                 room_with_lowest_priority = self.queues.get_running_room_with_lowest_priority(
-                    copy.deepcopy(self.room_threads)
+                    self.room_threads
                 )
                 room_priority = self.priority[
                     self.room_threads[room_with_lowest_priority]
@@ -195,12 +188,11 @@ class Scheduler:
                     self.room_threads[room_with_lowest_priority].power = False
                     self.queues.pop_service_by_room_id(room_with_lowest_priority)
                     self.queues.add_into_suspend_queue(
-                        copy.deepcopy(self.room_threads[room_with_lowest_priority])
+                        self.room_threads[room_with_lowest_priority]
                     )
 
                     self.queues.pop_ready_queue()
                     self.queues.add_into_running_queue(ready_running_room_id)
-                    recover_temp(copy.deepcopy(self.room_threads[ready_running_room_id]))
                     self.room_threads[ready_running_room_id].state = 'RUNNING'
                     self.room_threads[ready_running_room_id].power = True
                     self.room_threads[ready_running_room_id].current_speed = \
@@ -215,12 +207,11 @@ class Scheduler:
                         self.room_threads[room_with_lowest_priority].power = False
                         self.queues.pop_service_by_room_id(room_with_lowest_priority)
                         self.queues.add_into_suspend_queue(
-                            copy.deepcopy(self.room_threads[room_with_lowest_priority])
+                            self.room_threads[room_with_lowest_priority]
                         )
 
                         self.queues.pop_ready_queue()
                         self.queues.add_into_running_queue(ready_running_room_id)
-                        recover_temp(copy.deepcopy(self.room_threads[ready_running_room_id]))
                         self.room_threads[ready_running_room_id].state = 'RUNNING'
                         self.room_threads[ready_running_room_id].power = True
                         self.room_threads[ready_running_room_id].current_speed = \
