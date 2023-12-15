@@ -13,7 +13,7 @@ class Queues:
         self.off_queue = []
 
     def add_into_off_queue(self, room_id):
-        self.off_queue.append[room_id]
+        self.off_queue.append(room_id)
 
 
     def get_all_rooms_from_off_queue(self):

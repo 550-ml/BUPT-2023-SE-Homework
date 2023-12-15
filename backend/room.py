@@ -35,7 +35,7 @@ class Room(threading.Thread):
 
     def __deepcopy__(self, memo):
         new_room = Room(self.room_id, self.state, self.target, 
-                        self.state_lock, self.write_lock, self.read_lock)
+                        self.state_lock, self.write_lock)
 
         new_room.current_temp = copy.deepcopy(self.current_temp, memo)
         new_room.current_speed = copy.deepcopy(self.current_speed, memo)
@@ -57,7 +57,7 @@ class Room(threading.Thread):
         new_room.change_flag = self.change_flag
         new_room.state_lock = self.state_lock
         new_room.write_lock = self.write_lock
-        new_room.read_lock = self.read_lock
+        # new_room.read_lock = self.read_lock
 
         return new_room
 

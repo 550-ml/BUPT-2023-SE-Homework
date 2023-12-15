@@ -114,6 +114,7 @@ class Scheduler:
 
     def schedule(self):
         while 1:
+            print(self.room_threads['test'].current_temp)
             # recover temp
             read_to_recover_in_off = self.queues.get_all_rooms_from_off_queue()
             ready_to_recover_in_ready = self.queues.get_all_rooms_from_ready_queue()
