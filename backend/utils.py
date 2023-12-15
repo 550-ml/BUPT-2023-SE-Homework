@@ -24,7 +24,6 @@ def recover_temp(room: Room):
         room.current_temp = room.initial_env_temp
     else:
         room.current_temp += temp_should_recover
-    print(room.current_temp)
 
 
 def current_temp(room: Room, time_now):
