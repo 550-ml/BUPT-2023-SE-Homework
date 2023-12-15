@@ -6,13 +6,16 @@ from database import add_to_detail
 
 
 class Room(threading.Thread):
-    def __init__(self, room_id, state, target, state_lock: threading.Lock, write_lock: threading.Lock,  **kwargs):
+    def __init__(self, room_id, state, target, 
+                 state_lock: threading.Lock, write_lock: threading.Lock,  read_lock: threading.Lock,
+                 **kwargs):
         super().__init__(**kwargs)
         self.power = False
         self.room_id = room_id
         self.state = state
-        self.initial_env_temp = None
-        self.current_temp = None
+        # need to change
+        self.initial_env_temp = 25
+        self.current_temp = 25
         self.current_speed = None
         self.target_temp = None
         self.target_speed = None
@@ -27,10 +30,12 @@ class Room(threading.Thread):
         self.running_lock = threading.Lock()
         self.state_lock = state_lock
         self.write_lock = write_lock
+        self.read_lock = read_lock
         self.change_flag = 0
 
     def __deepcopy__(self, memo):
-        new_room = Room(self.room_id, self.state, self.target, self.state_lock, self.write_lock)
+        new_room = Room(self.room_id, self.state, self.target, 
+                        self.state_lock, self.write_lock, self.read_lock)
 
         new_room.current_temp = copy.deepcopy(self.current_temp, memo)
         new_room.current_speed = copy.deepcopy(self.current_speed, memo)
@@ -52,6 +57,7 @@ class Room(threading.Thread):
         new_room.change_flag = self.change_flag
         new_room.state_lock = self.state_lock
         new_room.write_lock = self.write_lock
+        new_room.read_lock = self.read_lock
 
         return new_room
 
@@ -60,6 +66,7 @@ class Room(threading.Thread):
         while self.running:
             self.running_lock.acquire()
             self.state_lock.acquire()
+            self.read_lock.acquire()
 
             self.is_changed()
 
@@ -77,6 +84,7 @@ class Room(threading.Thread):
 
                 self.write_into_db(self.end_time)
 
+            self.read_lock.release()
             self.state_lock.release()
             self.running_lock.release()
 

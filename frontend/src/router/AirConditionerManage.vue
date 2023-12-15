@@ -18,9 +18,7 @@
                       <p>空调模式: {{ room.mode }}</p>
                       <p>当前风速: {{ room.speed }}</p>
                       <p>当前温度: {{ room.currTemp }}</p>
-                      <p>目标温度: {{ room.targetTemp }}</p>
-                      <p>服务时间: {{ room.servedTime }}</p>
-                      <p>服务费用: {{ room.fee }}</p>
+                      <p>扫风: {{ room.sweep }}</p>
                       <el-button text class="button" @click="dialogVisible = true">操作</el-button>
                     </div>
                   </div>
@@ -84,7 +82,9 @@
           </el-tabs>
         </el-main>
       </el-container>
-      <el-footer>Footer</el-footer>
+      <el-footer>
+        <el-button type="primary" @click="GetroomName">刷新数据</el-button>
+      </el-footer>
     </el-container>
   </div>
 </template>
@@ -95,6 +95,102 @@
 import { ref } from "vue";
 import { ElMessageBox } from 'element-plus';
 import axios from 'axios';
+// 定义默认房间信息
+const roomIds = ['test', '223', '224', '222', '223'];
+const roomsInfo = ref([
+  {
+    roomId: roomIds[0],
+    is_on: '未开启',
+    mode: '未开启',
+    speed: '未开启',
+    sweep: '未开启',
+    currTemp: '未开启',
+  },
+  {
+    roomId: roomIds[1],
+    is_on: '未开启',
+    mode: '未开启',
+    speed: '未开启',
+    sweep: '未开启',
+    currTemp: '未开启',
+  },
+  {
+    roomId: roomIds[2],
+    is_on: '未开启',
+    mode: '未开启',
+    speed: '未开启',
+    sweep: '未开启',
+    currTemp: '未开启',
+  }, {
+    roomId: roomIds[3],
+    is_on: '未开启',
+    mode: '未开启',
+    speed: '未开启',
+    sweep: '未开启',
+    currTemp: '未开启',
+  },
+  {
+    roomId: roomIds[4],
+    is_on: '未开启',
+    mode: '未开启',
+    speed: '未开启',
+    sweep: '未开启',
+    currTemp: '未开启',
+  }
+])
+// 获取特定房间的信息
+const fetchRoomInfo = async (roomId) => {
+  try {
+    const response = await axios.get(`http://10.129.37.107:11451/api/status/${roomId}`);
+    const roomData = response.data;
+
+    // 根据接口返回的数据结构更新房间信息
+    const updatedRooms = roomsInfo.value.map(room => {
+      if (room.roomId === roomId) {
+        if (roomData.is_on) {
+          room.is_on = '已开启';
+          room.mode = roomData.mode;
+          room.speed = roomData.wind_speed;
+          room.sweep = roomData.sweep ? '是' : '否';
+          room.currTemp = `${roomData.temperature}°C`;
+        } else {
+          room.is_on = '未开启';
+          room.mode = '未开启';
+          room.speed = '未开启';
+          room.sweep = '未开启';
+          room.currTemp = '未开启';
+        }
+        return room;
+      }
+      return room;
+    });
+    roomsInfo.value = updatedRooms;
+
+  } catch (error) {
+    console.error('获取房间信息时出错:', error);
+  }
+};
+// 向后端请求房间名称
+const GetroomName = async () => {
+  // const response = await axios.get('http://10.129.37.107:11451/api/status');
+  // const responseData = response.data;
+  const responseData = [{ room: 'test1', is_on: 0 }, { room: 'test2', is_on: 0 }, { room: 'test224', is_on: 0 }, { room: 'test225', is_on: 0 }, { room: '225', is_on: 0 }]
+  roomIds.splice(0, roomIds.length, ...responseData.map(room => room.room));
+  console.log(roomIds); // 输出更新后的 roomIds 数组
+  roomsInfo.value = responseData.map(room => ({
+    roomId: room.room,
+    is_on: room.is_on === 0 ? '否' : '是',
+    mode: 'Cold',
+    speed: 'Medium',
+    sweep: '是',
+    currTemp: '20°C',
+  }));
+  // setInterval(() => {
+  //   roomIds.forEach(roomId => {
+  //     fetchRoomInfo(roomId);
+  //   });
+  // }, 10000);
+};
 const dialogVisible = ref(false);
 const form = ref({
   operation: '',
@@ -129,121 +225,13 @@ const submitForm = async (_formName) => {
   }
 };
 
-const roomsInfo = ref([
-  {
-    roomId: 'Room 1',
-    is_on: '是',
-    mode: 'Cold',
-    eed: 'Medium',
-    currTemp: '20°C',
-    targetTemp: '接口没有',
-    servedTime: '2 hours',
-    fee: '$15',
-  },
-  {
-    roomId: 'Room 2',
-    is_on: '是',
-    mode: 'Hot',
-    speed: 'High',
-    currTemp: '30°C',
-    targetTemp: '接口没有',
-    servedTime: '3 hours',
-    fee: '$20',
-  },
-  {
-    roomId: 'Room 2',
-    is_on: '是',
-    mode: 'Hot',
-    speed: 'High',
-    currTemp: '30°C',
-    targetTemp: '接口没有',
-    servedTime: '3 hours',
-    fee: '$20',
-  }, {
-    roomId: 'Room 1',
-    is_on: '是',
-    mode: 'Cold',
-    speed: 'Medium',
-    currTemp: '20°C',
-    targetTemp: '接口没有',
-    servedTime: '2 hours',
-    fee: '$15',
-  },
-  {
-    roomId: 'Room 1',
-    is_on: '是',
-    mode: 'Cold',
-    speed: 'Medium',
-    currTemp: '20°C',
-    targetTemp: '接口没有',
-    servedTime: '2 hours',
-    fee: '$15',
-  }, {
-    roomId: 'Room 1',
-    is_on: '是',
-    mode: 'Cold',
-    speed: 'Medium',
-    currTemp: '20°C',
-    targetTemp: '25°C',
-    servedTime: '2 hours',
-    fee: '$15',
-  }
-  // Add more rooms as needed...
-])
-// 获取特定房间的信息
-const fetchRoomInfo = async (roomId) => {
-  try {
-    // const sentData = {
-    //   room: roomId
-    // };
-    // const jsonData = JSON.stringify(sentData);
-    const response = await axios.get(`http://10.129.37.107:11451/api/status/${roomId}`);
-    const roomData = response.data;
 
-    // 根据接口返回的数据结构更新房间信息
-    const updatedRooms = roomsInfo.value.map(room => {
-      if (room.roomId === roomId) {
-        if (roomData.is_on) {
-          // 更新特定房间的信息
-          room.mode = roomData.mode;
-          room.speed = roomData.wind_speed;
-          room.currTemp = `${roomData.temperature}°C`;
-          // room.targetTemp = `${roomData.target_temperature}°C`;
-          room.servedTime = roomData.served_time;
-          // room.fee = roomData.fee;
-          // 其他属性更新...
-        } else {
-          // 如果空调未开启，将所有值设为空值
-          room.mode = '';
-          room.speed = '';
-          room.currTemp = '';
-          // room.targetTemp = '';
-          room.servedTime = '';
-          // room.fee = '';
-          // 其他属性更新...
-        }
-        return room;
-      }
-      return room;
-    });
 
-    // 将更新后的房间信息重新赋值给roomsInfo
-    roomsInfo.value = updatedRooms;
-
-  } catch (error) {
-    console.error('获取房间信息时出错:', error);
-    // 在这里处理错误，例如向用户显示错误消息
-  }
-};
 
 // 假设你有一个包含所有房间ID的数组
-const roomIds = ['222', '223', '224', '222', '223', '224'];
-// 每秒获取所有房间的信息
-setInterval(() => {
-  roomIds.forEach(roomId => {
-    fetchRoomInfo(roomId);
-  });
-}, 10000);
+
+// // 每秒获取所有房间的信息
+
 
 // This code keeps track of the current date and time
 // const currentDate = ref(new Date());

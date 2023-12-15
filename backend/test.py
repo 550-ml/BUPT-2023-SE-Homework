@@ -1,11 +1,13 @@
-import heapq
-import time
-import threading
-from scheduler import Scheduler
+# import heapq
+# import time
+# import threading
+# from scheduler import Scheduler
 
-from central_ac import CentralAc
+# from central_ac import CentralAc
 
-centralAC = CentralAc()
-scheduler = Scheduler(centralAC)
+# centralAC = CentralAc()
+# scheduler = Scheduler(centralAC)
 
-scheduler.schedule
+# scheduler.schedule
+
+print(None < 25)

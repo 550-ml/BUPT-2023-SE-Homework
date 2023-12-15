@@ -14,8 +14,8 @@ class User(db.Model):
 
 class Detail(db.Model):
     room_id = db.Column(db.String(50), nullable=True, primary_key=True)
-    start_time = db.Column(db.DateTime, default=datetime.datetime.now)
-    end_time = db.Column(db.DateTime, default=0, onupdate=datetime.datetime.now)
+    start_time = db.Column(db.DateTime, default=datetime.datetime.now())
+    end_time = db.Column(db.DateTime, default=0, onupdate=datetime.datetime.now())
     speed = db.Column(db.Enum("HIGH", "MID", "LOW"))
     fee = db.Column(db.Float, default=0.0)
     times_used = db.Column(db.Float, nullable=True)
@@ -31,8 +31,8 @@ class Detail(db.Model):
 
 class Order(db.Model):
     room_id = db.Column(db.String(50), primary_key=True)
-    checkin = db.Column(db.DateTime, default=datetime.datetime.now)
-    checkout = db.Column(db.DateTime, default=datetime.datetime.now, onupdate=datetime.datetime.now)
+    checkin = db.Column(db.DateTime, default=datetime.datetime.now())
+    checkout = db.Column(db.DateTime, default=datetime.datetime.now(), onupdate=datetime.datetime.now())
     total_cost = db.Column(db.Float, default=0.0)
 
     def __str__(self) -> str:
@@ -43,20 +43,20 @@ class Order(db.Model):
         return self.__str__()
 
 
-def add_to_detail(room_id, star_time=datetime.datetime.now, end_time=0, speed='mid', fee=0,
-                  time_used=0, target_temp=25):
+def add_to_detail(room_id, start_time=datetime.datetime.now(), end_time=0, speed='mid', fee=0,
+                  times_used=0, target_temp=25):
     with app.app_context():
         db.session.add(Detail(room_id=room_id,
-                              star_time=star_time,
+                              start_time=start_time,
                               end_time=end_time,
                               speed=speed,
                               fee=fee,
-                              time_used=time_used,
+                              times_used=times_used,
                               target_temp=target_temp))
         db.session.commit()
 
 
-def add_to_order(room_id, checkin=datetime.datetime.now, checkout=datetime.datetime.now, total_cost=0):
+def add_to_order(room_id, checkin=datetime.datetime.now(), checkout=datetime.datetime.now(), total_cost=0):
     with app.app_context():
         db.session.add(Order(room_id=room_id,
                              checkin=checkin,

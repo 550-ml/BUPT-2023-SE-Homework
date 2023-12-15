@@ -11,8 +11,13 @@
       </div>
 
       <div class="flex justify-end">
-        <input type="text" placeholder="请输入房间号" class="p-2 border border-gray-300 rounded mr-2" v-model="searchTerm"
-          @input="emitSearch" />
+        <input
+          type="text"
+          placeholder="请输入房间号"
+          class="p-2 border border-gray-300 rounded mr-2"
+          v-model="searchTerm"
+          @input="emitSearch"
+        />
         <button class="bg-blue-500 text-white py-2 px-4 rounded" @click="executeSearch">搜索</button>
       </div>
     </div>
@@ -39,8 +44,11 @@
         <div v-if="activeTab === 'tab1'" class="mt-4 w-1/2">
           <table class="w-full">
             <tbody class="relative flex flex-col h-full min-w-0 break-words border-0 shadow-xl rounded-2xl">
-              <tr v-for="deviceId in allDevices" :key="deviceId"
-                class="flex justify-between items-center px-6 py-4 border-b border-solid rounded-t-2xl border-b-slate-100">
+              <tr
+                v-for="deviceId in allDevices"
+                :key="deviceId"
+                class="flex justify-between items-center px-6 py-4 border-b border-solid rounded-t-2xl border-b-slate-100"
+              >
                 <td>{{ deviceId }}</td>
                 <td>
                   <button class="bg-blue-500 text-white py-2 px-4 rounded item-center" @click="checkIn(deviceId)">
@@ -55,11 +63,17 @@
         <div v-else-if="activeTab === 'tab2'" class="mt-4 w-1/2">
           <table class="w-full">
             <tbody class="relative flex flex-col h-full min-w-0 break-words border-0 shadow-xl rounded-2xl">
-              <tr v-for="deviceId in allDevices" :key="deviceId"
-                class="flex justify-between items-center px-6 py-4 border-b border-solid rounded-t-2xl border-b-slate-100">
+              <tr
+                v-for="deviceId in allDevices"
+                :key="deviceId"
+                class="flex justify-between items-center px-6 py-4 border-b border-solid rounded-t-2xl border-b-slate-100"
+              >
                 <td>{{ deviceId }}</td>
                 <td>
-                  <button class="bg-blue-500 text-white py-2 px-4 rounded item-center" @click="getSingleDevice(deviceId)">
+                  <button
+                    class="bg-blue-500 text-white py-2 px-4 rounded item-center"
+                    @click="getSingleDevice(deviceId)"
+                  >
                     退房
                   </button>
                 </td>
@@ -102,6 +116,7 @@
 import { ref, onMounted } from "vue";
 import RoomStates from "../components/RoomState.vue";
 import axios from "axios";
+import api from "../main.ts";
 
 export default {
   components: {
@@ -115,6 +130,7 @@ export default {
     const isDetailedOrderOpen = ref(false);
     const activeTab = ref("tab1");
     const allDevices = ref([]);
+    const allUnCheckedDevices = ref([]);
     const roomId = ref(null);
 
     const executeSearch = () => {
@@ -157,26 +173,41 @@ export default {
       isCheckOutOpen.value = false;
     };
 
-    const closeModal = () => {
-      // 关闭对话框
-      // errorMessage.value = null;
-    };
-
     const changeTab = tab => {
       searchedDeviceData.value = null;
       activeTab.value = tab;
+      if (tab == "tab1") {
+        getAllUnCheckedDevices();
+      } else if (tab == "tab2") {
+        getAllDevices();
+      }
+    };
+
+    const getAllUnCheckedDevices = async () => {
+      try {
+        const response = await api.get("/admin/uncheck_in", {
+          headers: {
+            "X-CSRF-Token": "abcde12345" // Include the CSRF token if available
+          }
+        });
+
+        allUnCheckedDevices.value = response.data;
+        // allDevices.value = ["1-101", "2-203", "4-416"];
+      } catch (error) {
+        console.error("Failed to get devices:", error.response.data);
+      }
     };
 
     const getAllDevices = async () => {
       try {
-        // const response = await axios.get('/admin/devices', {
-        //   headers: {
-        //     'X-CSRF-Token': 'abcde12345', // Include the CSRF token if available
-        //   },
-        // });
+        const response = await api.get("/admin/devices", {
+          headers: {
+            "X-CSRF-Token": "abcde12345" // Include the CSRF token if available
+          }
+        });
 
-        // allDevices.value = response.data;
-        allDevices.value = ["1-101", "2-203", "4-416"];
+        allDevices.value = response.data;
+        // allDevices.value = ["1-101", "2-203", "4-416"];
       } catch (error) {
         console.error("Failed to get devices:", error.response.data);
       }
@@ -185,7 +216,7 @@ export default {
     const checkIn = async roomId => {
       openCheckIn();
       try {
-        const response = await axios.post(
+        const response = await api.post(
           "/room/check_in",
           {
             room: roomId
@@ -208,7 +239,7 @@ export default {
 
     const checkOut = async () => {
       try {
-        const response = await axios.post(
+        const response = await api.post(
           "/room/check_out",
           {
             room: roomId
@@ -235,6 +266,7 @@ export default {
     });
 
     return {
+      // errorMessage,
       searchTerm,
       searchedDeviceData,
       isCheckInOpen,
@@ -250,8 +282,8 @@ export default {
       closeCheckIn,
       openCheckOut,
       closeCheckOut,
-      closeModal,
       changeTab,
+      getAllUnCheckedDevices,
       getAllDevices,
       checkIn,
       checkOut

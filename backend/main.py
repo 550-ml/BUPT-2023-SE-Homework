@@ -1,3 +1,5 @@
+import os
+
 from app import *
 from threading import Thread
 from flask import request, jsonify, Blueprint
@@ -68,7 +70,7 @@ curl.exe -v -X post http://localhost:11451/api/logout?no-csrf
     return 204
 
 
-weiruzhu = ['test']
+weiruzhu = ['test', 'test2']
 
 
 # 管理员加房
@@ -114,7 +116,6 @@ def delete_room():
             401
 curl.exe -v -X delete -d '{"room":"test"}' http://localhost:11451/api/admin/device?no-csrf
     """
-
     params = request.get_json(force=True)
     print(request.path, " : ", params)
     room = params['room']
@@ -123,6 +124,7 @@ curl.exe -v -X delete -d '{"room":"test"}' http://localhost:11451/api/admin/devi
         if room in weiruzhu:
             weiruzhu.remove(room)
             print(f"未入住'{room}' 已删除")
+            print(weiruzhu)
             return jsonify({'room': room}), 200
         elif room in scheduler.room_threads:
             del scheduler.room_threads[room]  # 此处等于scheduler函数中的删房函数
@@ -295,13 +297,16 @@ def get_all_status():
 curl.exe -v -X get http://localhost:11451/api/status?no-csrf
     """
     try:
-        status = {}
-        for room in weiruzhu:
-            status[room] = False
+        json = []
+        # for room in weiruzhu:
+        #     status[room] = False
         for room in scheduler.room_threads.values():
-            status[room.room_id] = room.power
+            status = {}
+            status['room'] = room.room_id
+            status['is_on'] = room.power
+            json.append(status)
 
-        return jsonify(status), 200
+        return jsonify(json), 200
     except:
         return jsonify({'error_code': 100}), 401
 
@@ -329,13 +334,12 @@ curl.exe -v -X POST -d '{"room": "test"}' http://localhost:11451/api/room/check_
         try:
             rooms = []
             rooms.append(room)
-            print("123")
             print(rooms)
             scheduler.add_room(rooms)
-            print("456")  # 上一行代码报错
             json = jsonify('room', room)
             weiruzhu.remove(room)
             print("已入住")
+            print(weiruzhu)
             return json, 200
         except:
             return jsonify({'error_code': 100}), 401
@@ -440,7 +444,7 @@ curl.exe -v -X POST -d '{"room_id": "test"}' http://localhost:11451/api/device/c
     # else:
     #     return jsonify({'error_code': 100}), 401
 
-    return 204
+    return jsonify({"message": "succeed"}), 200
 
 
 # 服务器更改客户端状态
@@ -482,6 +486,8 @@ def client_change(room_id):
     signature？？   # SHA256withRSA, RSA 4096, sign text = operation + unique_id + data + time
     :return: 204
             401
+
+curl.exe -v -X POST -d '{"room_id": "test", "operation": "start, stop, temperature, wind_speed, mode", "data": "1, 0, 16, 3, cold", "time": "2023-09-18T11:45:14+08:0", "unique_id": "1145141919810abc", "signature": "SHA256withRSA"}' http://localhost:11451/api/device/client/test?no-csrf
     """
 
     params = request.get_json(force=True)
@@ -501,17 +507,60 @@ def client_change(room_id):
     target_temp = operation_data.get('temperature')
     wind_speed = operation_data.get('wind_speed')
 
+    if wind_speed == str(3):
+        wind_speed = 'HIGH'
+    elif wind_speed == str(2):
+        wind_speed = 'MID'
+    elif wind_speed == str(1):
+        wind_speed = 'LOW'
+
+    if room_id not in scheduler.room_threads:
+        print("该房间未入住")
+        return jsonify({'error_code': 100}), 401
+
     power = True
-    for room in scheduler.room_threads:
+    for room in scheduler.room_threads.values():
         if room.room_id == room_id:
             power = room.power
 
-    if bool(start) == bool(power) == True:
-        scheduler.deal_with_speed_temp_change(room_id, target_temp, wind_speed)
+    print(start)
+    print(power)
+    if bool(start) == bool(power) and bool(power):
+        if start == '1':
+            start = 'ON'
+        print(room_id, target_temp, wind_speed, start)
+        scheduler.deal_with_speed_temp_change(room_id, int(target_temp), wind_speed)
     else:
-        scheduler.deal_with_on_and_off(room_id, target_temp, wind_speed, start)
+        if start == '1':
+            start = 'ON'
+        print(room_id, target_temp, wind_speed, start)
+        return_state = scheduler.deal_with_on_and_off(room_id, int(target_temp), wind_speed, start)
+        print(return_state)
 
-    return 204
+    return jsonify({"message": "Online successfully"}), 204
+
+
+# 管理员给出所有未入住房间信息
+@app.route('/api/admin/uncheck_in', methods=['get'])
+def get_uncheckin_room_list():
+    """
+
+    :return: 200 room :
+                    type: string array
+            401
+
+    调数据库
+
+curl.exe -v -X get http://localhost:11451/api/admin/uncheck_in?no-csrf
+    """
+    try:
+        # available = scheduler.get_available_room()
+        available = []
+        for room in weiruzhu:
+            available.append(room)
+        return jsonify(available), 200
+    except:
+        return jsonify({'error_code': 100}), 401
 
 
 if __name__ == '__main__':
@@ -523,3 +572,14 @@ if __name__ == '__main__':
         app.run(port=11451, debug=True, host='0.0.0.0')
 
     # scheduler.schedule()
+"""
+调试：
+http://localhost:11451/__debugger__/683-942-319
+开房test
+curl.exe -v -X POST -d '{"room": "test"}' http://localhost:11451/api/room/check_in?no-csrf
+客户端更改状态：开机
+curl.exe -v -X POST -d '{"room_id": "test", "operation": "start, stop, temperature, wind_speed, mode", "data": "1, 0, 16, 3, cold", "time": "2023-09-18T11:45:14+08:0", "unique_id": "1145141919810abc", "signature": "SHA256withRSA"}' http://localhost:11451/api/device/client/test?no-csrf
+关机
+curl.exe -v -X POST -d '{"room_id": "test", "operation": "start, stop, temperature, wind_speed, mode", "data": "0, 1, 16, 3, cold", "time": "2023-09-18T11:45:14+08:0", "unique_id": "1145141919810abc", "signature": "SHA256withRSA"}' http://localhost:11451/api/device/client/test?no-csrf
+
+"""
