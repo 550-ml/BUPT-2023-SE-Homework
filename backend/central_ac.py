@@ -21,6 +21,7 @@ class CentralAc:
 
     def service(self, current_temp, target_temp, target_speed, total_cost):
         time.sleep(0.01)
+        print(target_speed)
         current_temp = self.update_temperature(current_temp, target_temp, target_speed)
         total_cost = self.update_cost(total_cost, target_speed)
 
