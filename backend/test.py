@@ -12,9 +12,7 @@
 
 a = [1, 2, 3]
 
-def get():
-    if not a:
-        return False
-    return [item for item in a]
-
-b = get()
+def delete(id):
+    if id not in a:
+        return None
+    del a[id]
