@@ -68,7 +68,7 @@ class Queues:
     def get_all_rooms_from_suspend_queue(self):
         if not self.suspend_queue:
             return False
-        return list(self.suspend_queue.keys().room_id)
+        return [key.room_id for key in self.suspend_queue.keys()]
 
     def pop_suspend_queue(self):
         ready_to_pop = []
