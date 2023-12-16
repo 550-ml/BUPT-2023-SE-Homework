@@ -81,12 +81,12 @@
       </div>
     </div>
 
-    <div v-if="errorMessage" class="modal">
+    <!-- <div v-if="errorMessage" class="modal">
       <div class="modal-content">
         <p>{{ errorMessage }}</p>
         <button @click="closeModal" class="bg-blue-500 text-white py-2 px-4 rounded mt-4">关闭</button>
       </div>
-    </div>
+    </div> -->
   </div>
 
   <div v-if="isCheckInOpen" class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
@@ -125,7 +125,33 @@
       </div>
       <div>
         <h2>xxx房间详单</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Cost</th>
+              <th>Duration</th>
+              <th>End Time</th>
+              <th>Mode</th>
+              <th>Start Time</th>
+              <th>Wind Speed</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="detail in detailedReport">
+              <!-- <td>{{ detail.cost }}</td>
+              <td>{{ detail.duration }}</td>
+              <td>{{ detail.end_time }}</td>
+              <td>{{ detail.mode }}</td>
+              <td>{{ detail.start_time }}</td>
+              <td>{{ detail.wind_speed }}</td> -->
+              <td v-for="(value, key) in detail" :key="key">
+                {{ value }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
+      <button @click="closeCheckOut" class="mr-2 mt-4 bg-blue-500 text-white py-2 px-4 rounded">保存</button>
       <button @click="closeCheckOut" class="mt-4 bg-blue-500 text-white py-2 px-4 rounded">返回</button>
     </div>
   </div>
@@ -152,6 +178,8 @@ export default {
     const allUnCheckedDevices = ref([]);
     const initTemperature = ref(0);
     const checkoutReport = ref("");
+    const billReport = ref(null);
+    const detailedReport = ref(null);
     let roomId = ref(null);
 
     const executeSearch = () => {
@@ -210,32 +238,32 @@ export default {
     };
 
     const getAllUnCheckedDevices = async () => {
-      allUnCheckedDevices.value = ["1", "2"];
-      // try {
-      //   const response = await api.get("/admin/uncheck_in", {
-      //     headers: {
-      //       "X-CSRF-Token": "abcde12345" // Include the CSRF token if available
-      //     }
-      //   });
-      //   allUnCheckedDevices.value = response.data;
-      // } catch (error) {
-      //   console.error("Failed to get devices:", error.response.data);
-      // }
+      // allUnCheckedDevices.value = ["1", "2"];
+      try {
+        const response = await api.get("/admin/uncheck_in", {
+          headers: {
+            "X-CSRF-Token": "abcde12345" // Include the CSRF token if available
+          }
+        });
+        allUnCheckedDevices.value = response.data;
+      } catch (error) {
+        console.error("Failed to get devices:", error.response.data);
+      }
     };
 
     const getAllDevices = async () => {
-      allDevices.value = ["1", "2"];
-      // try {
-      //   const response = await api.get("/admin/devices", {
-      //     headers: {
-      //       "X-CSRF-Token": "abcde12345" // Include the CSRF token if available
-      //     }
-      //   });
+      // allDevices.value = ["1", "2"];
+      try {
+        const response = await api.get("/admin/devices", {
+          headers: {
+            "X-CSRF-Token": "abcde12345" // Include the CSRF token if available
+          }
+        });
 
-      //   allDevices.value = response.data;
-      // } catch (error) {
-      //   console.error("Failed to get devices:", error.response.data);
-      // }
+        allDevices.value = response.data;
+      } catch (error) {
+        console.error("Failed to get devices:", error.response.data);
+      }
     };
 
     const checkIn = async () => {
@@ -264,8 +292,46 @@ export default {
     };
 
     const checkOut = async () => {
-      console.log(roomId);
-      // room = roomId;
+      // console.log(roomId);
+
+      // checkoutReport.value = {
+      //   details: [
+      //     {
+      //       cost: 0.0780313,
+      //       duration: 4.6944,
+      //       end_time: "2023-12-16T18:33:56",
+      //       mode: "cold",
+      //       start_time: "2023-12-16T18:33:51",
+      //       wind_speed: "MID"
+      //     },
+      //     {
+      //       cost: 0.0780343,
+      //       duration: 4.6944,
+      //       end_time: "2023-12-16T18:33:56",
+      //       mode: "cold",
+      //       start_time: "2023-12-16T18:33:51",
+      //       wind_speed: "MID"
+      //     },
+      //     {
+      //       cost: 0.0736313,
+      //       duration: 4.6944,
+      //       end_time: "2023-12-16T18:33:56",
+      //       mode: "cold",
+      //       start_time: "2023-12-16T18:33:51",
+      //       wind_speed: "MID"
+      //     }
+      //   ],
+      //   total_cost: 0,
+      //   total_time: 0
+      // };
+      // billReport.value = checkoutReport.value;
+      // console.log(billReport.value);
+      // detailedReport.value = checkoutReport.value.details;
+      // console.log(detailedReport.value[0].start_time);
+      // console.log(detailedReport);
+      // console.log(searchedDeviceData);
+      // isUnCheckOut.value = false;
+
       try {
         const response = await api.post(
           "/room/check_out",
@@ -274,16 +340,17 @@ export default {
           },
           {
             headers: {
-              "X-CSRF-Token": csrfToken.value
+              "X-CSRF-Token": "abcde12345"
             }
           }
         );
 
-        // const { room, report } = response.data;
-        // console.log("Check-out 成功:", room, report);
+        console.log("Check-out 成功:", response.data);
 
         // 将返回的 report 数据存储在 checkoutReport 中
-        // checkoutReport.value = report;
+        checkoutReport.value = response.data;
+        billReport.value = checkoutReport.data;
+        detailedReport.value = checkoutReport.data.details || [];
       } catch (error) {
         console.error("Check-out 失败:", error.response.data);
       }
@@ -309,6 +376,8 @@ export default {
       roomId,
       initTemperature,
       checkoutReport,
+      billReport,
+      detailedReport,
       executeSearch,
       getSingleDevice,
       cancelSearch,
