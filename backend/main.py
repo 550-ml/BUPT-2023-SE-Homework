@@ -564,24 +564,44 @@ curl.exe -v -X POST -d '{"room_id": "test", "operation": "start, stop, temperatu
         if room.room_id == room_id:
             power = room.power
 
-    print("         请求的开关机",start, "房间当前的开关机",power)
-    if bool(int(start)) == bool(power) and bool(power):
-        print("更改风速")
-        if start == '1':
-            start = 'ON'
-        #print(room_id, target_temp, wind_speed, start)
+    # print("         请求的开关机",start, "房间当前的开关机",power)
+    # if bool(int(start)) == bool(power) and bool(power):
+    #     print("更改风速")
+    #     if start == '1':
+    #         start = 'ON'
+    #     #print(room_id, target_temp, wind_speed, start)
+    #     scheduler.deal_with_speed_temp_change(room_id, int(target_temp), wind_speed)
+    # else:
+    #     if start == '1':
+    #         start = 'ON'
+    #         print(room_id, "开机")
+    #     else:
+    #         print(room_id, "关机")
+    #     #print(room_id, target_temp, wind_speed, start)
+    #     return_state = scheduler.deal_with_on_and_off(room_id, int(target_temp), wind_speed, start)
+    #     print(return_state)
+
+    print("           ", "请求的开关机", bool(int(start)), "房间当前的开关机", power)
+    if bool(int(start)) == bool(power) and not bool(int(start)):
+        print("房间", room_id, "想重复关机")
+        return jsonify({'error_code': 100}), 401
+
+    if bool(int(start)) == bool(power) and bool(int(start)):
+        print("更改风速： ", room_id, " 房间号")
         scheduler.deal_with_speed_temp_change(room_id, int(target_temp), wind_speed)
+
     else:
         if start == '1':
             start = 'ON'
-            print(room_id, "开机")
+            print("开机： ", room_id, "房间号")
+            scheduler.deal_with_on_and_off(room_id, int(target_temp), wind_speed, start)
         else:
-            print(room_id, "关机")
-        #print(room_id, target_temp, wind_speed, start)
-        return_state = scheduler.deal_with_on_and_off(room_id, int(target_temp), wind_speed, start)
-        print(return_state)
+            print("关机： ", room_id, "房间号")
+            scheduler.deal_with_on_and_off(room_id, int(25), 'MID', start)
 
     return jsonify({"message": "Online successfully"}), 204
+
+
 
 
 # 管理员给出所有未入住房间信息
