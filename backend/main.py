@@ -306,8 +306,8 @@ curl.exe -v -X get http://localhost:11451/api/status/test?no-csrf
     else:
         speed_to_num = {'HIGH': 3, 'MID': 2, 'LOW': 1}
         room_message['wind_speed'] = speed_to_num[room_message['wind_speed']]
+    # print(room_message, "回传状态信息")
     json = jsonify(room_message)
-    print(json, "回传状态信息")
     return json, 200
     # except:
     #     return jsonify({'error_code': 100}), 401
