@@ -110,7 +110,7 @@ class Ui_Form(object):
         self.RadioButton_3.clicked.connect(self.on_radio_button_clicked)
         self.ComboBox.currentIndexChanged.connect(self.on_combobox_index_changed)
 
-        self.countdown = 3  # 初始化计数器
+        self.countdown = 1  # 初始化计数器
         self.timer = QTimer()
         self.timer.timeout.connect(self.finalize_changes)
 
@@ -226,7 +226,7 @@ class Ui_Form(object):
         #self.save_data_to_file(data)
 
     def start_timer(self):
-        self.countdown = 3  # 重置计数器
+        self.countdown = 1  # 重置计数器
         self.timer.start(1000)
 
     def finalize_changes(self):
