@@ -109,7 +109,7 @@ curl.exe -v -X put -d '{"room":"test", "public_key":"RSA 4096"}' http://localhos
             "port": "",
             "ip": ""
         })
-        print(weiruzhu)
+        print("当前未入住列表：", weiruzhu)
         return jsonify({'room': room}), 200
     except:
         return jsonify({'error_code': 100}), 401
@@ -135,9 +135,8 @@ curl.exe -v -X delete -d '{"room":"test"}' http://localhost:11451/api/admin/devi
     # try:
     if room in weiruzhu:
         weiruzhu.remove(room)
-        print(f"未入住'{room}' 已删除")
+        print(f"未入住'{room}' 已删除", "当前未入住列表为：", weiruzhu)
         rooms_ip = [room_info for room_info in rooms_ip if room_info["room"] != room]
-        print(weiruzhu)
         return jsonify({'room': room}), 200
     elif room in scheduler.room_threads:
         del scheduler.room_threads[room]  # 此处等于scheduler函数中的删房函数
@@ -231,16 +230,16 @@ curl.exe -v -X post -d '{"operation":"start, stop, temperature, wind_speed", "da
         return jsonify({'error_code': 100}), 401
 
     if bool(int(start)) == bool(power) and bool(int(start)):
-        print("房间号： ", room_id, " 更改风速")
+        print("更改风速： ", room_id, " 房间号")
         scheduler.deal_with_speed_temp_change(room_id, int(target_temp), wind_speed)
 
         #control_client(room_id, True, target_temp, wind_speed)
     else:
         if start == '1':
             start = 'ON'
-            print("房间号： ", room_id, " 开机")
+            print("开机： ", room_id, "房间号")
         else:
-            print("房间号： ", room_id, " 关机")
+            print("关机： ", room_id, "房间号")
         scheduler.deal_with_on_and_off(room_id, int(target_temp), wind_speed, start)
 
         #control_client(room_id, False, target_temp, wind_speed)
@@ -280,7 +279,7 @@ curl.exe -v -X get http://localhost:11451/api/status/test?no-csrf
         #     return json, 200
     speed_to_num = {'HIGH': 3, 'MID': 2, 'LOW': 1}
     print("对", room_id, "查询房间状态信息：")
-    print(scheduler.room_threads.keys())
+    #print(scheduler.room_threads.keys())
     room_message = scheduler.get_room_message(room_id)
     if room_message["wind_speed"] == None or room_message["wind_speed"] == '':
         init_temp = room_temp[room_id]
@@ -296,7 +295,7 @@ curl.exe -v -X get http://localhost:11451/api/status/test?no-csrf
     else:
         room_message['wind_speed'] = speed_to_num[room_message['wind_speed']]
     json = jsonify(room_message)
-    print(json)
+    print(json, "回传状态信息")
     return json, 200
     # except:
     #     return jsonify({'error_code': 100}), 401
