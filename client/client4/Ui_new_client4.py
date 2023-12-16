@@ -21,7 +21,7 @@ import threading
 # 生成唯一标识符
 unique_id = ''.join(random.choices('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', k=16))
 # 请求数据
-room_id = 'test'#房间号运行前更改
+room_id = 'test4'#房间号运行前更改
 port = '5680'#我的端口
 #data = '26'#温度temperature
 #operation = 'start'#空调状态power
@@ -246,7 +246,7 @@ class Ui_Form(object):
             if self.receive_data_called:
                 print("本地已记录")
             else:
-                print(self.receive_data_called)
+                #print(self.receive_data_called)#测试
                 self.get_current_status(room_id,post_data,time)
             # 在 finalize_changes 中将 receive_data_called 重新设置为 False
             self.receive_data_called = False

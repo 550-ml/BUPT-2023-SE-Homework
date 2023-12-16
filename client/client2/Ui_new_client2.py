@@ -246,7 +246,7 @@ class Ui_Form(object):
             if self.receive_data_called:
                 print("本地已记录")
             else:
-                print(self.receive_data_called)
+                #print(self.receive_data_called)#测试
                 self.get_current_status(room_id,post_data,time)
             # 在 finalize_changes 中将 receive_data_called 重新设置为 False
             self.receive_data_called = False
