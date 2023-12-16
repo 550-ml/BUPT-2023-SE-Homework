@@ -10,6 +10,7 @@
 
 # scheduler.schedule
 
-a = {'1': 1, '2': 2}
-a['3'] = 3
-print(a)
+
+# from room import Room
+
+# room1 = Room()

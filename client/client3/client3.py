@@ -10,7 +10,7 @@ import random
 from datetime import datetime
 import subprocess
 
-from Ui_new_client import Ui_Form
+from Ui_new_client3 import Ui_Form
 
 class AirConditionerPanel(QWidget, Ui_Form):
 

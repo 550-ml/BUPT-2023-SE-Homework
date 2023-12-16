@@ -10,31 +10,31 @@
             <el-tab-pane label="空调运行" class="left-text">
               <div class="show-mes">
                 <el-card v-for="(room, index) in roomsInfo" :key="index">
-                  <img src="../assets/room1.jpg" class="image" />
-                  <div style="padding: 14px">
-                    <span>{{ room.roomId }}</span>
-                    <div class="bottom">
-                      <p>是否开启: {{ room.is_on }}</p>
-                      <p>空调模式: {{ room.mode }}</p>
-                      <p>当前风速: {{ room.speed }}</p>
-                      <p>当前温度: {{ room.currTemp }}</p>
-                      <el-button text class="button" @click="openDialog(room.roomId)">操作</el-button>
-                    </div>
+                  <span class="border-head">{{ room.roomId }}</span>
+                  <img src="../assets/room2.jpg" class="image" />
+
+                  <div class="bottom">
+                    <p>是否开启: <strong>{{ room.is_on }}</strong></p>
+                    <p>空调模式: <strong>{{ room.mode }}</strong></p>
+                    <p>当前风速: <strong>{{ room.speed }}</strong></p>
+                    <p>当前温度: <strong>{{ room.currTemp }}</strong></p>
+                    <el-button class="button" :icon="Edit" plain @click="openDialog(room.roomId)">控制房间</el-button>
                   </div>
+
                 </el-card>
                 <el-dialog v-model="dialogVisible" title="设置空调状态" width="30%" :close-on-click-modal="false"
                   :close-on-press-escape="false">
-                  <el-form ref="form" :model="form" label-width="120px">
+                  <el-form ref="form" label-width="120px">
                     <el-form-item label="空调状态设置">
                       <el-radio-group v-model="startvalue" class="up_set_start">
                         <el-radio label="1" value="1" border class="start_text">开启</el-radio>
                         <el-radio label="0" value="0" border class="start_text">关闭</el-radio>
                       </el-radio-group>
                     </el-form-item>
-                    <el-form-item label="目标温度(°C)">
+                    <el-form-item label="目标温度(°C)" style="width: 353px;">
                       <el-input v-model="targetTemperature" type="number" placeholder="目标温度"></el-input>
                     </el-form-item>
-                    <el-form-item label="风速设置">
+                    <el-form-item label="风速设置" style="width: 500px;">
                       <el-select v-model="selectwindspeed" placeholder="风速选择" clearable>
                         <el-option label="低风速" value="1" />
                         <el-option label="中风速" value="2" />
@@ -45,7 +45,7 @@
                   <template #footer>
                     <span class="dialog-footer">
                       <el-button @click="dialogVisible = false">取消操作</el-button>
-                      <el-button type="primary" @click="submitForm()">确定发送</el-button>
+                      <el-button type="primary" @click="submitForm">确定发送</el-button>
                     </span>
                   </template>
                 </el-dialog>
@@ -87,7 +87,8 @@
         </el-main>
       </el-container>
       <el-footer>
-        <el-button type="primary" @click="GetroomName">刷新数据</el-button>
+        <el-button type="primary" @click="GetroomName">查询数据</el-button>
+        <el-button type="primary" @click="stopFetching">停止查询</el-button>
       </el-footer>
     </el-container>
   </div>
@@ -97,11 +98,21 @@
 <script lang="ts" setup>
 import api from "../main.ts";
 import { ref } from "vue";
-// import { ElMessageBox } from 'element-plus';
-import axios from 'axios';
+import { ElMessage } from 'element-plus'
+import { Edit } from '@element-plus/icons-vue'
+
+
 // 定义默认房间信息
 const roomIds = ['test', '223', '224', '222', '223'];
+let shouldFetchRoomInfo = true;
 const roomsInfo = ref([
+  {
+    roomId: roomIds[0],
+    is_on: '未开启',
+    mode: '未开启',
+    speed: '未开启',
+    currTemp: '未开启',
+  },
   {
     roomId: roomIds[0],
     is_on: '未开启',
@@ -141,7 +152,7 @@ const roomsInfo = ref([
 // 获取特定房间的信息
 const fetchRoomInfo = async (roomId) => {
   try {
-    const response = await axios.get(`http://10.129.37.107:11451/api/status/${roomId}`);
+    const response = await api.get(`/status/${roomId}`);
     const roomData = response.data;
 
     // 根据接口返回的数据结构更新房间信息
@@ -150,13 +161,21 @@ const fetchRoomInfo = async (roomId) => {
         if (roomData.is_on) {
           room.is_on = '已开启';
           room.mode = roomData.mode;
-          room.speed = roomData.wind_speed;
-          room.currTemp = `${roomData.temperature}°C`;
+          if (roomData.wind_speed === 1) {
+            room.speed = '低风速';
+          } else if (roomData.wind_speed === 2) {
+            room.speed = '中风速';
+          } else if (roomData.wind_speed === 3) {
+            room.speed = '高风速';
+          } else {
+            room.speed = '未知'; // 如果有其他风速选项，可以在这里处理
+          }
+          room.currTemp = `${roomData.temperature.toFixed(3)}°C`;
         } else {
           room.is_on = '未开启';
           room.mode = '未开启';
           room.speed = '未开启';
-          room.currTemp = `${roomData.temperature}°C`;
+          room.currTemp = `${roomData.temperature.toFixed(3)}°C`;
         }
         return room;
       }
@@ -166,13 +185,22 @@ const fetchRoomInfo = async (roomId) => {
 
   } catch (error) {
     console.error('获取房间信息时出错:', error);
+    GetroomName();
+    ElMessage({
+      message: `获取房间${roomId}信息时出错`,
+      type: 'error',
+    })
   }
 };
+
 // 向后端请求房间名称
 const GetroomName = async () => {
-  const response = await axios.get('http://10.129.37.107:11451/api/status');
+  const response = await api.get('/status');
   const responseData = response.data;
-
+  ElMessage({
+    message: `成功开始查询`,
+    type: 'success',
+  })
   // const responseData = [{ room: 'test1', is_on: 0 }, { room: 'test2', is_on: 0 }]
   console.log(responseData);
   roomIds.splice(0, roomIds.length, ...responseData.map(room => room.room));
@@ -180,17 +208,32 @@ const GetroomName = async () => {
   roomsInfo.value = responseData.map(room => ({
     roomId: room.room,
     is_on: room.is_on === 0 ? '否' : '是',
-    mode: 'Cold',
-    speed: 'Medium',
-    currTemp: '20°C',
+    mode: '未开启',
+    speed: '未开启',
+    currTemp: '未开启',
   }));
   console.log(roomsInfo.value);
+  ElMessage({
+    message: '房间加载成功',
+    type: 'success',
+  })
+  shouldFetchRoomInfo = true;
   setInterval(() => {
     roomIds.forEach(roomId => {
-      fetchRoomInfo(roomId);
+      if (shouldFetchRoomInfo) {
+        fetchRoomInfo(roomId);
+      }
     });
   }, 1000);
 };
+// 点击按钮时设置 shouldFetchRoomInfo 为 false
+const stopFetching = () => {
+  shouldFetchRoomInfo = false;
+  ElMessage({
+    message: `成功停止查询`,
+  })
+};
+
 
 
 // 控制某一个房间信息
@@ -199,12 +242,18 @@ const startvalue = ref('0'); // 初始化为默认值
 const targetTemperature = ref('');
 const selectwindspeed = ref('');
 const selectedRoomId = ref('');
+
 const openDialog = (roomId) => {
   selectedRoomId.value = roomId;
   dialogVisible.value = true; // 打开对话框
+  ElMessage({
+    message: `设置${selectedRoomId.value}房间状态`,
+
+  })
   console.log(selectedRoomId.value);
 };
 const submitForm = () => {
+
   // 收集输入框中的数据
   let dataToSend = {
     operation: "start, stop, temperature, wind_speed",
@@ -221,11 +270,19 @@ const submitForm = () => {
   api.post(`/admin/devices/${selectedRoomId.value}`, jsonData)
     .then(response => {
       // 处理请求成功的响应
+      ElMessage({
+        message: '空调设置成功',
+        type: 'success',
+      })
       console.log('POST 请求成功:', response);
       // 这里可以根据返回的响应执行相应的逻辑
     })
     .catch(error => {
       // 处理请求错误
+      ElMessage({
+        message: '空调设置失败',
+        type: 'error',
+      })
       console.error('POST 请求出错:', error);
       // 这里可以根据错误执行相应的逻辑
     });
@@ -280,10 +337,10 @@ const sendDataToBackend = () => {
 /* 定义el-header元素的样式 */
 .el-header {
   height: fit-content;
-  background: linear-gradient(to right, #67879c, #094073);
+  background: linear-gradient(to right, #d0dfed, #5a9be1);
   /* 添加渐变背景 */
   color: #ffffff;
-  padding: 10px;
+  padding: 5px;
   text-align: center;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   border-bottom: 1px solid #0c3d6b;
@@ -292,16 +349,16 @@ const sendDataToBackend = () => {
 
 /* 定义head-text类的样式 */
 .head-text {
-  font-size: 65px;
+  font-size: 60px;
   /* 增大字体大小 */
   font-weight: bold;
-  text-shadow: 8px 8px 16px rgba(0, 0, 0, 0.5);
+  text-shadow: 8px 8px 16px rgba(0, 0, 0, 0.7);
   /* 添加文字阴影 */
 }
 
 /* 左边那一栏文字 */
 .el-tabs--left .el-tabs__item.is-left {
-  font-size: 30px;
+  font-size: 20px;
   /* 增大字体大小 */
   color: #17547c;
   /* 改变字体颜色 */
@@ -318,30 +375,29 @@ const sendDataToBackend = () => {
 }
 
 .el-tab-pane {
-  padding: 20px;
+  padding: 2px;
 }
 
 /* 主要内容样式 */
 .show-mes {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  margin: 0;
-  /* 去除外边距 */
+  gap: 20px;
+  margin: 10px;
   padding: 0;
-  /* 去除内边距 */
   justify-content: space-evenly;
 }
 
 .el-card {
-  width: calc(30% - 20px);
+  --el-card-padding: 5px;
+  width: calc(31% - 5px);
   /* 调整卡片宽度 */
   height: auto;
   /* 自动调整卡片高度 */
-  margin-bottom: 20px;
-  border-radius: 20px;
+  margin-bottom: 8px;
+  border-radius: 25px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  background-color: #cfdee7;
+  background-color: #dfedf5;
   transition: box-shadow 0.3s ease;
   padding: 10px;
   /* 调整内边距以减小卡片的总体高度 */
@@ -352,48 +408,99 @@ const sendDataToBackend = () => {
   /* 改变阴影效果 */
 }
 
+.border-head {
+  color: #000000;
+  /* 字体颜色 */
+  border-radius: 17px;
+  /* 圆角大小 */
+  border: 2px solid #98bad0;
+  /* 边框颜色和粗细 */
+  background-color: rgb(243, 247, 248);
+  /* 背景色 */
+  padding: 5px 2px;
+  /* 内边距 */
+  font-size: 25px;
+  /* 字体大小 */
+  font-weight: 1000;
+  /* 字体粗细 */
+  font-family: ui-rounded, sans-serif;
+  /* 字体 */
+  display: flex;
+  justify-content: center;
+  /* 水平居中 */
+  margin: 0 100px;
+  /* 设置左右边距 */
+  line-height: 1.1;
+  /* 调整文字与边框的上下距离 */
+  cursor: pointer;
+}
+
+
 /* 设置图片样式 */
 .image {
-  width: 95%;
+  width: 72%;
   max-width: 100%;
   display: block;
   margin: 0 auto;
-  margin-bottom: 10px;
+  margin-top: 7px;
+  margin-bottom: 0px;
   border-radius: 20px 20px 10px 10px;
   /* 图片上方设置圆角 */
 }
 
 .show-mes .bottom {
-  line-height: 1.6;
-  /* 增大行高 */
+  line-height: 1.5;
   font-size: 20px;
-  /* 增大字体大小 */
   color: #050505;
-  /* 改变字体颜色为白色 */
   font-family: 'Courier New', Courier, monospace;
-  /* 改变字体 */
   font-weight: 700;
-  /* 增大字重 */
-  text-align: left;
-  /* 文字左对齐 */
   padding: 8px;
-  /* 添加内边距 */
+  margin-left: 25px;
+  margin-top: 7px;
 }
 
+.show-mes .bottom p {
+  margin: 2px 0;
+  /* 增加段落间距 */
+}
 
-/* 按钮样式 */
+.show-mes .bottom p strong {
+  font-weight: 700;
+  /* 变量使用粗体 */
+  color: #0e0e0e;
+  /* 变量颜色 */
+  font-family: fangsong;
+  /* 使用不同字体 */
+
+}
+
 .button {
-  padding: 8px 8px;
-  border-radius: 5px;
-  background-color: #007BFF;
-  color: #a01818;
+  padding: 10px 5px;
+  /* 调整按钮内边距 */
+  border-radius: 8px;
+  /* 圆角大小 */
+  background-color: #c1cedb;
+  /* 背景颜色 */
+  color: white;
+  /* 字体颜色 */
+  border: none;
+  /* 移除边框 */
+  font-size: 16px;
+  /* 字体大小 */
+  font-weight: 100;
+  /* 字体粗细 */
   transition: background-color 0.3s ease;
-  /* 添加背景色过渡效果 */
+  /* 添加背景颜色的过渡效果 */
+  /* 背景色过渡效果 */
+  cursor: pointer;
+  /* 鼠标样式 */
+  text-decoration: none;
+  /* 移除链接默认下划线 */
 }
 
 .button:hover {
-  background-color: #0056b3;
-  /* 鼠标悬停时改变背景色 */
+  background-color: #cdd3d9;
+  /* 鼠标悬停时的背景色 */
 }
 
 .time {

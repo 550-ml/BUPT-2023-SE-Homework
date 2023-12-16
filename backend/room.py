@@ -13,14 +13,17 @@ class Room(threading.Thread):
         self.power = False
         self.room_id = room_id
         self.state = state
+
         # need to change
-        self.initial_env_temp = 25
+        self.initial_env_temp = 30
         self.current_temp = self.initial_env_temp
-        self.current_speed = None
-        self.target_temp = None
-        self.target_speed = None
-        self.start_time = None
-        self.end_time = None
+        self.current_speed = ''
+        self.target_temp = 0
+        self.target_speed = ''
+
+        self.start_time = 0
+        self.end_time = 0
+
         self.current_fee = 0
         self.last_fee = 0
         self.fee = 0
@@ -30,10 +33,15 @@ class Room(threading.Thread):
 
         self.running = True
         self.target = target
+
+        self.running_condition = threading.Condition()
         self.running_lock = threading.Lock()
         self.state_lock = state_lock
         self.write_lock = write_lock
         self.change_flag = 0
+
+        self.is_start_first = 1
+        self.be_running = 1
 
     # def __deepcopy__(self, memo):
     #     new_room = Room(self.room_id, self.state, self.target,
@@ -63,31 +71,37 @@ class Room(threading.Thread):
     #     return new_room
 
     def run(self):
-        self.start_time = datetime.now()
-        self.on_temp = self.current_temp
-        while self.running:
-            self.running_lock.acquire()
-            self.state_lock.acquire()
+        while True:
+            if self.running:
+                self.running_lock.acquire()
+                self.state_lock.acquire()
 
-            self.is_changed()
+                if self.be_running:
+                    self.start_time = datetime.now()
+                    self.on_temp = self.current_temp
+                    self.be_running = 0
 
-            self.current_temp, self.current_fee = self.target(
-                self.on_temp,
-                self.target_temp,
-                self.target_speed,
-                self.start_time
-            )
-            if self.current_temp == self.target_temp:
-                self.running = False
-                self.end_time = datetime.now()
-                self.power = False
-                self.state = 'FINISH'
-                self.last_off_temp = self.current_temp
+                self.is_changed()
 
-                self.write_into_db(self.end_time)
+                self.current_temp, self.current_fee = self.target(
+                    self.on_temp,
+                    self.target_temp,
+                    self.target_speed,
+                    self.start_time,
+                    -1 if self.current_temp > self.target_temp else 1
+                )
+                
+                if self.current_temp == self.target_temp:
+                    self.running = False
+                    self.power = False
+                    self.state = 'FINISH'
+                    self.stop()
 
-            self.state_lock.release()
-            self.running_lock.release()
+                self.state_lock.release()
+                self.running_lock.release()
+            else:
+                with self.running_condition:
+                    self.running_condition.wait()
 
     def stop(self):
         self.running = False
@@ -96,14 +110,20 @@ class Room(threading.Thread):
         self.end_time = datetime.now()
         self.last_off_temp = self.current_temp
         self.write_into_db(self.end_time)
-
         self.running_lock.release()
+
+    def resume(self):
+        with self.running_condition:
+            self.running = True
+            self.be_running = 1
+            self.running_condition.notify()
 
     def is_changed(self):
         if self.change_flag:
             self.end_time = datetime.now()
             self.write_into_db(self.end_time)
             self.start_time = datetime.now()
+            self.on_temp = self.current_temp
             self.change_flag = 0
 
     def write_into_db(self, end_time):
