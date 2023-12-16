@@ -294,9 +294,9 @@ curl.exe -v -X get http://localhost:11451/api/status/test?no-csrf
         #     print(json)
         #     return json, 200
 
-    print("------------------------------------------------------------------------------------------------------------")
+    #print("------------------------------------------------------------------------------------------------------------")
 
-    print("对", room_id, "查询房间状态信息：")
+    #print("对", room_id, "查询房间状态信息：")
     if room_id not in scheduler.room_threads.keys():
         print("但该房间", room_id, "不在入住列表中")
         return jsonify({'error_code': 100}), 401
@@ -557,7 +557,7 @@ def control_client(room_id, is_on: bool, target_temp, wind):
     # try:
     response = requests.post(webhook_url, json=json)
     response.raise_for_status()
-    print("请求已发送成功")
+    print("请求已发送成功!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
     # except requests.RequestException as e:
     #     print(f"Error sending webhook: {e}")
 

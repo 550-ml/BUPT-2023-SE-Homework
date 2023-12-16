@@ -17,7 +17,7 @@ class Scheduler:
         self.priority = {'HIGH': 1, 'MID': 2, 'LOW': 3}
 
         self.max_be_served = 3
-        self.RR_SLOT = 30
+        self.RR_SLOT = 40
 
         self.state_lock = {}
         # self.read_lock = {}
@@ -193,7 +193,7 @@ class Scheduler:
                 room_with_lowest_priority = self.queues.get_running_room_with_lowest_priority(
                     self.room_threads
                 )
-                print('priority lowest:', room_with_lowest_priority)
+                # print('priority lowest:', room_with_lowest_priority)
 
                 room_priority = self.priority[
                     self.room_threads[room_with_lowest_priority].current_speed
