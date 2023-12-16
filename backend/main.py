@@ -418,17 +418,20 @@ curl.exe -v -X POST -d '{"room": "test"}' http://localhost:11451/api/room/check_
         return jsonify({'error_code': 100}), 401
 
     checkin = order.checkin
-    checkout = order.checkout
+    #checkout = order.checkout
+    checkout = datetime.now()
     total_time = checkout - checkin
-    total_cost = order.total_cost
+
 
     details = Detail.query.filter_by(room_id=room).order_by(Detail.start_time.desc()).all()
+    fee_last = Detail.query.filter_by(room_id=room).order_by(Detail.start_time.desc()).first().fee
+    total_cost = fee_last
 
-    de = {}
+    de = []
 
     # 遍历查询结果并提取所需信息
     for detail in details:
-        de.update({
+        de.append({
             'start_time': detail.start_time.isoformat(),
             'end_time': detail.end_time.isoformat(),
             'wind_speed': detail.speed,
@@ -439,7 +442,7 @@ curl.exe -v -X POST -d '{"room": "test"}' http://localhost:11451/api/room/check_
 
     report_data = {
         'total_cost': total_cost,
-        'total_time': total_time,
+        'total_time': total_time.total_seconds(),
         'details': de
     }
 
@@ -447,6 +450,7 @@ curl.exe -v -X POST -d '{"room": "test"}' http://localhost:11451/api/room/check_
     delete.append(room)
     scheduler.delete_room(delete)
     weiruzhu.append(room)
+    print(report_data)
 
     return jsonify(report_data), 200
 
