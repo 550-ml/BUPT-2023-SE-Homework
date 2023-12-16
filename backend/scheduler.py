@@ -203,7 +203,7 @@ class Scheduler:
                     # priority scheduling
                     self.room_threads[room_with_lowest_priority].stop()
                     self.room_threads[room_with_lowest_priority].state = 'SUSPEND'
-                    self.room_threads[room_with_lowest_priority].power = False
+                    self.room_threads[room_with_lowest_priority].power = True
                     self.queues.pop_service_by_room_id(room_with_lowest_priority)
                     self.queues.add_into_suspend_queue(
                         self.room_threads[room_with_lowest_priority]
@@ -226,7 +226,7 @@ class Scheduler:
                     if (time_now - start_waiting_time).total_seconds() >= self.RR_SLOT:
                         self.room_threads[room_with_lowest_priority].stop()
                         self.room_threads[room_with_lowest_priority].state = 'SUSPEND'
-                        self.room_threads[room_with_lowest_priority].power = False
+                        self.room_threads[room_with_lowest_priority].power = True
                         self.queues.pop_service_by_room_id(room_with_lowest_priority)
                         self.queues.add_into_suspend_queue(
                             self.room_threads[room_with_lowest_priority]
