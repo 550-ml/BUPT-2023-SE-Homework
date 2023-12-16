@@ -16,7 +16,6 @@
           placeholder="请输入房间号"
           class="p-2 border border-gray-300 rounded mr-2"
           v-model="searchTerm"
-          @input="emitSearch"
         />
         <button class="bg-blue-500 text-white py-2 px-4 rounded" @click="executeSearch">搜索</button>
       </div>
@@ -52,7 +51,7 @@
               >
                 <td>{{ deviceId }}</td>
                 <td>
-                  <button class="bg-blue-500 text-white py-2 px-4 rounded item-center" @click="openCheckIn">
+                  <button class="bg-blue-500 text-white py-2 px-4 rounded item-center" @click="openCheckIn(deviceId)">
                     入住
                   </button>
                 </td>
@@ -71,10 +70,7 @@
               >
                 <td>{{ deviceId }}</td>
                 <td>
-                  <button
-                    class="bg-blue-500 text-white py-2 px-4 rounded item-center"
-                    @click="getSingleDevice(deviceId)"
-                  >
+                  <button class="bg-blue-500 text-white py-2 px-4 rounded item-center" @click="openCheckOut(deviceId)">
                     退房
                   </button>
                 </td>
@@ -102,9 +98,7 @@
           placeholder="请输入默认温度"
         />
         <div class="flex justify-end">
-          <button @click="checkIn(roomId, initTemperature)" class="bg-blue-500 text-white py-2 px-4 rounded mr-2">
-            入住
-          </button>
+          <button @click="checkIn(roomId)" class="bg-blue-500 text-white py-2 px-4 rounded mr-2">入住</button>
           <button @click="closeCheckIn" class="bg-gray-300 text-gray-700 py-2 px-4 rounded">取消</button>
         </div>
       </div>
@@ -116,7 +110,16 @@
   </div>
 
   <div v-if="isCheckOutOpen" class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
-    <div class="bg-white p-6 rounded shadow-md">
+    <div v-if="isUnCheckOut">
+      <div class="bg-white p-8 max-w-md rounded shadow-md">
+        <p>确认退房？</p>
+        <div class="flex justify-end">
+          <button @click="checkOut(roomId)" class="bg-blue-500 text-white py-2 px-4 rounded mr-2">确认</button>
+          <button @click="closeCheckOut" class="bg-gray-300 text-gray-700 py-2 px-4 rounded">取消</button>
+        </div>
+      </div>
+    </div>
+    <div v-else class="bg-white p-6 rounded shadow-md">
       <div>
         <h2>xxx房间账单</h2>
       </div>
@@ -131,7 +134,6 @@
 <script>
 import { ref, onMounted, onUpdated } from "vue";
 import RoomStates from "../components/RoomState.vue";
-import axios from "axios";
 import api from "../main.ts";
 
 export default {
@@ -142,20 +144,22 @@ export default {
     const searchTerm = ref("");
     const searchedDeviceData = ref(null);
     const isUnCheckIn = ref(true);
+    const isUnCheckOut = ref(true);
     const isCheckInOpen = ref(false);
     const isCheckOutOpen = ref(false);
-    const isDetailedOrderOpen = ref(false);
     const activeTab = ref("tab1");
     const allDevices = ref([]);
     const allUnCheckedDevices = ref([]);
-    const roomId = ref(null);
     const initTemperature = ref(0);
+    const checkoutReport = ref("");
+    let roomId = ref(null);
 
     const executeSearch = () => {
       // if (!searchTerm.value) {
       //   return;
       // }
-
+      // if allDevices.
+      console.log(searchTerm.value);
       getSingleDevice(searchTerm.value);
     };
 
@@ -175,7 +179,8 @@ export default {
       searchedDeviceData.value = null;
     };
 
-    const openCheckIn = () => {
+    const openCheckIn = deviceId => {
+      roomId = deviceId;
       isCheckInOpen.value = true;
     };
 
@@ -184,12 +189,14 @@ export default {
       isUnCheckIn.value = true;
     };
 
-    const openCheckOut = () => {
+    const openCheckOut = deviceId => {
+      roomId = deviceId;
       isCheckOutOpen.value = true;
     };
 
     const closeCheckOut = () => {
       isCheckOutOpen.value = false;
+      isUnCheckOut.value = true;
     };
 
     const changeTab = tab => {
@@ -203,41 +210,42 @@ export default {
     };
 
     const getAllUnCheckedDevices = async () => {
-      try {
-        const response = await api.get("/admin/uncheck_in", {
-          headers: {
-            "X-CSRF-Token": "abcde12345" // Include the CSRF token if available
-          }
-        });
-        console.log(response.data);
-        allUnCheckedDevices.value = response.data;
-      } catch (error) {
-        console.error("Failed to get devices:", error.response.data);
-      }
+      allUnCheckedDevices.value = ["1", "2"];
+      // try {
+      //   const response = await api.get("/admin/uncheck_in", {
+      //     headers: {
+      //       "X-CSRF-Token": "abcde12345" // Include the CSRF token if available
+      //     }
+      //   });
+      //   allUnCheckedDevices.value = response.data;
+      // } catch (error) {
+      //   console.error("Failed to get devices:", error.response.data);
+      // }
     };
 
     const getAllDevices = async () => {
-      try {
-        const response = await api.get("/admin/devices", {
-          headers: {
-            "X-CSRF-Token": "abcde12345" // Include the CSRF token if available
-          }
-        });
+      allDevices.value = ["1", "2"];
+      // try {
+      //   const response = await api.get("/admin/devices", {
+      //     headers: {
+      //       "X-CSRF-Token": "abcde12345" // Include the CSRF token if available
+      //     }
+      //   });
 
-        allDevices.value = response.data;
-      } catch (error) {
-        console.error("Failed to get devices:", error.response.data);
-      }
+      //   allDevices.value = response.data;
+      // } catch (error) {
+      //   console.error("Failed to get devices:", error.response.data);
+      // }
     };
 
-    const checkIn = async (roomId, initTemperature) => {
-      isUnCheckIn.value = false;
-      console.log(initTemperature.value); // 输出温度值F
+    const checkIn = async () => {
+      console.log(roomId);
       try {
         const response = await api.post(
           "/room/check_in",
           {
-            room: roomId
+            room: roomId,
+            temperature: initTemperature.value
           },
           {
             headers: {
@@ -247,7 +255,7 @@ export default {
         );
 
         const checkedInRoom = response.data.room;
-
+        isUnCheckIn.value = false;
         openCheckIn();
       } catch (error) {
         // Handle unauthorized or other errors
@@ -256,6 +264,8 @@ export default {
     };
 
     const checkOut = async () => {
+      console.log(roomId);
+      // room = roomId;
       try {
         const response = await api.post(
           "/room/check_out",
@@ -269,14 +279,15 @@ export default {
           }
         );
 
-        const { room, report } = response.data;
-        console.log("Check-out 成功:", room, report);
+        // const { room, report } = response.data;
+        // console.log("Check-out 成功:", room, report);
 
         // 将返回的 report 数据存储在 checkoutReport 中
-        checkoutReport.value = report;
+        // checkoutReport.value = report;
       } catch (error) {
         console.error("Check-out 失败:", error.response.data);
       }
+      isUnCheckOut.value = false;
     };
 
     onMounted(() => {
@@ -289,13 +300,15 @@ export default {
       searchTerm,
       searchedDeviceData,
       isUnCheckIn,
+      isUnCheckOut,
       isCheckInOpen,
       isCheckOutOpen,
-      isDetailedOrderOpen,
       activeTab,
       allDevices,
       allUnCheckedDevices,
       roomId,
+      initTemperature,
+      checkoutReport,
       executeSearch,
       getSingleDevice,
       cancelSearch,
