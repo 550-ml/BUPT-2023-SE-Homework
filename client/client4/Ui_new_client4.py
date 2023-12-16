@@ -21,13 +21,13 @@ import threading
 # 生成唯一标识符
 unique_id = ''.join(random.choices('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', k=16))
 # 请求数据
-room_id = 'test4'#房间号运行前更改
+room_id = '4'#房间号运行前更改
 port = '5680'#我的端口
 #data = '26'#温度temperature
 #operation = 'start'#空调状态power
 #time = datetime.now().isoformat()#时间timestamp
 # 配置服务器的URL
-base_url = 'http://10.129.37.107:11451'#host:port
+base_url = 'http://10.129.210.249:11451'#host:port
 # 生成签名文本
 sign_text = room_id + unique_id + port
 signature = hashlib.sha256(sign_text.encode()).hexdigest()
@@ -66,18 +66,18 @@ class Ui_Form(object):
         self.BodyLabel_3.setGeometry(QtCore.QRect(650, 190, 63, 19))
         self.BodyLabel_3.setObjectName("BodyLabel_3")
 
-        self.RadioButton = RadioButton(Form)#中
+        self.RadioButton = RadioButton(Form)#中(默认)
         self.RadioButton.setGeometry(QtCore.QRect(670, 230, 51, 24))
         self.RadioButton.setObjectName("RadioButton")
-        #self.RadioButton.setChecked(True)
+        self.RadioButton.setChecked(True)
         self.RadioButton_2 = RadioButton(Form)#高
         self.RadioButton_2.setGeometry(QtCore.QRect(730, 230, 51, 24))
         self.RadioButton_2.setObjectName("RadioButton_2")
         #self.RadioButton_2.setChecked(True)
-        self.RadioButton_3 = RadioButton(Form)#低(默认)
+        self.RadioButton_3 = RadioButton(Form)#低
         self.RadioButton_3.setGeometry(QtCore.QRect(600, 230, 51, 24))
         self.RadioButton_3.setObjectName("RadioButton_3")
-        self.RadioButton_3.setChecked(True)
+        #self.RadioButton_3.setChecked(True)
 
         self.BodyLabel_4 = BodyLabel(Form)
         self.BodyLabel_4.setGeometry(QtCore.QRect(660, 110, 63, 19))
