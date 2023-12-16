@@ -418,11 +418,14 @@ curl.exe -v -X POST -d '{"room": "test"}' http://localhost:11451/api/room/check_
         return jsonify({'error_code': 100}), 401
 
     checkin = order.checkin
-    checkout = order.checkout
+    #checkout = order.checkout
+    checkout = datetime.now()
     total_time = checkout - checkin
-    total_cost = order.total_cost
+
 
     details = Detail.query.filter_by(room_id=room).order_by(Detail.start_time.desc()).all()
+    fee_last = Detail.query.filter_by(room_id=room).order_by(Detail.start_time.desc()).first().fee
+    total_cost = fee_last
 
     de = []
 
