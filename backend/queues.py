@@ -23,7 +23,7 @@ class Queues:
     def pop_off_queue(self, room_id):
         if room_id not in self.off_queue:
             return None
-        del self.off_queue(room_id)
+        del self.off_queue[room_id]
 
     # 将服务对象加入等待/待调度队列
     def add_into_ready_queue(self, room_id, priority):
