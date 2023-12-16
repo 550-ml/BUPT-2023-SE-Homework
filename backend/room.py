@@ -90,6 +90,7 @@ class Room(threading.Thread):
                     self.start_time,
                     -1 if self.current_temp > self.target_temp else 1
                 )
+                
                 if self.current_temp == self.target_temp:
                     self.running = False
                     self.power = False
