@@ -13,14 +13,17 @@ class Room(threading.Thread):
         self.power = False
         self.room_id = room_id
         self.state = state
+
         # need to change
-        self.initial_env_temp = 25
+        self.initial_env_temp = 30
         self.current_temp = self.initial_env_temp
-        self.current_speed = None
-        self.target_temp = None
-        self.target_speed = None
-        self.start_time = None
-        self.end_time = None
+        self.current_speed = ''
+        self.target_temp = 0
+        self.target_speed = ''
+
+        self.start_time = 0
+        self.end_time = 0
+
         self.current_fee = 0
         self.last_fee = 0
         self.fee = 0
@@ -30,6 +33,7 @@ class Room(threading.Thread):
 
         self.running = True
         self.target = target
+        
         self.running_lock = threading.Lock()
         self.state_lock = state_lock
         self.write_lock = write_lock
