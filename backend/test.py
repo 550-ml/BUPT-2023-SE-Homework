@@ -10,6 +10,6 @@
 
 # scheduler.schedule
 
-from room import Room
+# from room import Room
 
-room1 = Room()
+# room1 = Room()
