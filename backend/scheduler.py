@@ -23,8 +23,10 @@ class Scheduler:
         # self.read_lock = {}
         self.write_lock = threading.Lock()
         self.recover_lock = threading.Lock()
+        self.add_room_lock = threading.Lock()
 
     def add_room(self, room_ids: list):
+        self.add_room_lock.acquire()
         for room_id in room_ids:
             self.state_lock[room_id] = threading.Lock()
             # self.read_lock[room_id] = threading.Lock()
@@ -33,6 +35,7 @@ class Scheduler:
             self.room_threads[room_id] = room
 
             add_to_order(room_id)
+        self.add_room_lock.release()
 
     def delete_room(self, room_ids: list):
         for room_id in room_ids:
@@ -129,6 +132,7 @@ class Scheduler:
                     recover_temp(self.room_threads[room_id])
 
             # if room's current_temp <= target_temp, pop running_queue and add into suspend_queue
+            self.add_room_lock.acquire()
             for room in self.room_threads.values():
                 if room.target_temp is None:
                     continue
@@ -141,6 +145,7 @@ class Scheduler:
                     room.power = False
                     self.queues.pop_service_by_room_id(room.room_id)
                     self.queues.add_into_suspend_queue(room)
+            self.add_room_lock.release()
 
             # pop suspend_queue and add into ready_queue
             ready_to_pop_suspend = self.queues.pop_suspend_queue()
