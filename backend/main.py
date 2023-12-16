@@ -20,8 +20,8 @@ t = Thread(target=scheduler.schedule)
 
 rooms_ip = [{
     "room": "test",
-    "port": "",
-    "ip": ""
+    "port": "5677",
+    "ip": "10.129.117.63"
 }]
 
 
@@ -416,8 +416,8 @@ curl.exe -v -X POST -d '{"room": "test"}' http://localhost:11451/api/room/check_
         de.update({
             'start_time': detail.start_time.isoformat(),
             'end_time': detail.end_time.isoformat(),
-            'wind_speed': detail.wind_speed,
-            'mode': detail.mode,
+            'wind_speed': detail.speed,
+            'mode': "cold",
             'duration': detail.times_used,
             'cost': detail.fee
         })
@@ -470,6 +470,7 @@ curl.exe -v -X POST -d '{"room_id": "test"}' http://localhost:11451/api/device/c
         if room_ip["room"] == room_id:
             room_ip["port"] = port
             room_ip["ip"] = client_ip
+        print("该房间", room_ip["room"], "的ip端口：", room_ip["port"], room_ip["ip"])
 
     return jsonify({"message": "succeed"}), 200
 
@@ -484,6 +485,7 @@ def control_client(room_id, is_on: bool, target_temp, wind):
 
     :return: 204 401
     """
+    print("每个房间的ip端口为：", rooms_ip)
     port = ''
     client_ip = ''
     for room_ip in rooms_ip:
@@ -491,7 +493,8 @@ def control_client(room_id, is_on: bool, target_temp, wind):
             port = room_ip["port"]
             client_ip = room_ip["ip"]
 
-    webhook_url = 'http://' + client_ip + ':' + port + '/api/control'  # 前端提供的Webhook URL
+    webhook_url = 'http://' + str(client_ip) + ':' + str(port) + '/api/control'  # 前端提供的Webhook URL
+    print("webhookurl:", webhook_url)
     operation = "start, stop, temperature, wind_speed, mode"
     data = str(is_on) + ',' + str(not is_on) + ',' + str(target_temp) + ',' + str(wind) + ',' + 'cold'
     json = {
@@ -556,8 +559,7 @@ curl.exe -v -X POST -d '{"room_id": "test", "operation": "start, stop, temperatu
         if room.room_id == room_id:
             power = room.power
 
-    print("请求的开关机",start)
-    print("房间当前的开关机",power)
+    print("         请求的开关机",start, "房间当前的开关机",power)
     if bool(int(start)) == bool(power) and bool(power):
         print("更改风速")
         if start == '1':
