@@ -1,26 +1,30 @@
 <template>
-  <div class="hotel-management">
-    <div class="left-panel">
-      <h1 class="title">BUPT酒店管理系统</h1>
-      <!-- 其他内容 -->
-    </div>
-    <div class="right-panel">
+  <div class="login-background">
+    <div class="login-header-text">波普特廉价酒店管理系统</div>
+    <div class="hotel-management">
+      <img src="../../assets/hotel2.jpg" class="hotel-img">
       <div class="login-container">
         <el-form :model="form" label-width="120px" class="login-form">
           <div class="title-container">
-            <h3 class="title">登录</h3>
+            <h3 class="title">酒店登录</h3>
           </div>
           <el-form-item>
-            <el-icon :size="20" class="svg-container icon-user">
-              <User />
-            </el-icon>
-            <el-input v-model="form.name" placeholder="Username" class="custom-input"></el-input>
+            <el-input v-model="form.name" placeholder="Username" class="custom-input">
+              <template #prepend>
+                <el-icon :size="20" class="svg-container icon-user">
+                  <User />
+                </el-icon>
+              </template>
+            </el-input>
           </el-form-item>
           <el-form-item>
-            <el-icon :size="20" class="svg-container icon-edit">
-              <Edit />
-            </el-icon>
-            <el-input v-model="form.password" placeholder="Password" class="custom-input" show-password></el-input>
+            <el-input v-model="form.password" placeholder="Password" class="custom-input" show-password>
+              <template #prepend>
+                <el-icon :size="20" class="svg-container icon-edit">
+                  <Edit />
+                </el-icon>
+              </template>
+            </el-input>
           </el-form-item>
           <el-form-item>
             <el-button class="login-button" type="primary" @click="login">登录</el-button>
@@ -79,129 +83,199 @@ const login = () => {
 
 <style lang="scss" scoped>
 // Define your color variables
-$bg: #2d3a4b;
-$dark_gray: #889aa4;
-$light_gray: #eee;
-$cursor: #fff;
+.login-background {
+  background: linear-gradient(to top, #edeff1, #5a9be1);
+  /* 蓝色渐变背景 */
+  height: 100vh;
+  /* 设置高度，确保填满整个视口 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
 .hotel-management {
-  display: flex;
-  background-color: #f0f0f0;
-}
-
-.left-panel {
-  flex: 1;
-
+  background: white;
+  /* 白色底色 */
   padding: 20px;
+  border-radius: 120px 8px;
+  /* 可以根据需要调整边框圆角 */
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  /* 添加阴影效果 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 350px;
+  margin-right: 350px;
+  height: 400px;
+  /* 设置更高的高度 */
 }
 
-.right-panel {
-  flex: 2;
-  /* 右侧内容的样式 */
-}
-
-.title {
-  font-size: 36px;
+.login-header-text {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 70px;
   font-weight: bold;
-  color: #333;
-  margin-bottom: 20px;
+  color: #f9f3f3;
+  /* 文本颜色 */
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  /* 添加文本阴影 */
+  text-transform: uppercase;
+  /* 转换为大写字母 */
+  letter-spacing: 2px;
+  /* 字符间距 */
+  font-family: 'Arial', sans-serif;
+  /* 字体样式 */
+}
+
+
+.login-container {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.hotel-img {
+  position: relative;
+  max-width: 50%;
+  margin-left: 20px;
+  border-radius: 20px 5px;
+  mix-blend-mode: multiply;
 }
 
 .login-container {
-  min-height: 100%;
-  width: 100%;
-  background-color: $bg;
-  overflow: hidden;
-
-  .login-form {
-    position: relative;
-    width: 520px;
-    max-width: 100%;
-    padding: 160px 35px 0;
-    margin: 0 auto;
-    overflow: hidden;
-
-    :v-deep(.el-form-item) {
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      background: rgba(0, 0, 0, 0.1);
-      border-radius: 5px;
-      color: #454545;
-    }
-
-    :v-deep(.el-input) {
-      display: inline-block;
-      height: 47px;
-      width: 85%;
-
-      input {
-        background: transparent;
-        border: 0px;
-        -webkit-appearance: none;
-        border-radius: 0px;
-        padding: 12px 5px 12px 15px;
-        color: $light_gray;
-        height: 47px;
-        caret-color: $cursor;
-      }
-    }
-
-    .login-button {
-      width: 100%;
-      box-sizing: border-box;
-    }
-  }
-
-  .tips {
-    font-size: 16px;
-    line-height: 28px;
-    color: #fff;
-    margin-bottom: 10px;
-
-    span {
-      &:first-of-type {
-        margin-right: 16px;
-      }
-    }
-  }
-
-  .svg-container {
-    padding: 6px 5px 6px 15px;
-    color: $dark_gray;
-    vertical-align: middle;
-    display: inline-block;
-  }
-
-  .title-container {
-    position: relative;
-
-    .title {
-      font-size: 26px;
-      color: $light_gray;
-      margin: 0px auto 40px auto;
-      text-align: center;
-      font-weight: bold;
-    }
-
-    :v-deep().lang-select {
-      position: absolute;
-      top: 4px;
-      right: 0;
-      background-color: white;
-      font-size: 22px;
-      padding: 4px;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-  }
-
-  .show-pwd {
-    // position: absolute;
-    // right: 10px;
-    // top: 7px;
-    font-size: 16px;
-    color: $dark_gray;
-    cursor: pointer;
-    user-select: none;
-  }
+  display: flex;
+  align-items: center;
 }
+
+.hotel-img {
+  max-width: 50%;
+  margin-right: 20px;
+  border-radius: 20px;
+  mix-blend-mode: multiply;
+  /* 调整混合模式 */
+}
+
+
+.login-form {
+  width: 90%;
+}
+
+.title-container {
+  text-align: center;
+  margin-bottom: 20px;
+  margin-left: 80px;
+  font-size: 40px;
+  font-family: Arial, sans-serif;
+  /* 通用字体 */
+}
+
+.custom-input {
+  width: 100%;
+  margin-bottom: 15px;
+}
+
+.login-button {
+  margin-left: 30px;
+  width: 70%;
+}
+
+
+// .login-container {
+//   width: 100%;
+//   background-color: $bg;
+//   overflow: hidden;
+
+//   .login-form {
+//     position: relative;
+//     width: 520px;
+//     max-width: 100%;
+//     padding: 160px 35px 0;
+//     margin: 0 auto;
+//     overflow: hidden;
+
+//     :v-deep(.el-form-item) {
+//       border: 1px solid rgba(255, 255, 255, 0.1);
+//       background: rgba(0, 0, 0, 0.1);
+//       border-radius: 5px;
+//       color: #454545;
+//     }
+
+//     :v-deep(.el-input) {
+//       display: inline-block;
+//       height: 47px;
+//       width: 85%;
+
+//       input {
+//         background: transparent;
+//         border: 0px;
+//         -webkit-appearance: none;
+//         border-radius: 0px;
+//         padding: 12px 5px 12px 15px;
+//         color: $light_gray;
+//         height: 47px;
+//         caret-color: $cursor;
+//       }
+//     }
+
+//     .login-button {
+//       width: 100%;
+//       box-sizing: border-box;
+//     }
+//   }
+
+//   .tips {
+//     font-size: 16px;
+//     line-height: 28px;
+//     color: #fff;
+//     margin-bottom: 10px;
+
+//     span {
+//       &:first-of-type {
+//         margin-right: 16px;
+//       }
+//     }
+//   }
+
+//   .svg-container {
+//     padding: 6px 5px 6px 15px;
+//     color: $dark_gray;
+//     vertical-align: middle;
+//     display: inline-block;
+//   }
+
+//   .title-container {
+//     position: relative;
+
+//     .title {
+//       font-size: 26px;
+//       color: $light_gray;
+//       margin: 0px auto 40px auto;
+//       text-align: center;
+//       font-weight: bold;
+//     }
+
+//     :v-deep().lang-select {
+//       position: absolute;
+//       top: 4px;
+//       right: 0;
+//       background-color: white;
+//       font-size: 22px;
+//       padding: 4px;
+//       border-radius: 4px;
+//       cursor: pointer;
+//     }
+//   }
+
+//   .show-pwd {
+//     // position: absolute;
+//     // right: 10px;
+//     // top: 7px;
+//     font-size: 16px;
+//     color: $dark_gray;
+//     cursor: pointer;
+//     user-select: none;
+//   }
+// }
 </style>
