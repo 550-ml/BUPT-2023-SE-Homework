@@ -439,7 +439,7 @@ curl.exe -v -X POST -d '{"room": "test"}' http://localhost:11451/api/room/check_
 
     report_data = {
         'total_cost': total_cost,
-        'total_time': total_time,
+        'total_time': total_time.isoformat(),
         'details': de
     }
 
@@ -447,6 +447,7 @@ curl.exe -v -X POST -d '{"room": "test"}' http://localhost:11451/api/room/check_
     delete.append(room)
     scheduler.delete_room(delete)
     weiruzhu.append(room)
+    print(report_data)
 
     return jsonify(report_data), 200
 
