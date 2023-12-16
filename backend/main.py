@@ -22,6 +22,14 @@ rooms_ip = [{
     "room": "test",
     "port": "5677",
     "ip": "10.129.117.63"
+}, {
+    "room": "test2"
+}, {
+    "room": "test3"
+}, {
+    "room": "test4"
+}, {
+    "room": "test5"
 }]
 
 
@@ -78,7 +86,7 @@ curl.exe -v -X post http://localhost:11451/api/logout?no-csrf
     return 204
 
 
-weiruzhu = ['test', 'test2']
+weiruzhu = ['test', 'test2', 'test3', 'test4', 'test5']
 
 
 # 管理员加房
@@ -237,17 +245,17 @@ curl.exe -v -X post -d '{"operation":"start, stop, temperature, wind_speed", "da
         print("更改风速： ", room_id, " 房间号")
         scheduler.deal_with_speed_temp_change(room_id, int(target_temp), wind_speed)
 
-        # control_client(room_id, True, target_temp, wind_speed)
+        control_client(room_id, True, target_temp, wind_speed)
     else:
         if start == '1':
             start = 'ON'
             print("开机： ", room_id, "房间号")
             scheduler.deal_with_on_and_off(room_id, int(target_temp), wind_speed, start)
-            # control_client(room_id, True, target_temp, wind_speed)
+            control_client(room_id, True, target_temp, wind_speed)
         else:
             print("关机： ", room_id, "房间号")
             scheduler.deal_with_on_and_off(room_id, int(25), 'MID', start)
-            # control_client(room_id, False, target_temp, wind_speed)
+            control_client(room_id, False, target_temp, wind_speed)
 
     return jsonify({'room': room_id}), 200
     # except:
@@ -493,7 +501,7 @@ curl.exe -v -X POST -d '{"room_id": "test"}' http://localhost:11451/api/device/c
             tag = False
             room_ip["port"] = port
             room_ip["ip"] = client_ip
-        print("该房间", room_ip["room"], "的ip端口：", room_ip["port"], room_ip["ip"])
+            print("该房间", room_ip["room"], "的ip端口：", room_ip["port"], room_ip["ip"])
     if tag:
         print("想要连接的房间未找到")
         return jsonify({'error_code': 100}), 401
@@ -680,6 +688,9 @@ if __name__ == '__main__':
 http://localhost:11451/__debugger__/683-942-319
 开房test
 curl.exe -v -X POST -d '{"room": "test", "temperature": 30}' http://localhost:11451/api/room/check_in?no-csrf
+开房test2
+curl.exe -v -X POST -d '{"room": "test2", "temperature": 32}' http://localhost:11451/api/room/check_in?no-csrf
+
 客户端更改状态：开机
 curl.exe -v -X POST -d '{"room_id": "test", "operation": "start, stop, temperature, wind_speed, mode", "data": "1, 0, 16, 3, cold", "time": "2023-09-18T11:45:14+08:0", "unique_id": "1145141919810abc", "signature": "SHA256withRSA"}' http://localhost:11451/api/device/client/test?no-csrf
 关机
