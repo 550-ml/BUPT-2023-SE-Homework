@@ -151,7 +151,7 @@
           </tbody>
         </table>
       </div>
-      <!-- <button @click="saveToXlsx" class="mr-2 mt-4 bg-blue-500 text-white py-2 px-4 rounded">保存</button> -->
+      <button @click="closeCheckOut" class="mr-2 mt-4 bg-blue-500 text-white py-2 px-4 rounded">保存</button>
       <button @click="closeCheckOut" class="mt-4 bg-blue-500 text-white py-2 px-4 rounded">返回</button>
     </div>
   </div>
@@ -161,7 +161,6 @@
 import { ref, onMounted, onUpdated } from "vue";
 import RoomStates from "../components/RoomState.vue";
 import api from "../main.ts";
-// import XLSX from "xlsx";
 
 export default {
   components: {
@@ -358,29 +357,10 @@ export default {
       isUnCheckOut.value = false;
     };
 
-    // const saveToXlsx = () => {
-    //   const detailsSheet = XLSX.utils.json_to_sheet(checkoutReport.value.details);
-    //   const wb = XLSX.utils.book_new();
-    //   XLSX.utils.book_append_sheet(wb, detailsSheet, "Details");
-    //   const blob = XLSX.write(wb, {
-    //     bookType: "xlsx",
-    //     mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    //   });
-    //   const url = URL.createObjectURL(blob);
-
-    //   const a = document.createElement("a");
-    //   a.href = url;
-    //   a.download = "report.xlsx";
-    //   document.body.appendChild(a);
-    //   a.click();
-    //   document.body.removeChild(a);
-    //   URL.revokeObjectURL(url);
-    // };
-
-    // onMounted(() => {
-    //   getAllDevices();
-    //   getAllUnCheckedDevices();
-    // });
+    onMounted(() => {
+      getAllDevices();
+      getAllUnCheckedDevices();
+    });
 
     return {
       // errorMessage,
@@ -409,8 +389,7 @@ export default {
       getAllUnCheckedDevices,
       getAllDevices,
       checkIn,
-      checkOut,
-      saveToXlsx
+      checkOut
     };
   }
 };
