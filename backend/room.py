@@ -79,7 +79,8 @@ class Room(threading.Thread):
                 self.on_temp,
                 self.target_temp,
                 self.target_speed,
-                self.start_time
+                self.start_time,
+                -1 if self.current_temp > self.target_temp else 1
             )
             if self.current_temp == self.target_temp:
                 self.running = False
