@@ -237,17 +237,17 @@ curl.exe -v -X post -d '{"operation":"start, stop, temperature, wind_speed", "da
         print("更改风速： ", room_id, " 房间号")
         scheduler.deal_with_speed_temp_change(room_id, int(target_temp), wind_speed)
 
-        control_client(room_id, True, target_temp, wind_speed)
+        # control_client(room_id, True, target_temp, wind_speed)
     else:
         if start == '1':
             start = 'ON'
             print("开机： ", room_id, "房间号")
             scheduler.deal_with_on_and_off(room_id, int(target_temp), wind_speed, start)
-            control_client(room_id, True, target_temp, wind_speed)
+            # control_client(room_id, True, target_temp, wind_speed)
         else:
             print("关机： ", room_id, "房间号")
             scheduler.deal_with_on_and_off(room_id, int(25), 'MID', start)
-            control_client(room_id, False, target_temp, wind_speed)
+            # control_client(room_id, False, target_temp, wind_speed)
 
     return jsonify({'room': room_id}), 200
     # except:

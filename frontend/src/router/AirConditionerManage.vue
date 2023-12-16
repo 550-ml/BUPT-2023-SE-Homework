@@ -87,7 +87,8 @@
         </el-main>
       </el-container>
       <el-footer>
-        <el-button type="primary" @click="GetroomName">刷新数据</el-button>
+        <el-button type="primary" @click="GetroomName">查询数据</el-button>
+        <el-button type="primary" @click="stopFetching">停止查询</el-button>
       </el-footer>
     </el-container>
   </div>
@@ -99,9 +100,11 @@ import api from "../main.ts";
 import { ref } from "vue";
 import { ElMessage } from 'element-plus'
 import { Edit } from '@element-plus/icons-vue'
+
+
 // 定义默认房间信息
 const roomIds = ['test', '223', '224', '222', '223'];
-
+let shouldFetchRoomInfo = true;
 const roomsInfo = ref([
   {
     roomId: roomIds[0],
@@ -174,17 +177,22 @@ const fetchRoomInfo = async (roomId) => {
 
   } catch (error) {
     console.error('获取房间信息时出错:', error);
+    GetroomName();
     ElMessage({
       message: `获取房间${roomId}信息时出错`,
       type: 'error',
     })
   }
 };
+
 // 向后端请求房间名称
 const GetroomName = async () => {
   const response = await api.get('/status');
   const responseData = response.data;
-
+  ElMessage({
+    message: `成功开始查询`,
+    type: 'success',
+  })
   // const responseData = [{ room: 'test1', is_on: 0 }, { room: 'test2', is_on: 0 }]
   console.log(responseData);
   roomIds.splice(0, roomIds.length, ...responseData.map(room => room.room));
@@ -201,12 +209,23 @@ const GetroomName = async () => {
     message: '房间加载成功',
     type: 'success',
   })
+  shouldFetchRoomInfo = true;
   setInterval(() => {
     roomIds.forEach(roomId => {
-      fetchRoomInfo(roomId);
+      if (shouldFetchRoomInfo) {
+        fetchRoomInfo(roomId);
+      }
     });
   }, 1000);
 };
+// 点击按钮时设置 shouldFetchRoomInfo 为 false
+const stopFetching = () => {
+  shouldFetchRoomInfo = false;
+  ElMessage({
+    message: `成功停止查询`,
+  })
+};
+
 
 
 // 控制某一个房间信息
@@ -310,7 +329,7 @@ const sendDataToBackend = () => {
 /* 定义el-header元素的样式 */
 .el-header {
   height: fit-content;
-  background: linear-gradient(to right, #67879c, #094073);
+  background: linear-gradient(to right, #d0dfed, #5a9be1);
   /* 添加渐变背景 */
   color: #ffffff;
   padding: 5px;

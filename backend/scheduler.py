@@ -140,7 +140,7 @@ class Scheduler:
             # if room's current_temp <= target_temp, pop running_queue and add into suspend_queue
             self.access_room_lock.acquire()
             for room in self.room_threads.values():
-                if room.target_temp is None:
+                if room.target_temp == 0:
                     continue
                 if room.current_temp == room.target_temp:
                     self.queues.pop_service_by_room_id(room.room_id)
@@ -165,6 +165,7 @@ class Scheduler:
             ready_running_room_id, start_waiting_time = self.queues.get_from_ready_queue()
 
             if ready_running_room_id is not None:
+                print(ready_running_room_id)
                 ready_running_priority = self.priority[
                     self.room_threads[ready_running_room_id].current_speed
                 ]
@@ -181,15 +182,17 @@ class Scheduler:
                 self.room_threads[ready_running_room_id].power = True
                 self.room_threads[ready_running_room_id].current_speed = \
                     self.room_threads[ready_running_room_id].target_speed
-                self.room_threads[ready_running_room_id].run()
+                self.room_threads[ready_running_room_id].start()
             else:
                 # running_queue is full
                 # start scheduling
                 room_with_lowest_priority = self.queues.get_running_room_with_lowest_priority(
                     self.room_threads
                 )
+                # print('priority lowest:', room_with_lowest_priority)
+
                 room_priority = self.priority[
-                    self.room_threads[room_with_lowest_priority]
+                    self.room_threads[room_with_lowest_priority].current_speed
                 ]
 
                 if ready_running_priority < room_priority:
@@ -208,7 +211,7 @@ class Scheduler:
                     self.room_threads[ready_running_room_id].power = True
                     self.room_threads[ready_running_room_id].current_speed = \
                         self.room_threads[ready_running_room_id].target_speed
-                    self.room_threads[ready_running_room_id].run()
+                    self.room_threads[ready_running_room_id].start()
                 else:
                     # RR scheduling
                     time_now = datetime.now()
@@ -227,4 +230,4 @@ class Scheduler:
                         self.room_threads[ready_running_room_id].power = True
                         self.room_threads[ready_running_room_id].current_speed = \
                             self.room_threads[ready_running_room_id].target_speed
-                        self.room_threads[ready_running_room_id].run()
+                        self.room_threads[ready_running_room_id].start()
