@@ -424,11 +424,11 @@ curl.exe -v -X POST -d '{"room": "test"}' http://localhost:11451/api/room/check_
 
     details = Detail.query.filter_by(room_id=room).order_by(Detail.start_time.desc()).all()
 
-    de = {}
+    de = []
 
     # 遍历查询结果并提取所需信息
     for detail in details:
-        de.update({
+        de.append({
             'start_time': detail.start_time.isoformat(),
             'end_time': detail.end_time.isoformat(),
             'wind_speed': detail.speed,
@@ -439,7 +439,7 @@ curl.exe -v -X POST -d '{"room": "test"}' http://localhost:11451/api/room/check_
 
     report_data = {
         'total_cost': total_cost,
-        'total_time': total_time.isoformat(),
+        'total_time': total_time.total_seconds(),
         'details': de
     }
 
