@@ -242,7 +242,7 @@ curl.exe -v -X post -d '{"operation":"start, stop, temperature, wind_speed", "da
             control_client(room_id, True, target_temp, wind_speed)
         else:
             print("关机： ", room_id, "房间号")
-            scheduler.deal_with_on_and_off(room_id, int(target_temp), wind_speed, start)
+            scheduler.deal_with_on_and_off(room_id, int(25), 'MID', start)
             control_client(room_id, False, target_temp, wind_speed)
 
     return jsonify({'room': room_id}), 200
