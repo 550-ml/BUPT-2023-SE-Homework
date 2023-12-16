@@ -10,9 +10,6 @@
 
 # scheduler.schedule
 
-a = [1, 2, 3]
-
-def delete(id):
-    if id not in a:
-        return None
-    del a[id]
+a = {'1': 1, '2': 2}
+a['3'] = 3
+print(a)
