@@ -109,6 +109,7 @@ class Room(threading.Thread):
             self.end_time = datetime.now()
             self.write_into_db(self.end_time)
             self.start_time = datetime.now()
+            self.on_temp = self.current_temp
             self.change_flag = 0
 
     def write_into_db(self, end_time):

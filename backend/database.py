@@ -14,7 +14,7 @@ class User(db.Model):
 
 class Detail(db.Model):
     room_id = db.Column(db.String(50), nullable=True, primary_key=True)
-    start_time = db.Column(db.DateTime, default=datetime.datetime.now())
+    start_time = db.Column(db.DateTime, default=datetime.datetime.now(), primary_key=True)
     end_time = db.Column(db.DateTime, default=0, onupdate=datetime.datetime.now())
     speed = db.Column(db.Enum("HIGH", "MID", "LOW"))
     fee = db.Column(db.Float, default=0.0)
