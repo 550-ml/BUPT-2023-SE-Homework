@@ -149,7 +149,7 @@ const roomsInfo = ref([
 // 获取特定房间的信息
 const fetchRoomInfo = async (roomId) => {
   try {
-    const response = await axios.get(`http://10.129.37.107:11451/api/status/${roomId}`);
+    const response = await api.get(`/status/${roomId}`);
     const roomData = response.data;
 
     // 根据接口返回的数据结构更新房间信息
