@@ -483,12 +483,16 @@ curl.exe -v -X POST -d '{"room_id": "test"}' http://localhost:11451/api/device/c
     # else:
     #     return jsonify({'error_code': 100}), 401
 
+    tag = True
     for room_ip in rooms_ip:
         if room_ip["room"] == room_id:
+            tag = False
             room_ip["port"] = port
             room_ip["ip"] = client_ip
         print("该房间", room_ip["room"], "的ip端口：", room_ip["port"], room_ip["ip"])
-
+    if tag:
+        print("想要连接的房间未找到")
+        return jsonify({'error_code': 100}), 401
     return jsonify({"message": "succeed"}), 200
 
 
@@ -516,11 +520,25 @@ def control_client(room_id, is_on: bool, target_temp, wind):
     webhook_url = 'http://' + str(client_ip) + ':' + str(port) + '/api/control'  # 前端提供的Webhook URL
     print("webhookurl:", webhook_url)
     operation = "start, stop, temperature, wind_speed, mode"
-    data = str(is_on) + ',' + str(not is_on) + ',' + str(target_temp) + ',' + str(wind) + ',' + 'cold'
+    data = ''
+    if is_on:
+        data += '1, 0'
+    else:
+        data += '0, 1'
+    if wind == "HIGH":
+        wind = '3'
+    elif wind == "MID":
+        wind = '2'
+    elif wind == "LOW":
+        wind = '1'
+
+    strr = ',' + str(target_temp) + ',' + str(wind) + ',' + 'cold'
+    data += strr
     json = {
         "operation": operation,
         "data": data
     }
+    print(json)
     # try:
     response = requests.post(webhook_url, json=json)
     response.raise_for_status()
