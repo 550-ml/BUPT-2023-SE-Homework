@@ -10,17 +10,17 @@
             <el-tab-pane label="空调运行" class="left-text">
               <div class="show-mes">
                 <el-card v-for="(room, index) in roomsInfo" :key="index">
+                  <span class="border-head">{{ room.roomId }}</span>
                   <img src="../assets/room1.jpg" class="image" />
-                  <div style="padding: 14px">
-                    <span>{{ room.roomId }}</span>
-                    <div class="bottom">
-                      <p>是否开启: {{ room.is_on }}</p>
-                      <p>空调模式: {{ room.mode }}</p>
-                      <p>当前风速: {{ room.speed }}</p>
-                      <p>当前温度: {{ room.currTemp }}</p>
-                      <el-button text class="button" @click="openDialog(room.roomId)">操作</el-button>
-                    </div>
+
+                  <div class="bottom">
+                    <p>是否开启: <strong>{{ room.is_on }}</strong></p>
+                    <p>空调模式: <strong>{{ room.mode }}</strong></p>
+                    <p>当前风速: <strong>{{ room.speed }}</strong></p>
+                    <p>当前温度: <strong>{{ room.currTemp }}</strong></p>
+                    <el-button class="button" :icon="Edit" plain @click="openDialog(room.roomId)">控制房间</el-button>
                   </div>
+
                 </el-card>
                 <el-dialog v-model="dialogVisible" title="设置空调状态" width="30%" :close-on-click-modal="false"
                   :close-on-press-escape="false">
@@ -99,9 +99,17 @@ import api from "../main.ts";
 import { ref } from "vue";
 import { ElMessage } from 'element-plus'
 import axios from 'axios';
+import { Edit } from '@element-plus/icons-vue'
 // 定义默认房间信息
 const roomIds = ['test', '223', '224', '222', '223'];
 const roomsInfo = ref([
+  {
+    roomId: roomIds[0],
+    is_on: '未开启',
+    mode: '未开启',
+    speed: '未开启',
+    currTemp: '未开启',
+  },
   {
     roomId: roomIds[0],
     is_on: '未开启',
@@ -174,7 +182,7 @@ const fetchRoomInfo = async (roomId) => {
 };
 // 向后端请求房间名称
 const GetroomName = async () => {
-  const response = await axios.get('http://10.129.37.107:11451/api/status');
+  const response = await api.get('/status');
   const responseData = response.data;
 
   // const responseData = [{ room: 'test1', is_on: 0 }, { room: 'test2', is_on: 0 }]
@@ -305,7 +313,7 @@ const sendDataToBackend = () => {
   background: linear-gradient(to right, #67879c, #094073);
   /* 添加渐变背景 */
   color: #ffffff;
-  padding: 10px;
+  padding: 5px;
   text-align: center;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   border-bottom: 1px solid #0c3d6b;
@@ -314,16 +322,16 @@ const sendDataToBackend = () => {
 
 /* 定义head-text类的样式 */
 .head-text {
-  font-size: 65px;
+  font-size: 60px;
   /* 增大字体大小 */
   font-weight: bold;
-  text-shadow: 8px 8px 16px rgba(0, 0, 0, 0.5);
+  text-shadow: 8px 8px 16px rgba(0, 0, 0, 0.7);
   /* 添加文字阴影 */
 }
 
 /* 左边那一栏文字 */
 .el-tabs--left .el-tabs__item.is-left {
-  font-size: 30px;
+  font-size: 20px;
   /* 增大字体大小 */
   color: #17547c;
   /* 改变字体颜色 */
@@ -340,30 +348,29 @@ const sendDataToBackend = () => {
 }
 
 .el-tab-pane {
-  padding: 20px;
+  padding: 2px;
 }
 
 /* 主要内容样式 */
 .show-mes {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  margin: 0;
-  /* 去除外边距 */
+  gap: 20px;
+  margin: 10px;
   padding: 0;
-  /* 去除内边距 */
   justify-content: space-evenly;
 }
 
 .el-card {
-  width: calc(30% - 20px);
+  --el-card-padding: 5px;
+  width: calc(31% - 5px);
   /* 调整卡片宽度 */
   height: auto;
   /* 自动调整卡片高度 */
-  margin-bottom: 20px;
-  border-radius: 20px;
+  margin-bottom: 8px;
+  border-radius: 25px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  background-color: #cfdee7;
+  background-color: #dfedf5;
   transition: box-shadow 0.3s ease;
   padding: 10px;
   /* 调整内边距以减小卡片的总体高度 */
@@ -374,48 +381,98 @@ const sendDataToBackend = () => {
   /* 改变阴影效果 */
 }
 
+.border-head {
+  color: #000000;
+  /* 字体颜色 */
+  border-radius: 17px;
+  /* 圆角大小 */
+  border: 2px solid #98bad0;
+  /* 边框颜色和粗细 */
+  background-color: rgb(243, 247, 248);
+  /* 背景色 */
+  padding: 5px 2px;
+  /* 内边距 */
+  font-size: 25px;
+  /* 字体大小 */
+  font-weight: 1000;
+  /* 字体粗细 */
+  font-family: ui-rounded, sans-serif;
+  /* 字体 */
+  display: flex;
+  justify-content: center;
+  /* 水平居中 */
+  margin: 0 100px;
+  /* 设置左右边距 */
+  line-height: 1.1;
+  /* 调整文字与边框的上下距离 */
+}
+
+
 /* 设置图片样式 */
 .image {
-  width: 95%;
+  width: 72%;
   max-width: 100%;
   display: block;
   margin: 0 auto;
-  margin-bottom: 10px;
+  margin-top: 7px;
+  margin-bottom: 0px;
   border-radius: 20px 20px 10px 10px;
   /* 图片上方设置圆角 */
 }
 
 .show-mes .bottom {
-  line-height: 1.6;
-  /* 增大行高 */
+  line-height: 1.5;
   font-size: 20px;
-  /* 增大字体大小 */
   color: #050505;
-  /* 改变字体颜色为白色 */
   font-family: 'Courier New', Courier, monospace;
-  /* 改变字体 */
   font-weight: 700;
-  /* 增大字重 */
-  text-align: left;
-  /* 文字左对齐 */
   padding: 8px;
-  /* 添加内边距 */
+  margin-left: 25px;
+  margin-top: 7px;
+}
+
+.show-mes .bottom p {
+  margin: 2px 0;
+  /* 增加段落间距 */
+}
+
+.show-mes .bottom p strong {
+  font-weight: bold;
+  /* 变量使用粗体 */
+  color: #1f4e59;
+  /* 变量颜色 */
+  font-family: Arial, sans-serif;
+  /* 使用不同字体 */
+
 }
 
 
-/* 按钮样式 */
 .button {
-  padding: 8px 8px;
-  border-radius: 5px;
+  padding: 10px 20px;
+  /* 调整按钮内边距 */
+  border-radius: 8px;
+  /* 圆角大小 */
   background-color: #007BFF;
-  color: #a01818;
-  transition: background-color 0.3s ease;
-  /* 添加背景色过渡效果 */
+  /* 背景颜色 */
+  color: white;
+  /* 字体颜色 */
+  border: none;
+  /* 移除边框 */
+  font-size: 18px;
+  /* 字体大小 */
+  font-weight: bold;
+  /* 字体粗细 */
+
+  /* 背景色过渡效果 */
+  cursor: pointer;
+  /* 鼠标样式 */
+  text-decoration: none;
+  /* 移除链接默认下划线 */
 }
 
 .button:hover {
   background-color: #0056b3;
-  /* 鼠标悬停时改变背景色 */
+  /* 鼠标悬停时的背景色 */
 }
 
 .time {

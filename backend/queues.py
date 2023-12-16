@@ -23,11 +23,12 @@ class Queues:
     def pop_off_queue(self, room_id):
         if room_id not in self.off_queue:
             return None
-        del self.off_queue[room_id]
+        self.off_queue.remove(room_id)
 
     # 将服务对象加入等待/待调度队列
     def add_into_ready_queue(self, room_id, priority):
         heapq.heappush(self.ready_queue, (priority, datetime.now(), room_id))
+        # print(room_id, 'in ready')
         return True
 
     # 从等待/待调度队列中取得优先级最高的服务对象
@@ -94,6 +95,7 @@ class Queues:
     # 把服务对象加入到服务队列中
     def add_into_running_queue(self, room_id):
         self.running_queue[room_id] = room_id
+        # print(room_id, 'in running')
         return True
 
     # 把房间id为room_id的服务对象从服务队列中弹出
