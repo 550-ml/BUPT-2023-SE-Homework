@@ -86,8 +86,12 @@ class Scheduler:
             return 'on'
         else:
             if self.queues.remove_from_suspend_queue(room_id):
+                self.room_threads[room_id].state = False
+                self.queues.add_into_off_queue(room_id)
                 return 'off_remove_from_suspend'
             elif self.queues.remove_from_ready_queue(room_id):
+                self.room_threads[room_id].state = False
+                self.queues.add_into_off_queue(room_id)
                 return 'off_remove_from_ready'
             else:
                 self.room_threads[room_id].stop()
