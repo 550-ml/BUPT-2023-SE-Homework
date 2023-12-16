@@ -10,9 +10,6 @@
 
 # scheduler.schedule
 
-a = [1, 2, 3]
+from room import Room
 
-def delete(id):
-    if id not in a:
-        return None
-    del a[id]
+room1 = Room()

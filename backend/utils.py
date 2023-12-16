@@ -6,7 +6,7 @@ from room import Room
 def recover_temp(room: Room):
     recover_per_min = 0.5
 
-    if room.end_time is None:
+    if room.end_time == 0:
         return 0
 
     room_current_temp = room.current_temp

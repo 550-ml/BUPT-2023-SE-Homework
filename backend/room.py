@@ -33,7 +33,7 @@ class Room(threading.Thread):
 
         self.running = True
         self.target = target
-        
+
         self.running_lock = threading.Lock()
         self.state_lock = state_lock
         self.write_lock = write_lock
@@ -79,7 +79,8 @@ class Room(threading.Thread):
                 self.on_temp,
                 self.target_temp,
                 self.target_speed,
-                self.start_time
+                self.start_time,
+                -1 if self.current_temp > self.target_temp else 1
             )
             if self.current_temp == self.target_temp:
                 self.running = False
@@ -101,6 +102,7 @@ class Room(threading.Thread):
         self.last_off_temp = self.current_temp
         self.write_into_db(self.end_time)
 
+        self.running = True
         self.running_lock.release()
 
     def is_changed(self):
@@ -108,6 +110,7 @@ class Room(threading.Thread):
             self.end_time = datetime.now()
             self.write_into_db(self.end_time)
             self.start_time = datetime.now()
+            self.on_temp = self.current_temp
             self.change_flag = 0
 
     def write_into_db(self, end_time):

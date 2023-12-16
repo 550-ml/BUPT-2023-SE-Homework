@@ -23,11 +23,13 @@ class Queues:
     def pop_off_queue(self, room_id):
         if room_id not in self.off_queue:
             return None
-        del self.off_queue[room_id]
+        self.off_queue.remove(room_id)
 
     # 将服务对象加入等待/待调度队列
     def add_into_ready_queue(self, room_id, priority):
         heapq.heappush(self.ready_queue, (priority, datetime.now(), room_id))
+        print(room_id, 'in ready')
+        # print(self.ready_queue)
         return True
 
     # 从等待/待调度队列中取得优先级最高的服务对象
@@ -35,6 +37,7 @@ class Queues:
         service_objects = heapq.nsmallest(1, self.ready_queue)
         if not service_objects:
             return None, None
+        # print(service_objects)
         return service_objects[0][-1], service_objects[0][-2]  # room_id, start_waiting_time
 
     def get_all_rooms_from_ready_queue(self):
@@ -67,7 +70,7 @@ class Queues:
     def get_all_rooms_from_suspend_queue(self):
         if not self.suspend_queue:
             return False
-        return list(self.suspend_queue.keys().room_id)
+        return [key.room_id for key in self.suspend_queue.keys()]
 
     def pop_suspend_queue(self):
         ready_to_pop = []
@@ -94,15 +97,15 @@ class Queues:
     # 把服务对象加入到服务队列中
     def add_into_running_queue(self, room_id):
         self.running_queue[room_id] = room_id
+        print(room_id, 'in running')
         return True
 
     # 把房间id为room_id的服务对象从服务队列中弹出
     def pop_service_by_room_id(self, room_id):
         self.running_queue.pop(room_id)
 
-    @ staticmethod
     # 得到服务队列中优先级最低且运行时间最长的一个服务对象
-    def get_running_room_with_lowest_priority(room_threads):
+    def get_running_room_with_lowest_priority(self, room_threads):
         priority = {'HIGH': 1, 'MID': 2, 'LOW': 3}
         room_with_lowest_priority_and_longest_time = None
         lowest_priority = None
@@ -110,14 +113,15 @@ class Queues:
         time_now = datetime.now()
 
         for room_id, room in room_threads.items():
-            room_priority = priority[room.current_speed]
-            running_time = (time_now - room.start_time).total_seconds()
+            if room_id in self.running_queue.keys():
+                room_priority = priority[room.current_speed]
+                running_time = (time_now - room.start_time).total_seconds()
 
-            if (lowest_priority is None or
-                    room_priority > lowest_priority or
-                    (room_priority == lowest_priority and running_time > longest_running_time)):
+                if (lowest_priority is None or
+                        room_priority > lowest_priority or
+                        (room_priority == lowest_priority and running_time > longest_running_time)):
 
-                room_with_lowest_priority_and_longest_time = room_id
-                lowest_priority = room_priority
-                longest_running_time = running_time
+                    room_with_lowest_priority_and_longest_time = room_id
+                    lowest_priority = room_priority
+                    longest_running_time = running_time
         return room_with_lowest_priority_and_longest_time
