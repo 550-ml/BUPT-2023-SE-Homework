@@ -1,6 +1,6 @@
 import { createApp } from "vue";
-import ElementPlus from 'element-plus'
-import 'element-plus/dist/index.css'
+import ElementPlus from "element-plus";
+import "element-plus/dist/index.css";
 import "./style.css";
 import App from "./App.vue";
 // import router from "./router/router.ts";
@@ -52,7 +52,7 @@ const router = createRouter({
 });
 
 const api = axios.create({
-    baseURL: "http://10.129.37.107:11451/api",
+    baseURL: "http://10.129.210.249:11451/api"
 });
 
 export default api;
@@ -60,5 +60,5 @@ export default api;
 const app = createApp(App);
 // 导入style 文件
 import "./styles/index.scss";
-app.use(ElementPlus)
+app.use(ElementPlus);
 app.use(router).mount("#app");
