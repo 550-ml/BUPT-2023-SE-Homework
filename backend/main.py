@@ -112,6 +112,9 @@ curl.exe -v -X put -d '{"room":"test", "public_key":"RSA 4096"}' http://localhos
     public_key = params['public_key']
 
     try:
+        if room in scheduler.room_threads.keys():
+            print("该房间已入住，请不要加房")
+            return jsonify({'error_code': 100}), 401
         weiruzhu.append(room)
         rooms_ip.append({
             "room": room,
