@@ -278,6 +278,11 @@ curl.exe -v -X get http://localhost:11451/api/status/test?no-csrf
         #     })
         #     print(json)
         #     return json, 200
+
+    if room_id not in scheduler.room_threads.keys():
+        print("该房间", room_id, "不在入住列表中")
+        return jsonify({'error_code': 100}), 401
+
     speed_to_num = {'HIGH': 3, 'MID': 2, 'LOW': 1}
     print("对", room_id, "查询房间状态信息：")
     #print(scheduler.room_threads.keys())
