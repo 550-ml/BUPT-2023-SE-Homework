@@ -21,7 +21,7 @@ import threading
 # 生成唯一标识符
 unique_id = ''.join(random.choices('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', k=16))
 # 请求数据
-room_id = 'test'#房间号运行前更改
+room_id = 'test2'#房间号运行前更改
 port = '5678'#我的端口
 #data = '26'#温度temperature
 #operation = 'start'#空调状态power
