@@ -11,7 +11,7 @@
               <div class="show-mes">
                 <el-card v-for="(room, index) in roomsInfo" :key="index">
                   <span class="border-head">{{ room.roomId }}</span>
-                  <img src="../assets/room1.jpg" class="image" />
+                  <img src="../assets/room2.jpg" class="image" />
 
                   <div class="bottom">
                     <p>是否开启: <strong>{{ room.is_on }}</strong></p>
@@ -31,10 +31,10 @@
                         <el-radio label="0" value="0" border class="start_text">关闭</el-radio>
                       </el-radio-group>
                     </el-form-item>
-                    <el-form-item label="目标温度(°C)">
+                    <el-form-item label="目标温度(°C)" style="width: 353px;">
                       <el-input v-model="targetTemperature" type="number" placeholder="目标温度"></el-input>
                     </el-form-item>
-                    <el-form-item label="风速设置">
+                    <el-form-item label="风速设置" style="width: 500px;">
                       <el-select v-model="selectwindspeed" placeholder="风速选择" clearable>
                         <el-option label="低风速" value="1" />
                         <el-option label="中风速" value="2" />
@@ -98,10 +98,10 @@
 import api from "../main.ts";
 import { ref } from "vue";
 import { ElMessage } from 'element-plus'
-import axios from 'axios';
 import { Edit } from '@element-plus/icons-vue'
 // 定义默认房间信息
 const roomIds = ['test', '223', '224', '222', '223'];
+
 const roomsInfo = ref([
   {
     roomId: roomIds[0],
@@ -221,7 +221,7 @@ const openDialog = (roomId) => {
   dialogVisible.value = true; // 打开对话框
   ElMessage({
     message: `设置${selectedRoomId.value}房间状态`,
-    type: 'success',
+
   })
   console.log(selectedRoomId.value);
 };
@@ -405,6 +405,7 @@ const sendDataToBackend = () => {
   /* 设置左右边距 */
   line-height: 1.1;
   /* 调整文字与边框的上下距离 */
+  cursor: pointer;
 }
 
 
@@ -437,32 +438,32 @@ const sendDataToBackend = () => {
 }
 
 .show-mes .bottom p strong {
-  font-weight: bold;
+  font-weight: 700;
   /* 变量使用粗体 */
-  color: #1f4e59;
+  color: #0e0e0e;
   /* 变量颜色 */
-  font-family: Arial, sans-serif;
+  font-family: fangsong;
   /* 使用不同字体 */
 
 }
 
-
 .button {
-  padding: 10px 20px;
+  padding: 10px 5px;
   /* 调整按钮内边距 */
   border-radius: 8px;
   /* 圆角大小 */
-  background-color: #007BFF;
+  background-color: #c1cedb;
   /* 背景颜色 */
   color: white;
   /* 字体颜色 */
   border: none;
   /* 移除边框 */
-  font-size: 18px;
+  font-size: 16px;
   /* 字体大小 */
-  font-weight: bold;
+  font-weight: 100;
   /* 字体粗细 */
-
+  transition: background-color 0.3s ease;
+  /* 添加背景颜色的过渡效果 */
   /* 背景色过渡效果 */
   cursor: pointer;
   /* 鼠标样式 */
@@ -471,7 +472,7 @@ const sendDataToBackend = () => {
 }
 
 .button:hover {
-  background-color: #0056b3;
+  background-color: #cdd3d9;
   /* 鼠标悬停时的背景色 */
 }
 
