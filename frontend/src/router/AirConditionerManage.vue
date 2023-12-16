@@ -161,7 +161,15 @@ const fetchRoomInfo = async (roomId) => {
         if (roomData.is_on) {
           room.is_on = '已开启';
           room.mode = roomData.mode;
-          room.speed = roomData.wind_speed;
+          if (roomData.wind_speed === 1) {
+            room.speed = '低风速';
+          } else if (roomData.wind_speed === 2) {
+            room.speed = '中风速';
+          } else if (roomData.wind_speed === 3) {
+            room.speed = '高风速';
+          } else {
+            room.speed = '未知'; // 如果有其他风速选项，可以在这里处理
+          }
           room.currTemp = `${roomData.temperature.toFixed(3)}°C`;
         } else {
           room.is_on = '未开启';
