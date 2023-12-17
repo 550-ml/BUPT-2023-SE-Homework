@@ -172,9 +172,18 @@ const fetchRoomInfo = async (roomId) => {
   }
 };
 
-
 /**
- * 异步获取房间名称
+ * 异步获取房间名称和状态信息
+ * 
+ * 该函数用于发送异步 GET 请求获取房间的名称和状态信息，并更新房间的相关数据。
+ * 
+ * 函数执行的步骤包括：
+ * 1. 发送 GET 请求获取房间状态信息
+ * 2. 更新房间 ID 数组
+ * 3. 更新房间信息数组
+ * 4. 显示成功查询消息和房间加载成功消息
+ * 
+ * @returns {Promise<void>} 无返回值
  */
 const GetroomName = async () => {
   const response = await api.get('/status');
@@ -228,6 +237,19 @@ const targetTemperature = ref('');
 const selectwindspeed = ref('');
 const selectedRoomId = ref('');
 
+/**
+ * 打开对话框
+ * 
+ * 该函数用于打开设置房间状态的对话框，并设置选中的房间 ID。
+ * 
+ * 函数执行的步骤包括：
+ * 1. 设置选中的房间 ID
+ * 2. 打开对话框
+ * 3. 显示设置房间状态的消息
+ * 
+ * @param {string} roomId - 房间 ID
+ * @returns {void} 无返回值
+ */
 const openDialog = (roomId) => {
   selectedRoomId.value = roomId;
   dialogVisible.value = true; // 打开对话框
@@ -237,6 +259,13 @@ const openDialog = (roomId) => {
   })
   console.log(selectedRoomId.value);
 };
+
+/**
+ * 提交表单数据并发送请求
+ * @function submitForm
+ * @description 收集输入框中的数据，构建请求数据并发送POST请求到指定的API接口。
+ * @returns {void}
+ */
 const submitForm = () => {
   // 收集输入框中的数据
   let dataToSend = {
@@ -279,6 +308,10 @@ const minTemperature = ref('');
 const maxTemperature = ref('');
 const defaultTemperature = ref('');
 const rate = ref('');
+
+/**
+ * 发送数据到后端
+ */
 const sendDataToBackend = () => {
   // 收集输入框中的数据
   const dataToSend = {
@@ -291,7 +324,7 @@ const sendDataToBackend = () => {
   };
 
   // 使用 fetch 或 Axios 将数据发送到后端（这是一个假设的函数）
-  fetch('你的后端接口地址', {
+  fetch('', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
