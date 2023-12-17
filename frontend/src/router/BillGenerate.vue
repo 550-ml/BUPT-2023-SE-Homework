@@ -1,3 +1,4 @@
+<!--  -->
 <template>
   <div class="w-full px-2 my-4">
     <div class="flex items-center justify-between mb-4 mr-4">
@@ -121,37 +122,45 @@
     </div>
     <div v-else class="bg-white p-6 rounded shadow-md">
       <div>
-        <h2>xxx房间账单</h2>
-      </div>
-      <div>
-        <h2>xxx房间详单</h2>
-        <table>
+        <h2 class="text-center py-4">{{ roomId }}号房间账单</h2>
+        <table class="w-full border-collapse border shadow-md">
           <thead>
-            <tr>
-              <th>Cost</th>
-              <th>Duration</th>
-              <th>End Time</th>
-              <th>Mode</th>
-              <th>Start Time</th>
-              <th>Wind Speed</th>
+            <tr class="bg-gray-200">
+              <th class="p-4">total cost</th>
+              <th class="p-4">total time</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="detail in detailedReport">
-              <!-- <td>{{ detail.cost }}</td>
-              <td>{{ detail.duration }}</td>
-              <td>{{ detail.end_time }}</td>
-              <td>{{ detail.mode }}</td>
-              <td>{{ detail.start_time }}</td>
-              <td>{{ detail.wind_speed }}</td> -->
-              <td v-for="(value, key) in detail" :key="key">
+            <tr>
+              <td class="p-4 text-center border">{{ billReport.total_cost }}</td>
+              <td class="p-4 text-center border">{{ billReport.total_time }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <h2 class="text-center py-4">{{ roomId }}号房间详单</h2>
+        <table class="w-full border-collapse border shadow-md">
+          <thead>
+            <tr class="bg-gray-200">
+              <th class="p-4">Cost</th>
+              <th class="p-4">Duration</th>
+              <th class="p-4">End Time</th>
+              <th class="p-4">Mode</th>
+              <th class="p-4">Start Time</th>
+              <th class="p-4">Wind Speed</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="detail in detailedReport" :key="detail.id">
+              <td v-for="(value, key) in detail" :key="key" class="p-4 text-center border">
                 {{ value }}
               </td>
             </tr>
           </tbody>
         </table>
       </div>
-      <button @click="closeCheckOut" class="mr-2 mt-4 bg-blue-500 text-white py-2 px-4 rounded">保存</button>
+      <button @click="saveToExcel" class="mr-2 mt-4 bg-blue-500 text-white py-2 px-4 rounded">保存</button>
       <button @click="closeCheckOut" class="mt-4 bg-blue-500 text-white py-2 px-4 rounded">返回</button>
     </div>
   </div>
@@ -161,6 +170,9 @@
 import { ref, onMounted, onUpdated } from "vue";
 import RoomStates from "../components/RoomState.vue";
 import api from "../main.ts";
+// import * as ExcelJS from "exceljs";
+// import writeXlsxFile from "write-excel-file";
+import * as XLSX from "xlsx";
 
 export default {
   components: {
@@ -180,7 +192,8 @@ export default {
     const checkoutReport = ref("");
     const billReport = ref(null);
     const detailedReport = ref(null);
-    let roomId = ref(null);
+
+    let roomId = ref("");
 
     const executeSearch = () => {
       // if (!searchTerm.value) {
@@ -218,7 +231,7 @@ export default {
     };
 
     const openCheckOut = deviceId => {
-      roomId = deviceId;
+      roomId.value = deviceId;
       isCheckOutOpen.value = true;
     };
 
@@ -325,18 +338,14 @@ export default {
       //   total_time: 0
       // };
       // billReport.value = checkoutReport.value;
-      // console.log(billReport.value);
       // detailedReport.value = checkoutReport.value.details;
-      // console.log(detailedReport.value[0].start_time);
-      // console.log(detailedReport);
-      // console.log(searchedDeviceData);
       // isUnCheckOut.value = false;
 
       try {
         const response = await api.post(
           "/room/check_out",
           {
-            room: roomId
+            room: roomId.value
           },
           {
             headers: {
@@ -355,6 +364,31 @@ export default {
         console.error("Check-out 失败:", error.response.data);
       }
       isUnCheckOut.value = false;
+    };
+
+    const saveToExcel = () => {
+      const billSheet = XLSX.utils.json_to_sheet(checkoutReport.value.details);
+
+      // Create a sheet for total
+      const totalSheet = XLSX.utils.json_to_sheet([
+        {
+          "Total Cost": checkoutReport.value.total_cost,
+          "Total Time": checkoutReport.value.total_time
+        }
+      ]);
+
+      // Create a new workbook
+      let wb = XLSX.utils.book_new();
+
+      // Append details and total sheets to the workbook
+      XLSX.utils.book_append_sheet(wb, totalSheet, "Bill");
+
+      // Save the workbook to Excel file
+      // const blob = XLSX.writeFile(wb, "report" + roomId.value + ".xlsx");
+      const detailsSheet = XLSX.utils.json_to_sheet(checkoutReport.value.details);
+      XLSX.utils.book_append_sheet(wb, detailsSheet, "Details");
+      const blob = XLSX.writeFile(wb, "report" + roomId.value + ".xlsx");
+      URL.createObjectURL(blob.files);
     };
 
     onMounted(() => {
@@ -389,7 +423,8 @@ export default {
       getAllUnCheckedDevices,
       getAllDevices,
       checkIn,
-      checkOut
+      checkOut,
+      saveToExcel
     };
   }
 };
