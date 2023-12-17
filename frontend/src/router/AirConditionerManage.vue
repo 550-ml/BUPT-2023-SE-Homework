@@ -368,7 +368,7 @@ const sendDataToBackend = () => {
     // 根据需要添加更多字段...
   };
 
-  // 使用 fetch 或 Axios 将数据发送到后端（这是一个假设的函数）
+  // 使用 fetch 或 Axios 将数据发送到后端
   fetch('', {
     method: 'POST',
     headers: {

@@ -101,7 +101,6 @@ const login = () => {
 </script>
 
 <style lang="scss" scoped>
-// Define your color variables
 .login-background {
   background: linear-gradient(to top, #edeff1, #5a9be1);
   /* 蓝色渐变背景 */
