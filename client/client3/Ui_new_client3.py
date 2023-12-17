@@ -27,7 +27,7 @@ port = '5679'#我的端口
 #operation = 'start'#空调状态power
 #time = datetime.now().isoformat()#时间timestamp
 # 配置服务器的URL
-base_url = 'http://10.129.37.107:11451'#host:port
+base_url = 'http://10.129.210.249:11451'#host:port
 # 生成签名文本
 sign_text = room_id + unique_id + port
 signature = hashlib.sha256(sign_text.encode()).hexdigest()
