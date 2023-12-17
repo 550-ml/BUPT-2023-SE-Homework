@@ -447,11 +447,8 @@ curl.exe -v -X POST -d '{"room": "test"}' http://localhost:11451/api/room/check_
     checkout = datetime.datetime.now()
     total_time = checkout - checkin
 
-
     details = Detail.query.filter_by(room_id=room).order_by(Detail.start_time.desc()).all()
-    fee_last = Detail.query.filter_by(room_id=room).order_by(Detail.start_time.desc()).first().fee
-    total_cost = fee_last
-
+    total_cost = 0.0
     de = []
 
     # 遍历查询结果并提取所需信息
@@ -464,6 +461,7 @@ curl.exe -v -X POST -d '{"room": "test"}' http://localhost:11451/api/room/check_
             'duration': detail.times_used,
             'cost': detail.fee
         })
+        total_cost += detail.fee
 
     report_data = {
         'total_cost': total_cost,
