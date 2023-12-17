@@ -24,6 +24,7 @@
                     <p>空调模式: <strong>{{ room.mode }}</strong></p>
                     <p>当前风速: <strong>{{ room.speed }}</strong></p>
                     <p>当前温度: <strong>{{ room.currTemp }}</strong></p>
+                    <p>目标温度: <strong>{{ room.targetTemp }}</strong></p>
                     <el-button class="button" :icon="Edit" plain @click="openDialog(room.roomId)">控制房间</el-button>
                   </div>
 
@@ -121,6 +122,47 @@ const roomsInfo = ref([
     mode: '未开启',
     speed: '未开启',
     currTemp: '未开启',
+    targetTemp: '未开启',
+  },
+  {
+    roomId: roomIds[0],
+    is_on: '未开启',
+    mode: '未开启',
+    speed: '未开启',
+    currTemp: '未开启',
+    targetTemp: '未开启',
+  },
+  {
+    roomId: roomIds[0],
+    is_on: '未开启',
+    mode: '未开启',
+    speed: '未开启',
+    currTemp: '未开启',
+    targetTemp: '未开启',
+  },
+  {
+    roomId: roomIds[0],
+    is_on: '未开启',
+    mode: '未开启',
+    speed: '未开启',
+    currTemp: '未开启',
+    targetTemp: '未开启',
+  },
+  {
+    roomId: roomIds[0],
+    is_on: '未开启',
+    mode: '未开启',
+    speed: '未开启',
+    currTemp: '未开启',
+    targetTemp: '未开启',
+  },
+  {
+    roomId: roomIds[0],
+    is_on: '未开启',
+    mode: '未开启',
+    speed: '未开启',
+    currTemp: '未开启',
+    targetTemp: '未开启',
   }
 ])
 
@@ -150,11 +192,13 @@ const fetchRoomInfo = async (roomId) => {
             room.speed = '未知'; // 如果有其他风速选项，可以在这里处理
           }
           room.currTemp = `${roomData.temperature.toFixed(3)}°C`;
+          room.targetTemp = `${roomData.target_temp.toFixed(3)}°C`;
         } else {
           room.is_on = '未开启';
           room.mode = '未开启';
           room.speed = '未开启';
           room.currTemp = `${roomData.temperature.toFixed(3)}°C`;
+          room.targetTemp = `${roomData.target_temp.toFixed(3)}°C`;
         }
         return room;
       }
@@ -202,6 +246,7 @@ const GetroomName = async () => {
     mode: '未开启',
     speed: '未开启',
     currTemp: '未开启',
+    targetTemp: '未开启',
   }));
   console.log(roomsInfo.value);
   ElMessage({
