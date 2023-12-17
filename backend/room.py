@@ -43,6 +43,8 @@ class Room(threading.Thread):
         self.is_start_first = 1
         self.be_running = 1
 
+        self.route = ''
+
     # def __deepcopy__(self, memo):
     #     new_room = Room(self.room_id, self.state, self.target,
     #                     self.state_lock, self.write_lock)
@@ -97,7 +99,8 @@ class Room(threading.Thread):
                     self.state = 'FINISH'
                     self.end_time = datetime.now()
                     self.last_off_temp = self.current_temp
-                    self.write_into_db(self.end_time)
+                    self.route = 'current_temp=target_temp'
+                    self.write_into_db(self.end_time, self.route)
 
 
                 self.state_lock.release()
@@ -112,7 +115,7 @@ class Room(threading.Thread):
 
         self.end_time = datetime.now()
         self.last_off_temp = self.current_temp
-        self.write_into_db(self.end_time)
+        self.write_into_db(self.end_time, self.route)
         self.running_lock.release()
 
     def resume(self):
@@ -124,26 +127,31 @@ class Room(threading.Thread):
     def is_changed(self):
         if self.change_flag:
             self.end_time = datetime.now()
-            self.write_into_db(self.end_time)
+            self.route = 'state change'
+            self.write_into_db(self.end_time, self.route)
+            # self.current_speed = self.target_speed
             self.start_time = datetime.now()
             self.on_temp = self.current_temp
             self.change_flag = 0
 
-    def write_into_db(self, end_time):
+    def write_into_db(self, end_time, route):
         self.write_lock.acquire()
         duration = (end_time - self.start_time).total_seconds()
+        if duration < 0.01:
+            pass
+        else:
+            self.fee += self.current_fee
+            self.last_fee = self.current_fee
+            self.current_fee = 0
 
-        self.fee += self.current_fee
-        self.last_fee = self.current_fee
-        self.current_fee = 0
-
-        add_to_detail(
-            self.room_id,
-            self.start_time,
-            self.end_time,
-            self.current_speed,
-            self.fee,
-            duration,
-            self.target_temp
-        )
+            add_to_detail(
+                self.room_id,
+                self.start_time,
+                self.end_time,
+                self.current_speed,
+                self.last_fee,
+                duration,
+                self.target_temp,
+                route
+            )
         self.write_lock.release()

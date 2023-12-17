@@ -95,6 +95,7 @@ class Scheduler:
                 self.queues.add_into_off_queue(room_id)
                 # return 'off_remove_from_ready'
             else:
+                self.room_threads[room_id].route = 'from on to off'
                 self.room_threads[room_id].stop()
                 self.room_threads[room_id].state = 'FINISH'
                 self.room_threads[room_id].power = False
@@ -209,6 +210,7 @@ class Scheduler:
 
                 if ready_running_priority < room_priority:
                     # priority scheduling
+                    self.room_threads[room_with_lowest_priority].route = 'from running to suspend'
                     self.room_threads[room_with_lowest_priority].stop()
                     self.room_threads[room_with_lowest_priority].state = 'SUSPEND'
                     self.room_threads[room_with_lowest_priority].power = True
@@ -232,6 +234,7 @@ class Scheduler:
                     # RR scheduling
                     time_now = datetime.now()
                     if (time_now - start_waiting_time).total_seconds() >= self.RR_SLOT:
+                        self.room_threads[room_with_lowest_priority].route = 'from running to suspend'
                         self.room_threads[room_with_lowest_priority].stop()
                         self.room_threads[room_with_lowest_priority].state = 'SUSPEND'
                         self.room_threads[room_with_lowest_priority].power = True
