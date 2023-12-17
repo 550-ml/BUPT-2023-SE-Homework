@@ -1,3 +1,8 @@
+#文件名：servers1.py
+#功能：负责接受管理员更改请求的发送包并解析，将解析后的包通过socket服务器本地传输给空调面板
+#作者：邸仲尧
+#创建日期：2023.11.15
+#其余4个客户端服务器文件均为该客户端服务器复制文件
 from flask import Flask, request, jsonify
 import socket
 import threading
@@ -30,7 +35,7 @@ def control_device():
     data1 = [data1.strip() for data1 in data.split(',')]
     operation_data = dict(zip(operations, data1))
     # 处理服务器更改客户端状态请求
-    # 以下是一个简单的示例，你可以根据你的业务逻辑进行修改
+    # 示例，解析包后是字典，将预设的客户端状态替换并发送
     for key, value in operation_data.items():
         if key == "start":
           client_state["start"] = value  # is_on
@@ -59,7 +64,7 @@ def broadcast_state():
             print(f"向客户端广播状态时发生错误: {e}")
             # 根据需要处理异常（例如，从集合中删除客户端）
 
-def start_flask_server():
+def start_flask_server():#在局域网启动flask服务器
     app.run(debug=True,host='0.0.0.0',port=5677, use_reloader=False)
 
 def start_socket_server():

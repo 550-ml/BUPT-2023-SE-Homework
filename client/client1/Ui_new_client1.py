@@ -1,3 +1,8 @@
+#文件名：Ui_new_client1.py
+#功能：负责空调面板的设置和更改，以及接受管理员端的更改请求，更改目标状态后向后端发送数据
+#作者：邸仲尧
+#创建日期：2023.11.15
+#其余4个客户端均为该客户端复制文件
 from PyQt5 import QtCore, QtGui, QtWidgets
 from qfluentwidgets import BodyLabel, ComboBox, CompactDoubleSpinBox, RadioButton, SwitchButton, TitleLabel
 import sys
@@ -34,14 +39,14 @@ signature = hashlib.sha256(sign_text.encode()).hexdigest()
 
 sweep="On"#是否送风
 
-class Ui_Form(object):
+class Ui_Form(object):#空调面板类
     def setupUi(self, Form):
         Form.setObjectName("Form")
-        Form.resize(1200, 700)
+        Form.resize(1200, 700)#窗口大小
         self.SwitchButton = SwitchButton(Form)
         self.SwitchButton.setGeometry(QtCore.QRect(450, 140, 91, 22))
         self.SwitchButton.setMaximumSize(QtCore.QSize(16777215, 1000))
-        self.SwitchButton.setObjectName("SwitchButton")
+        self.SwitchButton.setObjectName("SwitchButton")#开关按钮
         self.SwitchButton.setChecked(False)  # 设置初始状态为False
 
         self.CompactDoubleSpinBox = CompactDoubleSpinBox(Form)
@@ -49,9 +54,9 @@ class Ui_Form(object):
         self.CompactDoubleSpinBox.setMinimumSize(QtCore.QSize(79, 33))
         self.CompactDoubleSpinBox.setMaximumSize(QtCore.QSize(1000, 1000))
         self.CompactDoubleSpinBox.setMouseTracking(False)
-        self.CompactDoubleSpinBox.setMinimum(16.0)
-        self.CompactDoubleSpinBox.setMaximum(34.0)
-        self.CompactDoubleSpinBox.setProperty("value", 25.0)
+        self.CompactDoubleSpinBox.setMinimum(16.0)#最小温度
+        self.CompactDoubleSpinBox.setMaximum(34.0)#最大温度
+        self.CompactDoubleSpinBox.setProperty("value", 25.0)#默认温度
         self.CompactDoubleSpinBox.setObjectName("CompactDoubleSpinBox")
         self.TitleLabel = TitleLabel(Form)
         self.TitleLabel.setGeometry(QtCore.QRect(530, 50, 123, 37))
@@ -69,7 +74,7 @@ class Ui_Form(object):
         self.RadioButton = RadioButton(Form)#中(默认)
         self.RadioButton.setGeometry(QtCore.QRect(670, 230, 51, 24))
         self.RadioButton.setObjectName("RadioButton")
-        self.RadioButton.setChecked(True)
+        self.RadioButton.setChecked(True)#初始状态设置
         self.RadioButton_2 = RadioButton(Form)#高
         self.RadioButton_2.setGeometry(QtCore.QRect(730, 230, 51, 24))
         self.RadioButton_2.setObjectName("RadioButton_2")
@@ -103,6 +108,7 @@ class Ui_Form(object):
         self.timer.timeout.connect(self.updateDateTime)
         self.timer.start(1000)
 
+        #按钮数据改变连接各个按钮改变函数
         self.SwitchButton.checkedChanged.connect(self.on_button_state_changed)
         self.CompactDoubleSpinBox.valueChanged.connect(self.on_spinbox_value_changed)
         self.RadioButton.clicked.connect(self.on_radio_button_clicked)
@@ -134,7 +140,7 @@ class Ui_Form(object):
         #发送接受的端口号，每个客户端的端口不一样
         self.client_online(room_id, port, unique_id, signature)
 
-    def retranslateUi(self, Form):
+    def retranslateUi(self, Form):#面板按钮文本
         _translate = QtCore.QCoreApplication.translate
         Form.setWindowTitle(_translate("Form", "Form"))
         self.TitleLabel.setText(_translate("Form", "空调面板"))
@@ -150,7 +156,7 @@ class Ui_Form(object):
         self.ComboBox.setText(_translate("Form", "制热"))
         self.ComboBox.setText(_translate("Form", "制冷"))
     
-    def update_panel(self, data):
+    def update_panel(self, data):#更新面板函数
         # 将接收到的数据转换为字典
         data_dict = eval(data)
         # 更新空调面板按钮的值
@@ -187,21 +193,21 @@ class Ui_Form(object):
         #if sweep=="stop":
         #    sweep = "stop"
 
-    def receive_data(self):
+    def receive_data(self):#接受后端更改包函数
         while True:
             self.receive_data_called = True
             #print("重新设置值",self.receive_data_called)#测试
             data = self.client_socket.recv(1024).decode()
             if data:
-                self.update_panel(data)
+                self.update_panel(data)#连接更改空调面板函数
 
-    def updateDateTime(self):
+    def updateDateTime(self):#更新时间函数
         # 更新 QLabel 显示当前日期和时间
         current_time = QTime.currentTime()
         current_date_time = QDateTime.currentDateTime().toString('yyyy-MM-dd hh:mm:ss')
-        self.DateTimeLabel.setText(current_date_time)
+        self.DateTimeLabel.setText(current_date_time)#设置面板显示时间
 
-    def on_button_state_changed(self,checked):
+    def on_button_state_changed(self,checked):#按钮更改函数,按钮变化启动计时器
         if checked:
             self.start_timer()
         else:
@@ -210,33 +216,33 @@ class Ui_Form(object):
         #data = self.get_panel_data()
         #self.save_data_to_file(data)
 
-    def on_spinbox_value_changed(self):
+    def on_spinbox_value_changed(self):#按钮更改函数,按钮变化启动计时器
         self.start_timer()
         #data = self.get_panel_data()
         #self.save_data_to_file(data)
 
-    def on_radio_button_clicked(self):
+    def on_radio_button_clicked(self):#按钮更改函数,按钮变化启动计时器
         self.start_timer()
         #data = self.get_panel_data()
         #self.save_data_to_file(data)
 
-    def on_combobox_index_changed(self):
+    def on_combobox_index_changed(self):#按钮更改函数,按钮变化启动计时器
         self.start_timer()
         #data = self.get_panel_data()
         #self.save_data_to_file(data)
 
-    def start_timer(self):
+    def start_timer(self):#计时器函数
         self.countdown = 1  # 重置计数器
         self.timer.start(1000)
 
-    def finalize_changes(self):
+    def finalize_changes(self):#主发送函数，当按钮更改启动计时器后，计时器归零启动该函数，获取当前空调面板数据，打包后发送
         self.countdown -= 1
         if self.countdown == 0:
             self.stop_timer()
             data = self.get_panel_data()
             time=data.get('更改时间')
             post_data=[value for key, value in data.items() if key != "更改时间"]
-            self.save_data_to_file(data)
+            self.save_data_to_file(data)#保存到本地
             #self.client_online(room_id, port, unique_id, signature)
             #print(self.receive_data_called,"第三次")#测试
             if self.count_data==1:
@@ -252,7 +258,7 @@ class Ui_Form(object):
             self.receive_data_called = False
             #print(self.receive_data_called,"第四次")#测试
     
-    def client_online(self,room_id, port, unique_id, signature):
+    def client_online(self,room_id, port, unique_id, signature):#发送客户端端口和房间号函数
         url = f'{base_url}/api/device/client'
         headers = {'Content-Type': 'application/json'}
         post_data2 = {
@@ -269,7 +275,7 @@ class Ui_Form(object):
         else:
             print('连接请求失败')
     
-    def get_current_status(self,room_id,data,time):
+    def get_current_status(self,room_id,data,time):#发送空调面板当前数据函数
         url = f'{base_url}/api/device/client/{room_id}'
         headers = {'Content-Type': 'application/json'}
         data_string=', '.join(map(str, data))
@@ -289,10 +295,10 @@ class Ui_Form(object):
         else:
             print('当前状态请求失败')
     
-    def stop_timer(self):
+    def stop_timer(self):#停止计时器函数
         self.timer.stop()
 
-    def get_panel_data(self):
+    def get_panel_data(self):#获取当前空调面板数据函数
         import datetime
         selected_radio_text = ""
         if self.RadioButton.isChecked():
@@ -325,7 +331,7 @@ class Ui_Form(object):
         #panel_data["更改时间"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         return panel_data
     
-    def save_data_to_file(self, data):
+    def save_data_to_file(self, data):#保存到本地更改记录函数
         import os
         # 获取当前脚本所在的目录
         current_directory = os.path.dirname(os.path.abspath(__file__))
