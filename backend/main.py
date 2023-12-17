@@ -440,7 +440,7 @@ curl.exe -v -X POST -d '{"room": "test"}' http://localhost:11451/api/room/check_
 
     checkin = order.checkin
     #checkout = order.checkout
-    checkout = datetime.now()
+    checkout = datetime.datetime.now()
     total_time = checkout - checkin
 
 
