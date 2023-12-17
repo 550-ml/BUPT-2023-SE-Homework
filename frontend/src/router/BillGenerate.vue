@@ -1,3 +1,4 @@
+<!--  -->
 <template>
   <div class="w-full px-2 my-4">
     <div class="flex items-center justify-between mb-4 mr-4">
@@ -81,12 +82,12 @@
       </div>
     </div>
 
-    <div v-if="errorMessage" class="modal">
+    <!-- <div v-if="errorMessage" class="modal">
       <div class="modal-content">
         <p>{{ errorMessage }}</p>
         <button @click="closeModal" class="bg-blue-500 text-white py-2 px-4 rounded mt-4">关闭</button>
       </div>
-    </div>
+    </div> -->
   </div>
 
   <div v-if="isCheckInOpen" class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
@@ -121,11 +122,45 @@
     </div>
     <div v-else class="bg-white p-6 rounded shadow-md">
       <div>
-        <h2>xxx房间账单</h2>
+        <h2 class="text-center py-4">{{ roomId }}号房间账单</h2>
+        <table class="w-full border-collapse border shadow-md">
+          <thead>
+            <tr class="bg-gray-200">
+              <th class="p-4">total cost</th>
+              <th class="p-4">total time</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="p-4 text-center border">{{ billReport.total_cost }}</td>
+              <td class="p-4 text-center border">{{ billReport.total_time }}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
       <div>
-        <h2>xxx房间详单</h2>
+        <h2 class="text-center py-4">{{ roomId }}号房间详单</h2>
+        <table class="w-full border-collapse border shadow-md">
+          <thead>
+            <tr class="bg-gray-200">
+              <th class="p-4">Cost</th>
+              <th class="p-4">Duration</th>
+              <th class="p-4">End Time</th>
+              <th class="p-4">Mode</th>
+              <th class="p-4">Start Time</th>
+              <th class="p-4">Wind Speed</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="detail in detailedReport" :key="detail.id">
+              <td v-for="(value, key) in detail" :key="key" class="p-4 text-center border">
+                {{ value }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
+      <button @click="saveToExcel" class="mr-2 mt-4 bg-blue-500 text-white py-2 px-4 rounded">保存</button>
       <button @click="closeCheckOut" class="mt-4 bg-blue-500 text-white py-2 px-4 rounded">返回</button>
     </div>
   </div>
@@ -135,6 +170,9 @@
 import { ref, onMounted, onUpdated } from "vue";
 import RoomStates from "../components/RoomState.vue";
 import api from "../main.ts";
+// import * as ExcelJS from "exceljs";
+// import writeXlsxFile from "write-excel-file";
+import * as XLSX from "xlsx";
 
 export default {
   components: {
@@ -152,7 +190,10 @@ export default {
     const allUnCheckedDevices = ref([]);
     const initTemperature = ref(0);
     const checkoutReport = ref("");
-    let roomId = ref(null);
+    const billReport = ref(null);
+    const detailedReport = ref(null);
+
+    let roomId = ref("");
 
     const executeSearch = () => {
       // if (!searchTerm.value) {
@@ -190,7 +231,7 @@ export default {
     };
 
     const openCheckOut = deviceId => {
-      roomId = deviceId;
+      roomId.value = deviceId;
       isCheckOutOpen.value = true;
     };
 
@@ -210,32 +251,32 @@ export default {
     };
 
     const getAllUnCheckedDevices = async () => {
-      allUnCheckedDevices.value = ["1", "2"];
-      // try {
-      //   const response = await api.get("/admin/uncheck_in", {
-      //     headers: {
-      //       "X-CSRF-Token": "abcde12345" // Include the CSRF token if available
-      //     }
-      //   });
-      //   allUnCheckedDevices.value = response.data;
-      // } catch (error) {
-      //   console.error("Failed to get devices:", error.response.data);
-      // }
+      // allUnCheckedDevices.value = ["1", "2"];
+      try {
+        const response = await api.get("/admin/uncheck_in", {
+          headers: {
+            "X-CSRF-Token": "abcde12345" // Include the CSRF token if available
+          }
+        });
+        allUnCheckedDevices.value = response.data;
+      } catch (error) {
+        console.error("Failed to get devices:", error.response.data);
+      }
     };
 
     const getAllDevices = async () => {
-      allDevices.value = ["1", "2"];
-      // try {
-      //   const response = await api.get("/admin/devices", {
-      //     headers: {
-      //       "X-CSRF-Token": "abcde12345" // Include the CSRF token if available
-      //     }
-      //   });
+      // allDevices.value = ["1", "2"];
+      try {
+        const response = await api.get("/admin/devices", {
+          headers: {
+            "X-CSRF-Token": "abcde12345" // Include the CSRF token if available
+          }
+        });
 
-      //   allDevices.value = response.data;
-      // } catch (error) {
-      //   console.error("Failed to get devices:", error.response.data);
-      // }
+        allDevices.value = response.data;
+      } catch (error) {
+        console.error("Failed to get devices:", error.response.data);
+      }
     };
 
     const checkIn = async () => {
@@ -264,30 +305,50 @@ export default {
     };
 
     const checkOut = async () => {
-      console.log(roomId);
-      // room = roomId;
       try {
         const response = await api.post(
           "/room/check_out",
           {
-            room: roomId
+            room: roomId.value
           },
           {
             headers: {
-              "X-CSRF-Token": csrfToken.value
+              "X-CSRF-Token": "abcde12345"
             }
           }
         );
 
-        // const { room, report } = response.data;
-        // console.log("Check-out 成功:", room, report);
+        console.log("Check-out 成功:", response.data);
 
         // 将返回的 report 数据存储在 checkoutReport 中
-        // checkoutReport.value = report;
+        checkoutReport.value = response.data;
+        billReport.value = checkoutReport.value;
+        detailedReport.value = checkoutReport.value.details;
+        isUnCheckOut.value = false;
       } catch (error) {
         console.error("Check-out 失败:", error.response.data);
       }
       isUnCheckOut.value = false;
+    };
+
+    const saveToExcel = () => {
+      const billSheet = XLSX.utils.json_to_sheet(checkoutReport.value.details);
+
+      const totalSheet = XLSX.utils.json_to_sheet([
+        {
+          "Total Cost": checkoutReport.value.total_cost,
+          "Total Time": checkoutReport.value.total_time
+        }
+      ]);
+
+      let wb = XLSX.utils.book_new();
+
+      XLSX.utils.book_append_sheet(wb, totalSheet, "Bill");
+
+      const detailsSheet = XLSX.utils.json_to_sheet(checkoutReport.value.details);
+      XLSX.utils.book_append_sheet(wb, detailsSheet, "Details");
+      const blob = XLSX.writeFile(wb, "report" + roomId.value + ".xlsx");
+      URL.createObjectURL(blob.files);
     };
 
     onMounted(() => {
@@ -309,6 +370,8 @@ export default {
       roomId,
       initTemperature,
       checkoutReport,
+      billReport,
+      detailedReport,
       executeSearch,
       getSingleDevice,
       cancelSearch,
@@ -320,7 +383,8 @@ export default {
       getAllUnCheckedDevices,
       getAllDevices,
       checkIn,
-      checkOut
+      checkOut,
+      saveToExcel
     };
   }
 };

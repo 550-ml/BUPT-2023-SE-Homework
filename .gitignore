@@ -6,3 +6,5 @@
 /**/__pycache__
 /**/config.py
 /**/.DS_Store
+/frontend/src/sendRequest.ts
+/frontend/sendRequest.ts

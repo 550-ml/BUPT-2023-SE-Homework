@@ -1,3 +1,9 @@
+<!--
+  文件名: register.vue
+  功能: 这个文件是用于用户注册的界面。
+  作者: 王拓
+  创建日期: 2023-11-11
+-->
 <template>
   <div class="register-container">
     <el-form :model="form" label-width="120px" class="register-form">

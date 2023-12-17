@@ -77,7 +77,7 @@ class Queues:
         time_now = datetime.now()
         for room, start_time in self.suspend_queue.items():
             duration = (time_now - start_time).total_seconds()
-            if duration >= 60 and room.current_temp >= room.target_temp:
+            if duration >= 10 and room.current_temp >= room.target_temp:
                 ready_to_pop.append(room)
         if len(ready_to_pop) == 0:
             return None
