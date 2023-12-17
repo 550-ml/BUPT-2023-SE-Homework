@@ -1,3 +1,9 @@
+<!--
+  文件名: HotelManage.vue
+  功能: 这个文件是用于添加和删除房间的界面。
+  作者: 鲁启航
+  创建日期: 2023-11-11
+-->
 <template>
   <div class="w-full px-2 my-4">
     <div class="flex items-center justify-between mb-4 mr-4">
@@ -129,7 +135,12 @@ export default {
       isDeleteOpen.value = false;
     };
 
-    // 添加房间
+    /**
+     * 添加房间
+     * @function addRoom
+     * @description 添加一个新的房间
+     * @returns {void}
+     */
     const addRoom = async () => {
       try {
         const response = await api.put(
@@ -151,6 +162,12 @@ export default {
       // requestData = ref(null);
     };
 
+    /**
+     * 删除房间
+     * @function deleteRoom
+     * @description 删除一个已有房间
+     * @returns {void}
+     */
     const deleteRoom = async () => {
       try {
         const response = await api.request({

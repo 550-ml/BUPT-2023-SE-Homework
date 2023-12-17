@@ -1,4 +1,9 @@
-<!--  -->
+<!--
+  文件名: BillGenerate.vue
+  功能: 这个文件是用于入住、退房和产生账单详单的界面。
+  作者: 鲁启航
+  创建日期: 2023-11-11
+-->
 <template>
   <div class="w-full px-2 my-4">
     <div class="flex items-center justify-between mb-4 mr-4">
@@ -81,13 +86,6 @@
         </div>
       </div>
     </div>
-
-    <!-- <div v-if="errorMessage" class="modal">
-      <div class="modal-content">
-        <p>{{ errorMessage }}</p>
-        <button @click="closeModal" class="bg-blue-500 text-white py-2 px-4 rounded mt-4">关闭</button>
-      </div>
-    </div> -->
   </div>
 
   <div v-if="isCheckInOpen" class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
@@ -170,8 +168,6 @@
 import { ref, onMounted, onUpdated } from "vue";
 import RoomStates from "../components/RoomState.vue";
 import api from "../main.ts";
-// import * as ExcelJS from "exceljs";
-// import writeXlsxFile from "write-excel-file";
 import * as XLSX from "xlsx";
 
 export default {
@@ -196,10 +192,6 @@ export default {
     let roomId = ref("");
 
     const executeSearch = () => {
-      // if (!searchTerm.value) {
-      //   return;
-      // }
-      // if allDevices.
       console.log(searchTerm.value);
       getSingleDevice(searchTerm.value);
     };
@@ -216,6 +208,9 @@ export default {
       };
     };
 
+    /**
+     * 定义一系列函数更改状态变量，用于控制对话框的弹出
+     */
     const cancelSearch = () => {
       searchedDeviceData.value = null;
     };
@@ -250,12 +245,17 @@ export default {
       }
     };
 
+    /**
+     * 获取所有未入住房间
+     * @function getAllUnCheckedDevices
+     * @description 发送请求，获取所有未入住房间的列表
+     * @returns {void}
+     */
     const getAllUnCheckedDevices = async () => {
-      // allUnCheckedDevices.value = ["1", "2"];
       try {
         const response = await api.get("/admin/uncheck_in", {
           headers: {
-            "X-CSRF-Token": "abcde12345" // Include the CSRF token if available
+            "X-CSRF-Token": "abcde12345"
           }
         });
         allUnCheckedDevices.value = response.data;
@@ -264,12 +264,17 @@ export default {
       }
     };
 
+    /**
+     * 获取所有已入住房间
+     * @function getAllDevices
+     * @description 发送请求，获取所有已入住房间的列表
+     * @returns {void}
+     */
     const getAllDevices = async () => {
-      // allDevices.value = ["1", "2"];
       try {
         const response = await api.get("/admin/devices", {
           headers: {
-            "X-CSRF-Token": "abcde12345" // Include the CSRF token if available
+            "X-CSRF-Token": "abcde12345"
           }
         });
 
@@ -279,6 +284,12 @@ export default {
       }
     };
 
+    /**
+     * 入住
+     * @function checkIn
+     * @description 发送请求，入住指定房间
+     * @returns {void}
+     */
     const checkIn = async () => {
       console.log(roomId);
       try {
@@ -290,7 +301,7 @@ export default {
           },
           {
             headers: {
-              "X-CSRF-Token": "abcde12345" // Include the CSRF token if available
+              "X-CSRF-Token": "abcde12345"
             }
           }
         );
@@ -299,11 +310,16 @@ export default {
         isUnCheckIn.value = false;
         openCheckIn();
       } catch (error) {
-        // Handle unauthorized or other errors
         console.error("Check-in failed:", error.response.data);
       }
     };
 
+    /**
+     * 退房并生成账单详单
+     * @function checkOut
+     * @description 发送请求，对指定房间进行退房，并产生账单与详单
+     * @returns {void}
+     */
     const checkOut = async () => {
       try {
         const response = await api.post(
@@ -320,7 +336,6 @@ export default {
 
         console.log("Check-out 成功:", response.data);
 
-        // 将返回的 report 数据存储在 checkoutReport 中
         checkoutReport.value = response.data;
         billReport.value = checkoutReport.value;
         detailedReport.value = checkoutReport.value.details;
@@ -331,6 +346,12 @@ export default {
       isUnCheckOut.value = false;
     };
 
+    /**
+     * 保存账单与详单
+     * @function saveToExcel
+     * @description 将账单与详单保存为一个excel中的两个表格
+     * @returns {void}
+     */
     const saveToExcel = () => {
       const billSheet = XLSX.utils.json_to_sheet(checkoutReport.value.details);
 
