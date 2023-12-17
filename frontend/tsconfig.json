@@ -21,9 +21,12 @@
     "noFallthroughCasesInSwitch": true,
 
     "noImplicitAny": false,
-    "allowJs": true
+    "allowJs": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "esModuleInterop": true
   },
   "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],
   "references": [{ "path": "./tsconfig.node.json" }],
-  "type":["node"]
+  "type": ["node"]
 }
