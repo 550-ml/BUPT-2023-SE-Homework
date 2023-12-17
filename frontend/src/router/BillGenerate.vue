@@ -305,42 +305,6 @@ export default {
     };
 
     const checkOut = async () => {
-      // console.log(roomId);
-
-      // checkoutReport.value = {
-      //   details: [
-      //     {
-      //       cost: 0.0780313,
-      //       duration: 4.6944,
-      //       end_time: "2023-12-16T18:33:56",
-      //       mode: "cold",
-      //       start_time: "2023-12-16T18:33:51",
-      //       wind_speed: "MID"
-      //     },
-      //     {
-      //       cost: 0.0780343,
-      //       duration: 4.6944,
-      //       end_time: "2023-12-16T18:33:56",
-      //       mode: "cold",
-      //       start_time: "2023-12-16T18:33:51",
-      //       wind_speed: "MID"
-      //     },
-      //     {
-      //       cost: 0.0736313,
-      //       duration: 4.6944,
-      //       end_time: "2023-12-16T18:33:56",
-      //       mode: "cold",
-      //       start_time: "2023-12-16T18:33:51",
-      //       wind_speed: "MID"
-      //     }
-      //   ],
-      //   total_cost: 0,
-      //   total_time: 0
-      // };
-      // billReport.value = checkoutReport.value;
-      // detailedReport.value = checkoutReport.value.details;
-      // isUnCheckOut.value = false;
-
       try {
         const response = await api.post(
           "/room/check_out",
@@ -358,8 +322,9 @@ export default {
 
         // 将返回的 report 数据存储在 checkoutReport 中
         checkoutReport.value = response.data;
-        billReport.value = checkoutReport.data;
-        detailedReport.value = checkoutReport.data.details || [];
+        billReport.value = checkoutReport.value;
+        detailedReport.value = checkoutReport.value.details;
+        isUnCheckOut.value = false;
       } catch (error) {
         console.error("Check-out 失败:", error.response.data);
       }
@@ -369,7 +334,6 @@ export default {
     const saveToExcel = () => {
       const billSheet = XLSX.utils.json_to_sheet(checkoutReport.value.details);
 
-      // Create a sheet for total
       const totalSheet = XLSX.utils.json_to_sheet([
         {
           "Total Cost": checkoutReport.value.total_cost,
@@ -377,14 +341,10 @@ export default {
         }
       ]);
 
-      // Create a new workbook
       let wb = XLSX.utils.book_new();
 
-      // Append details and total sheets to the workbook
       XLSX.utils.book_append_sheet(wb, totalSheet, "Bill");
 
-      // Save the workbook to Excel file
-      // const blob = XLSX.writeFile(wb, "report" + roomId.value + ".xlsx");
       const detailsSheet = XLSX.utils.json_to_sheet(checkoutReport.value.details);
       XLSX.utils.book_append_sheet(wb, detailsSheet, "Details");
       const blob = XLSX.writeFile(wb, "report" + roomId.value + ".xlsx");
