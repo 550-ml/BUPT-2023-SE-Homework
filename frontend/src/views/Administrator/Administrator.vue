@@ -1,3 +1,9 @@
+<!--
+  文件名: Administrator.vue
+  功能: 这个文件是用于管理空调的管理员界面,不过已经被废弃了
+  作者: 王拓
+  创建日期: 2023-10-11
+-->
 <template>
     <div class="common-layout">
         <el-container>

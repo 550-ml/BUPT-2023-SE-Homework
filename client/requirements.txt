@@ -1,5 +1,5 @@
 requsets
 rsa
 PyQt5
-"PyQt-Fluent-Widgets[full]"
+# "PyQt-Fluent-Widgets[full]"
 Flask

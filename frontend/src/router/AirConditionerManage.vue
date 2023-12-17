@@ -1,3 +1,9 @@
+<!--
+  文件名: AirConditionerManage.vue
+  功能: 这个文件是用于管理空调的设置参数的界面。
+  作者: 王拓
+  创建日期: 2023-11-11
+-->
 <template>
   <div class="common-layout">
     <el-container>
@@ -102,9 +108,12 @@ import { ElMessage } from 'element-plus'
 import { Edit } from '@element-plus/icons-vue'
 
 
-// 定义默认房间信息
 const roomIds = ['test', '223', '224', '222', '223'];
 let shouldFetchRoomInfo = true;
+/**
+ * @description 房间信息数组
+ * @type {Array}
+ */
 const roomsInfo = ref([
   {
     roomId: roomIds[0],
@@ -112,44 +121,14 @@ const roomsInfo = ref([
     mode: '未开启',
     speed: '未开启',
     currTemp: '未开启',
-  },
-  {
-    roomId: roomIds[0],
-    is_on: '未开启',
-    mode: '未开启',
-    speed: '未开启',
-    currTemp: '未开启',
-  },
-  {
-    roomId: roomIds[1],
-    is_on: '未开启',
-    mode: '未开启',
-    speed: '未开启',
-    currTemp: '未开启',
-  },
-  {
-    roomId: roomIds[2],
-    is_on: '未开启',
-    mode: '未开启',
-    speed: '未开启',
-    currTemp: '未开启',
-  },
-  {
-    roomId: roomIds[3],
-    is_on: '未开启',
-    mode: '未开启',
-    speed: '未开启',
-    currTemp: '未开启',
-  },
-  {
-    roomId: roomIds[4],
-    is_on: '未开启',
-    mode: '未开启',
-    speed: '未开启',
-    currTemp: '未开启',
   }
 ])
-// 获取特定房间的信息
+
+/**
+ * 异步获取房间信息
+ * @param {string} roomId - 房间ID
+ * 
+ */
 const fetchRoomInfo = async (roomId) => {
   try {
     const response = await api.get(`/status/${roomId}`);
@@ -193,7 +172,10 @@ const fetchRoomInfo = async (roomId) => {
   }
 };
 
-// 向后端请求房间名称
+
+/**
+ * 异步获取房间名称
+ */
 const GetroomName = async () => {
   const response = await api.get('/status');
   const responseData = response.data;
@@ -224,9 +206,12 @@ const GetroomName = async () => {
         fetchRoomInfo(roomId);
       }
     });
-  }, 1000);
+  }, 3000);
 };
-// 点击按钮时设置 shouldFetchRoomInfo 为 false
+
+/**
+ * 停止获取房间信息
+ */
 const stopFetching = () => {
   shouldFetchRoomInfo = false;
   ElMessage({
@@ -253,7 +238,6 @@ const openDialog = (roomId) => {
   console.log(selectedRoomId.value);
 };
 const submitForm = () => {
-
   // 收集输入框中的数据
   let dataToSend = {
     operation: "start, stop, temperature, wind_speed",

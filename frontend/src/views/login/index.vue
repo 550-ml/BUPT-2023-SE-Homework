@@ -1,3 +1,9 @@
+<!--
+  文件名: index.vue
+  功能: 这个文件是应用的主入口文件, 用于渲染登录界面页面
+  作者: 王拓
+  创建日期: 2023-11-11
+-->
 <template>
   <div class="login-background">
     <div class="login-header-text">波普特廉价酒店管理系统</div>
@@ -46,6 +52,19 @@ import axios from "axios";
 import api from "../../main.ts";
 import { useRouter } from 'vue-router';
 const router = useRouter();
+
+/**
+ * 登录函数
+ * 1. 获取表单中的用户名和密码
+ * 2. 将用户名和密码组成 JSON 数据
+ * 3. 发送登录请求到后端 API
+ * 4. 根据登录成功后返回的角色信息进行页面跳转
+ *    - 如果角色是经理，跳转到经理仪表盘页面
+ *    - 如果角色是结账员，跳转到结账仪表盘页面
+ *    - 如果角色是空调管理员，跳转到空调管理员仪表盘页面
+ *    - 其他角色，跳转到默认仪表盘页面
+ * 5. 处理登录失败的情况
+ */
 const login = () => {
   const loginData = {
     username: form.value.name,
