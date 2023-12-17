@@ -20,10 +20,11 @@ class Detail(db.Model):
     fee = db.Column(db.Float, default=0.0, primary_key=True)
     times_used = db.Column(db.Float, nullable=True, primary_key=True)
     target_temp = db.Column(db.Integer, nullable=True, primary_key=True)
+    route = db.Column(db.String, primary_key=True)
 
     def __str__(self) -> str:
         return 'room_id:{0},start_time:{1},end_time:{2},speed:{3},fee:{4},times_used:{5}'.format(
-             self.room_id, self.start_time, self.end_time, self.speed, self.fee, self.times_used, self.target_temp)
+             self.room_id, self.start_time, self.end_time, self.speed, self.fee, self.times_used, self.target_temp, self.route)
 
     def __repr__(self) -> str:
         return self.__str__()
@@ -44,7 +45,7 @@ class Order(db.Model):
 
 
 def add_to_detail(room_id, start_time=datetime.datetime.now(), end_time=0, speed='mid', fee=0,
-                  times_used=0, target_temp=25):
+                  times_used=0, target_temp=25, route=''):
     with app.app_context():
         db.session.add(Detail(room_id=room_id,
                               start_time=start_time,
@@ -52,7 +53,8 @@ def add_to_detail(room_id, start_time=datetime.datetime.now(), end_time=0, speed
                               speed=speed,
                               fee=fee,
                               times_used=times_used,
-                              target_temp=target_temp))
+                              target_temp=target_temp,
+                              route=route))
         db.session.commit()
 
 
