@@ -1,3 +1,35 @@
+"""
+Title: Central Air Conditioning Control System
+Module Description:
+    This module manages the core functionalities of a central air conditioning system.
+    It provides the capabilities to control and monitor the air conditioning system's mode, temperature, speed, \
+    and power consumption.
+    The module is designed to be integrated with a larger system for \
+    managing air conditioning across multiple rooms or zones.
+
+Main Algorithms:
+    - Mode management: Ability to set the air conditioning mode (e.g., cooling, heating).
+    - Temperature and speed control: Set and adjust the temperature range and fan speed.
+    - Power consumption management: Monitor and manage the power consumption rates based on operation mode and fan speed.
+
+Interface Description:
+    - __init__(): Initializes the central air conditioning system with default settings.
+
+    API Interface Methods:
+    - set_params(mode, fee_rate, temp_section, default_temp, default_speed): Configure the system parameters including
+        mode, fee rate, temperature range, default temperature, and speed.
+
+Development Record:
+    Creator: Lisheng Gong
+    Creation Date: 2023/12/01
+    Modifier: Lisheng Gong
+    Modification Date: 2023/12/17
+    Modification Content:
+        - add preamble notes
+    Version: 3.0.0
+"""
+
+
 import time
 from datetime import datetime
 

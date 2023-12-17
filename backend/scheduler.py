@@ -1,3 +1,41 @@
+"""
+Title: Central Air Conditioning Scheduler
+Module Description:
+    This module provides scheduling functionality for a central air conditioning system.
+    It dynamically adjusts the operation of the air conditioner based on the needs and priorities of different rooms, \
+    aiming for efficient and energy-saving operation.
+    Features include room temperature control, priority queue management, \
+    and interfacing with the central air conditioning system.
+
+Main Algorithms:
+    - Priority Scheduling: Schedule based on the set priority of rooms (High, Medium, Low).
+    - Round Robin: Allocate fixed service time slots to each room.
+    - Temperature Recovery: Return to default temperature when a room no longer requires air conditioning.
+
+Interface Description:
+    - __init__(central_ac: CentralAc): Initializes the scheduler, binds with the central air conditioning system.
+
+    API Interface Methods:
+    - add_room(room_id): Adds a new room to the system.
+    - delete_room(room_id): Removes an existing room from the system.
+    - get_available_room(): Retrieves and returns a list of available rooms in the system.
+    - get_room_message(room_id): Fetches and returns the status message of a specified room.
+    - set_room_initial_env_temp(room_id, temperature): Sets the initial environmental temperature for a specified room.
+    - deal_with_on_and_off(room_id, status): Handles the turning on or off of the air conditioning for a specified room.
+    - deal_with_speed_temp_change(room_id, speed, temperature): Manages changes in the fan speed and \
+        temperature settings for a specified room.
+
+Development Record:
+    Creator: Lisheng Gong
+    Creation Date: 2023/12/01
+    Modifier: Lisheng Gong
+    Modification Date: 2023/12/17
+    Modification Content:
+        - add preamble notes
+    Version: 3.0.0
+"""
+
+
 import threading
 from datetime import datetime
 import copy

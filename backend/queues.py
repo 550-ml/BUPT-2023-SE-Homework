@@ -1,3 +1,33 @@
+"""
+Title: Queue Management for Central Air Conditioning System
+Module Description:
+    This module is responsible for managing the various queues in a central air conditioning system.
+    It handles the organization and prioritization of rooms based on their air conditioning needs and statuses.
+    The module plays a crucial role in the efficient distribution of air conditioning resources,
+    ensuring that rooms are served based on predefined criteria and system state.
+
+Main Algorithms:
+    - Queue Management: Manages different queues such as ready, suspend, running, and off queues for room management.
+    - Room Prioritization: Prioritizes rooms in the queues based on their current status and needs.
+    - Integration with Room Module: Works in conjunction with the Room module to dynamically update and manage room statuses.
+
+Interface Description:
+    - __init__(): Initializes the queues including ready, suspend, running, and off queues.
+    - add_into_off_queue(room_id): Adds a room to the off queue.
+    - get_all_rooms_from_off_queue(): Retrieves all rooms from the off queue.
+    - pop_off_queue(): Removes and returns the first room from the off queue.
+
+Development Record:
+    Creator: Lisheng Gong
+    Creation Date: 2023/12/01
+    Modifier: Lisheng Gong
+    Modification Date: 2023/12/17
+    Modification Content:
+        - add preamble notes
+    Version: 3.0.0
+"""
+
+
 import heapq
 from datetime import datetime
 
