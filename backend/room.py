@@ -93,9 +93,12 @@ class Room(threading.Thread):
                 
                 if self.current_temp == self.target_temp:
                     self.running = False
-                    self.power = False
+                    self.power = True
                     self.state = 'FINISH'
-                    self.stop()
+                    self.end_time = datetime.now()
+                    self.last_off_temp = self.current_temp
+                    self.write_into_db(self.end_time)
+
 
                 self.state_lock.release()
                 self.running_lock.release()

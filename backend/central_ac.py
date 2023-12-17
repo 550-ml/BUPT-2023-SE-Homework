@@ -27,7 +27,7 @@ class CentralAc:
         return current_temp, total_cost
 
     def update_temperature(self, on_temp, target_temp, target_speed, duration, cold_or_heat):
-        current_temp = on_temp + cold_or_heat * self.temperature_change_rate[target_speed] / 20 * duration
+        current_temp = on_temp + cold_or_heat * self.temperature_change_rate[target_speed] / 10 * duration
 
         if cold_or_heat == -1 and current_temp <= target_temp:
             return target_temp
@@ -37,5 +37,5 @@ class CentralAc:
             return current_temp
 
     def update_cost(self, target_speed, duration):
-        total_cost = self.fee_rate * self.power_rate[target_speed] / 20 * duration
+        total_cost = self.fee_rate * self.power_rate[target_speed] / 10 * duration
         return total_cost

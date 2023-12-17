@@ -17,7 +17,7 @@ class Scheduler:
         self.priority = {'HIGH': 1, 'MID': 2, 'LOW': 3}
 
         self.max_be_served = 3
-        self.RR_SLOT = 40
+        self.RR_SLOT = 20
 
         self.state_lock = {}
         # self.read_lock = {}
@@ -180,7 +180,7 @@ class Scheduler:
 
             if ready_running_room_id is None:
                 # ready_queue is empty
-                continue
+                pass
             elif len(self.queues.running_queue) < self.max_be_served:
                 # running_queue has vacancies
                 self.queues.pop_ready_queue()
