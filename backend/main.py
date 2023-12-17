@@ -285,7 +285,7 @@ def get_one_status(room_id):
         type: string
 
 
-    :return: 200 room, temperature, wind_speed, mode, sweep, is_on, last_update
+    :return: 200 room, temperature, wind_speed, mode, sweep, is_on, last_update, 另外加target_temp
             401
 curl.exe -v -X get http://localhost:11451/api/status/test?no-csrf
     """
@@ -327,7 +327,10 @@ curl.exe -v -X get http://localhost:11451/api/status/test?no-csrf
     else:
         speed_to_num = {'HIGH': 3, 'MID': 2, 'LOW': 1}
         room_message['wind_speed'] = speed_to_num[room_message['wind_speed']]
-    # print(room_message, "回传状态信息")
+        for i in scheduler.room_threads.keys():
+            if room_id == i:
+                room_message['target_temp'] = scheduler.room_threads[i].target_temp
+    print(room_message, "回传状态信息")
     json = jsonify(room_message)
     return json, 200
     # except:
