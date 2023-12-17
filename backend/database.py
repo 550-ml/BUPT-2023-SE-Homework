@@ -20,7 +20,7 @@ class Detail(db.Model):
     fee = db.Column(db.Float, default=0.0, primary_key=True)
     times_used = db.Column(db.Float, nullable=True, primary_key=True)
     target_temp = db.Column(db.Integer, nullable=True, primary_key=True)
-    route = db.Column(db.String, primary_key=True)
+    route = db.Column(db.String(255), primary_key=True)
 
     def __str__(self) -> str:
         return 'room_id:{0},start_time:{1},end_time:{2},speed:{3},fee:{4},times_used:{5}'.format(
