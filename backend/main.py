@@ -322,7 +322,8 @@ curl.exe -v -X get http://localhost:11451/api/status/test?no-csrf
             'mode': 'cold',
             # 'sweep': sweep,
             'is_on': False,
-            'is_ruzhu': False
+            'is_ruzhu': False,
+            'target_temp': 25
         }
     else:
         speed_to_num = {'HIGH': 3, 'MID': 2, 'LOW': 1}
