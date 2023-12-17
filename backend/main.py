@@ -1,5 +1,40 @@
-import os
+"""
+程序名称: Central Air Conditioning Management System (CACMS) Backend Service
+程序描述:
+    - 该Python脚本是为中央空调管理系统设计的后端服务。
+    - 基于Flask框架，实现了用户登录、房间管理、设备控制等功能。
+    - 包含了API路由处理，用于处理前端发出的网络请求，并与数据库进行交互。
+    - 调用多线程技术来处理后台调度任务。
 
+主要模块及其功能:
+    1. 登录/登出管理: 提供用户登录和登出功能，验证用户身份并分配相应角色。
+    2. 房间管理: 实现对房间的增加和删除功能。
+    3. 设备控制: 允许管理员通过API控制中央空调的各项参数。
+    4. 状态查询: 提供接口查询特定房间或所有房间的当前状态。
+    5. 前台服务: 处理前台的开房和退房流程，包括费用计算和使用详情。
+
+接口说明:
+    这个脚本主要设计了flask的13种接口函数，用于前后端交互，涉及到逻辑判断数据库调用以及接口测试。
+    - `/api/login`: 用户登录接口
+    - `/api/logout`: 用户登出接口
+    - `/api/admin/device`: 房间增加和删除接口
+    - `/api/admin/devices`: 查询所有房间名称接口
+    - `/api/status/<room_id>`: 查询指定房间状态接口
+    - `/api/status`: 查询所有房间状态接口
+    - `/api/room/check_in`: 前台开房接口
+    - `/api/room/check_out`: 前台退房接口
+    - `/api/device/client/<room_id>`: 客户端状态更新接口
+    - 等
+
+开发者信息:
+    - 开发者: [陈悦-2021211882]
+    - 开发日期: [2023-12]
+
+备注：
+    此脚本中过多的注释是因为软件在实际生产中，需要不断的测试以及不断地修改。
+
+"""
+import os
 from app import *
 from threading import Thread
 from flask import request, jsonify, Blueprint
@@ -23,14 +58,6 @@ rooms_ip = [{
     "port": "5677",
     "ip": "10.129.117.63"
 }, {
-    "room": "test2"
-}, {
-    "room": "test3"
-}, {
-    "room": "test4"
-}, {
-    "room": "test5"
-}, {
     "room": "1"
 }, {
     "room": "2"
@@ -52,7 +79,7 @@ def login_admin():
     password
     :return: {error:bool.
                 role:str}  # room/administrator/manager/receptionist
-
+终端测试指令：
 curl.exe -v -X post -d '{"username":"administrator_1", "password":"administrator"}' http://localhost:11451/api/login?no-csrf
     """
 
@@ -95,24 +122,21 @@ curl.exe -v -X post http://localhost:11451/api/logout?no-csrf
 
     return 204
 
-
-weiruzhu = ['test', 'test2', 'test3', 'test4', 'test5','1', '2', '3', '4', '5']
-
+weiruzhu = ['test','1', '2', '3', '4', '5']
 
 # 管理员加房
-# 理解是增加一个未入住房间
 @app.route('/api/admin/device', methods=['put'])
 def add_room():
     """
-    room:
-        type: string
-    public_key:
-        type: string # RSA 4096
-
+    input:
+        room:
+            type: string
+        public_key:
+            type: string # RSA 4096
     :return: 200 room:
                     type: string
             401
-
+终端测试：
 curl.exe -v -X put -d '{"room":"test", "public_key":"RSA 4096"}' http://localhost:11451/api/admin/device?no-csrf
     """
     print("------------------------------------------------------------------------------------------------------------")
@@ -141,13 +165,13 @@ curl.exe -v -X put -d '{"room":"test", "public_key":"RSA 4096"}' http://localhos
 @app.route('/api/admin/device', methods=['delete'])
 def delete_room():
     """
-    room:
-        type: string
-
-
+    input：
+        room:
+            type: string
     :return: 200 room:
                     type: string
             401
+终端测试：
 curl.exe -v -X delete -d '{"room":"test"}' http://localhost:11451/api/admin/device?no-csrf
     """
     print("------------------------------------------------------------------------------------------------------------")
@@ -180,13 +204,11 @@ curl.exe -v -X delete -d '{"room":"test"}' http://localhost:11451/api/admin/devi
 @app.route('/api/admin/devices', methods=['get'])
 def get_room_list():
     """
-
     :return: 200 room :
                     type: string array
             401
 
     调数据库
-
 curl.exe -v -X get http://localhost:11451/api/admin/devices?no-csrf
     """
     try:
@@ -202,19 +224,19 @@ curl.exe -v -X get http://localhost:11451/api/admin/devices?no-csrf
 @app.route('/api/admin/devices/<string:room_id>', methods=['post'])
 def control_device(room_id):
     """
-    room:
-        type: string
+    input：
+        room:
+            type: string
 
-    operation:
-          type: string
-          example:  'start, stop, temperature, wind_speed, mode,'
-    data:
-          type: string
-          example: 26   # different for operations
-
-    :return: 200 返回房间列表？？   ？？？？
+        operation:
+              type: string
+              example:  'start, stop, temperature, wind_speed, mode,'
+        data:
+              type: string
+              example: 26   # different for operations
+    :return: 200 返回房间列表
             401
-
+终端测试：
 curl.exe -v -X post -d '{"operation":"start, stop, temperature, wind_speed", "data":"1, 0, 23, 3"}' http://localhost:11451/api/admin/devices/test?no-csrf
     """
     print("------------------------------------------------------------------------------------------------------------")
@@ -224,18 +246,15 @@ curl.exe -v -X post -d '{"operation":"start, stop, temperature, wind_speed", "da
         return jsonify({'error_code': 100}), 401
     params = request.get_json(force=True)
     print("管理员控制：", request.path, " 参数为: ", params)
-
+    #解析数据
     operation = params['operation']
     data = params['data']
-
     operations = [element.strip() for element in operation.split(',')]
     datas = [datas.strip() for datas in data.split(',')]
     operation_data = dict(zip(operations, datas))
-
     start = operation_data.get('start')
     target_temp = operation_data.get('temperature')
     wind_speed = operation_data.get('wind_speed')
-
     if wind_speed == '3':
         wind_speed = 'HIGH'
     elif wind_speed == '2':
@@ -291,21 +310,7 @@ curl.exe -v -X get http://localhost:11451/api/status/test?no-csrf
     """
 
     # try:
-        # if room_id in weiruzhu:
-        #     json = jsonify({
-        #         'room': room_id,
-        #         'temperature': 25,
-        #         'wind_speed': 2,
-        #         'mode': 'cold',
-        #         # 'sweep': sweep,
-        #         'is_on': False,
-        #         'is_ruzhu': False
-        #     })
-        #     print(json)
-        #     return json, 200
-
     #print("------------------------------------------------------------------------------------------------------------")
-
     #print("对", room_id, "查询房间状态信息：")
     if room_id not in scheduler.room_threads.keys():
         print("但该房间", room_id, "不在入住列表中")
@@ -342,11 +347,9 @@ curl.exe -v -X get http://localhost:11451/api/status/test?no-csrf
 @app.route('/api/status', methods=['get'])
 def get_all_status():
     """
-
     :return: 200 room, is_on(开关机状态)
 
             401
-
 curl.exe -v -X get http://localhost:11451/api/status?no-csrf
     """
     try:
@@ -358,7 +361,6 @@ curl.exe -v -X get http://localhost:11451/api/status?no-csrf
             status['room'] = room.room_id
             status['is_on'] = room.power
             json.append(status)
-
         return jsonify(json), 200
     except:
         return jsonify({'error_code': 100}), 401
@@ -368,11 +370,10 @@ curl.exe -v -X get http://localhost:11451/api/status?no-csrf
 @app.route('/api/room/check_in', methods=['POST'])
 def check_in():
     """前台开房
-    roomId
+    input：
+        roomId
     :return: 200 room,
-
             401
-
 curl.exe -v -X POST -d '{"room": "test"}' http://localhost:11451/api/room/check_in?no-csrf
     """
     print("------------------------------------------------------------------------------------------------------------")
@@ -412,8 +413,8 @@ curl.exe -v -X POST -d '{"room": "test"}' http://localhost:11451/api/room/check_
 @app.route('/api/room/check_out', methods=['POST'])
 def check_out():
     """前台退房
-    roomId:int
-
+    input：
+        roomId:int
     :return: room,
             report_data:
                 total_cost
@@ -421,13 +422,11 @@ def check_out():
                 details:
                     start_time
                     end_time
-                    temperature 不用
+                    temperature
                     wind_speed
                     mode
-
                     duration
                     cost
-
     调数据库
 curl.exe -v -X POST -d '{"room": "test"}' http://localhost:11451/api/room/check_out?no-csrf
     """
@@ -483,11 +482,11 @@ curl.exe -v -X POST -d '{"room": "test"}' http://localhost:11451/api/room/check_
 @app.route('/api/device/client', methods=['POST'])
 def client_connect():
     """
-    room_id
-    port    #Port for WebHook
-    unique_id   #random Unique ID, 16 characters
-    signature   #SHA256withRSA, RSA 4096, sign text = room_id + unique_id + port
-
+    input：
+        room_id
+        port    #Port for WebHook
+        unique_id   #random Unique ID, 16 characters
+        signature   #SHA256withRSA, RSA 4096, sign text = room_id + unique_id + port
     :return:204 succes
             401
 
@@ -501,9 +500,9 @@ curl.exe -v -X POST -d '{"room_id": "test"}' http://localhost:11451/api/device/c
     port = data.get('port')
     client_ip = request.remote_addr
 
+    # 公私钥验证
     # unique_id = data.get('unique_id')
     # signature = data.get('signature')
-
     # sign_text = room_id + unique_id + str(port)
     # if sign_text == signature:
     #     return 204
@@ -528,9 +527,8 @@ curl.exe -v -X POST -d '{"room_id": "test"}' http://localhost:11451/api/device/c
 def control_client(room_id, is_on: bool, target_temp, wind):
     """
     send:
-    operation   # start, stop, temperature, wind_speed, mode
-    data        # example: 26  operations
-
+        operation   # start, stop, temperature, wind_speed, mode
+        data        # example: 26  operations
     :return: 204 401
     """
     print("------------------------------------------------------------------------------------------------------------")
@@ -580,12 +578,13 @@ def control_client(room_id, is_on: bool, target_temp, wind):
 @app.route('/api/device/client/<string:room_id>', methods=['POST'])
 def client_change(room_id):
     """
-    room_id
-    operation   # start, stop, temperature, wind_speed, mode, sweep
-    data        # example: 26  operations
-    time        # 更改日期
-    unique_id？？   # random Unique ID, 16 characters
-    signature？？   # SHA256withRSA, RSA 4096, sign text = operation + unique_id + data + time
+    input：
+        room_id
+        operation   # start, stop, temperature, wind_speed, mode, sweep
+        data        # example: 26  operations
+        time        # 更改日期
+        unique_id   # random Unique ID, 16 characters
+        signature   # SHA256withRSA, RSA 4096, sign text = operation + unique_id + data + time
     :return: 204
             401
 
@@ -593,23 +592,20 @@ curl.exe -v -X POST -d '{"room_id": "test", "operation": "start, stop, temperatu
     """
     print("------------------------------------------------------------------------------------------------------------")
 
+    # 解析数据
     params = request.get_json(force=True)
     print("客户端更改房间：", request.path, " 参数为: ", params)
     operation = params['operation']
     data = params['data']
     time = params['time']
-
     unique_id = params['unique_id']
     signature = params['signature']
-
     operations = [element.strip() for element in operation.split(',')]
     datas = [datas.strip() for datas in data.split(',')]
     operation_data = dict(zip(operations, datas))
-
     start = operation_data.get('start')
     target_temp = operation_data.get('temperature')
     wind_speed = operation_data.get('wind_speed')
-
     if wind_speed == str(3):
         wind_speed = 'HIGH'
     elif wind_speed == str(2):
@@ -625,23 +621,6 @@ curl.exe -v -X POST -d '{"room_id": "test", "operation": "start, stop, temperatu
     for room in scheduler.room_threads.values():
         if room.room_id == room_id:
             power = room.power
-
-    # print("         请求的开关机",start, "房间当前的开关机",power)
-    # if bool(int(start)) == bool(power) and bool(power):
-    #     print("更改风速")
-    #     if start == '1':
-    #         start = 'ON'
-    #     #print(room_id, target_temp, wind_speed, start)
-    #     scheduler.deal_with_speed_temp_change(room_id, int(target_temp), wind_speed)
-    # else:
-    #     if start == '1':
-    #         start = 'ON'
-    #         print(room_id, "开机")
-    #     else:
-    #         print(room_id, "关机")
-    #     #print(room_id, target_temp, wind_speed, start)
-    #     return_state = scheduler.deal_with_on_and_off(room_id, int(target_temp), wind_speed, start)
-    #     print(return_state)
 
     print("           ", "请求的开关机", bool(int(start)), "房间当前的开关机", power)
     if bool(int(start)) == bool(power) and not bool(int(start)):
@@ -697,6 +676,7 @@ if __name__ == '__main__':
     with app.app_context():
         app.run(port=11451, debug=True, host='0.0.0.0')
 
+    # 测试用例
     # rooms = ['1', '2', '3', '4', '5']
     # temps = ['32', '28', '30', '29', '35']
     # scheduler.add_room(rooms)
@@ -705,7 +685,7 @@ if __name__ == '__main__':
 
     # scheduler.schedule()
 """
-调试：
+调试用，终端命令：
 http://localhost:11451/__debugger__/683-942-319
 开房test
 curl.exe -v -X POST -d '{"room": "test", "temperature": 30}' http://localhost:11451/api/room/check_in?no-csrf
